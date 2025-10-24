@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar Sesión | AgroLink</title>
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Font Awesome para el ícono del tractor -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+
+<body class="auth-body">
+
+  <!-- ====== ENCABEZADO DEL LOGIN ====== -->
+  <header class="auth-header">
+    <a href="index.html" class="logo-auth">
+      <i class="fa-solid fa-tractor" style="color:#2b7a0b; font-size:1.8rem; margin-right: 8px;"></i>
+      <span style="font-weight: 700; font-size: 1.3rem; color:#2b7a0b;">AgroLink</span>
+    </a>
+  </header>
+
+  <!-- ====== CONTENEDOR PRINCIPAL ====== -->
+  <main class="auth-container">
+    <div class="auth-card">
+      <h2>Bienvenido a AgroLink</h2>
+      <p>Inicia sesión para continuar gestionando tus envíos agrícolas.</p>
+
+      <form class="auth-form">
+        <label for="email">Correo electrónico</label>
+        <input type="email" id="email" placeholder="usuario@correo.com" required>
+
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" placeholder="********" required>
+
+        <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+
+        <p class="switch-text">¿No tienes una cuenta?
+          <a href="registro.html">Regístrate aquí</a>
+        </p>
+      </form>
+    </div>
+  </main>
+
+  <!-- ====== FOOTER ====== -->
+  <footer class="footer">
+    <p>© 2025 AgroLink. Todos los derechos reservados.</p>
+  </footer>
+  <script src="js/script.js"></script>
+
+</body>
+
+</html>
