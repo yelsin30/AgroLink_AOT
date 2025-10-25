@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis Envíos | AgroLink</title>
+  <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+  <header class="dash-header">
+    <h1>📦 AgroLink - Mis Envíos</h1>
+    <nav>
+      <a href="dashboard.html">Inicio</a>
+      <a href="solicitudes.html">Nueva Solicitud</a>
+      <a href="envios.html" class="active">Mis Envíos</a>
+      <a href="perfil.html">Mi Perfil</a>
+      <a href="../index.html" id="logout">Cerrar Sesión</a>
+    </nav>
+  </header>
+
+  <main class="dash-content">
+    <h2>Solicitudes Realizadas</h2>
+    <p>Aquí puedes ver el estado de tus solicitudes de transporte agrícola.</p>
+
+    <div id="listaEnvios" class="solicitudes-list">
+      <!-- Se cargan dinámicamente -->
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const contenedor = document.getElementById("listaEnvios");
+      const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
+
+      if (solicitudes.length === 0) {
+        contenedor.innerHTML = "<p>No tienes solicitudes registradas aún.</p>";
+        return;
+      }
+
+      solicitudes.forEach((sol, i) => {
+        const card = document.createElement("div");
+        card.classList.add("solicitud-card");
+        card.innerHTML = `
+          <h3>${sol.tipo}</h3>
+          <p><strong>Origen:</strong> ${sol.origen}</p>
+          <p><strong>Destino:</strong> ${sol.destino}</p>
+          <p><strong>Fecha:</strong> ${sol.fecha}</p>
+          <p><strong>Peso:</strong> ${sol.peso} kg</p>
+          <p><strong>Estado:</strong> ${sol.estado}</p>
+        `;
+        contenedor.appendChild(card);
+      });
+    });
+  </script>
+</body>
+</html>

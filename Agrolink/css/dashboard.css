@@ -1,0 +1,180 @@
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: #f7f9f8;
+  color: #1f3b13;
+  margin: 0;
+}
+
+.dash-header {
+  background-color: #2b7a0b;
+  color: #fff;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.dash-header h1 {
+  font-size: 1.4rem;
+  margin: 0;
+}
+
+.dash-header nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.dash-header a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.dash-header a:hover,
+.dash-header a.active {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+.dash-content {
+  padding: 2rem;
+}
+
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.card {
+  flex: 1;
+  min-width: 250px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+@media (max-width: 768px) {
+  .cards {
+    flex-direction: column;
+  }
+}
+
+/* ===== FORMULARIO DE SOLICITUD ===== */
+.solicitud-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 500px;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin-top: 1.5rem;
+}
+
+.solicitud-form label {
+  font-weight: 600;
+  color: #2b7a0b;
+}
+
+.solicitud-form input,
+.solicitud-form select {
+  padding: 0.8rem;
+  border: 1px solid #cfe6c7;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: #f9fff8;
+}
+
+.solicitud-form input:focus,
+.solicitud-form select:focus {
+  border-color: #2b7a0b;
+  outline: none;
+}
+
+.mensaje-exito {
+  margin-top: 1rem;
+  color: #1f5c0a;
+  font-weight: bold;
+  background-color: #e9f9e4;
+  padding: 0.8rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+/* ===== LISTA DE SOLICITUDES PARA TRANSPORTISTA ===== */
+.solicitudes-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.solicitud-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.solicitud-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.solicitud-card h3 {
+  color: #2b7a0b;
+  margin-bottom: 0.5rem;
+}
+
+.solicitud-card p {
+  color: #333;
+  font-size: 0.95rem;
+  margin-bottom: 0.4rem;
+}
+
+.solicitud-card button {
+  margin-top: 1rem;
+  width: 100%;
+}
+
+/* =======================
+   SISTEMA DE NOTIFICACIONES (TOAST)
+======================= */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background-color: #2b7a0b;
+  color: #fff;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  z-index: 9999;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast.hide {
+  opacity: 0;
+  transform: translateY(40px);
+}

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Productor | AgroLink</title>
+  <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+  <header class="dash-header">
+    <h1>🚜 AgroLink - Panel del Productor</h1>
+    <nav>
+      <a href="dashboard.html" class="active">Inicio</a>
+      <a href="solicitudes.html">Nueva Solicitud</a>
+      <a href="perfil.html">Mi Perfil</a>
+      <a href="../index.html" id="logout">Cerrar Sesión</a>
+    </nav>
+  </header>
+
+  <main class="dash-content">
+    <h2>Bienvenido, Productor 👨‍🌾</h2>
+    <p>Desde aquí puedes gestionar tus solicitudes de transporte y hacer seguimiento a tus envíos.</p>
+
+    <div class="cards">
+      <div class="card">
+        <h3>📦 Nueva Solicitud</h3>
+        <p>Solicita un servicio de transporte agrícola fácilmente.</p>
+        <a href="solicitudes.html" class="btn btn-primary">Crear Solicitud</a>
+      </div>
+
+      <div class="card">
+        <h3>🚚 Mis Envíos</h3>
+        <p>Consulta el estado de tus solicitudes registradas.</p>
+        <a href="#" class="btn btn-outline">Ver Envíos</a>
+      </div>
+
+      <div class="card">
+        <h3>👤 Perfil</h3>
+        <p>Actualiza tu información personal y de contacto.</p>
+        <a href="perfil.html" class="btn btn-outline">Editar Perfil</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/dashboard.js"></script>
+</body>
+</html>

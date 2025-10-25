@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis Viajes | AgroLink</title>
+  <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+  <header class="dash-header">
+    <h1>🚛 AgroLink - Mis Viajes</h1>
+    <nav>
+      <a href="dashboard.html">Inicio</a>
+      <a href="viajes.html" class="active">Mis Viajes</a>
+      <a href="perfil.html">Mi Perfil</a>
+      <a href="../index.html" id="logout">Cerrar Sesión</a>
+    </nav>
+  </header>
+
+  <main class="dash-content">
+    <h2>Viajes Aceptados</h2>
+    <p>Revisa los transportes que has aceptado recientemente.</p>
+
+    <div id="listaViajes" class="solicitudes-list">
+      <!-- Se carga dinámicamente -->
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const contenedor = document.getElementById("listaViajes");
+      const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
+      const aceptadas = solicitudes.filter(s => s.estado === "Aceptada ✅");
+
+      if (aceptadas.length === 0) {
+        contenedor.innerHTML = "<p>No has aceptado ningún viaje todavía.</p>";
+        return;
+      }
+
+      aceptadas.forEach(sol => {
+        const card = document.createElement("div");
+        card.classList.add("solicitud-card");
+        card.innerHTML = `
+          <h3>${sol.tipo}</h3>
+          <p><strong>Origen:</strong> ${sol.origen}</p>
+          <p><strong>Destino:</strong> ${sol.destino}</p>
+          <p><strong>Fecha:</strong> ${sol.fecha}</p>
+          <p><strong>Peso:</strong> ${sol.peso} kg</p>
+          <p><strong>Estado:</strong> ${sol.estado}</p>
+        `;
+        contenedor.appendChild(card);
+      });
+    });
+  </script>
+  <script src="../js/toast.js"></script>
+
+</body>
+</html>
