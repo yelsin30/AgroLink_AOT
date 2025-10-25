@@ -1,96 +1,76 @@
-// js/auth.js
-// Maneja el registro, login y flujo de acceso por rol (productor / transportista)
-
+// js/auth.js — versión corregida y mejorada
 document.addEventListener("DOMContentLoaded", () => {
-  const form = document.querySelector(".auth-form");
+  const registroForm = document.querySelector(".auth-form[action='registro']");
+  const loginForm = document.querySelector(".auth-form[action='login']");
 
-  if (!form) return;
-
-  // ======= REGISTRO =======
-  if (window.location.pathname.includes("registro.html")) {
-    form.addEventListener("submit", e => {
+  // === REGISTRO ===
+  if (registroForm) {
+    registroForm.addEventListener("submit", e => {
       e.preventDefault();
 
-      const rol = document.querySelector("#rol").value;
-      const nombre = document.querySelector("#nombre").value.trim();
-      const email = document.querySelector("#email").value.trim();
-      const password = document.querySelector("#password").value.trim();
+      const rol = document.getElementById("rol").value.trim();
+      const nombre = document.getElementById("nombre").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
 
       if (!rol || !nombre || !email || !password) {
-        showToast("Completa todos los campos antes de continuar", "error");
+        alert("Por favor, completa todos los campos antes de continuar.");
         return;
       }
 
-      // Obtener base de datos o crear una nueva
-      const db = getDB();
+      // Obtener lista de usuarios almacenados
+      const usuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios")) || [];
 
-      // Crear el usuario base si no existe
-      if (!db[rol]) db[rol] = {};
+      // Verificar si ya existe el correo
+      const existe = usuarios.find(u => u.email === email);
+      if (existe) {
+        alert("Este correo ya está registrado. Inicia sesión en su lugar.");
+        window.location.href = "login.html";
+        return;
+      }
 
-      // Crear perfil inicial
-      const perfilBase = rol === "productor"
-        ? { nombre, email, telefono: "", direccion: "" }
-        : { nombre, email, telefono: "", vehiculo: "", placa: "" };
+      // Guardar nuevo usuario
+      usuarios.push({ rol, nombre, email, password });
+      localStorage.setItem("agrolinkUsuarios", JSON.stringify(usuarios));
 
-      db[rol].perfil = perfilBase;
-      db[rol].solicitudes = db[rol].solicitudes || [];
-      db[rol].viajes = db[rol].viajes || [];
+      // Guardar sesión activa
+      localStorage.setItem("usuarioActivo", JSON.stringify({ email, rol, nombre }));
 
-      // Guardar la base
-      saveDB(db);
-      localStorage.setItem("agrolinkRol", rol);
-
-      showToast("Registro exitoso. Redirigiendo...", "success");
-
-      setTimeout(() => {
-        window.location.href =
-          rol === "productor"
-            ? "productor/dashboard.html"
-            : "transportista/dashboard.html";
-      }, 1200);
+      alert("Registro exitoso. Bienvenido a AgroLink.");
+      if (rol === "productor") {
+        window.location.href = "productor/dashboard.html";
+      } else {
+        window.location.href = "transportista/dashboard.html";
+      }
     });
   }
 
-  // ======= LOGIN =======
-  if (window.location.pathname.includes("login.html")) {
-    form.addEventListener("submit", e => {
+  // === INICIO DE SESIÓN ===
+  if (loginForm) {
+    loginForm.addEventListener("submit", e => {
       e.preventDefault();
 
-      const email = document.querySelector("#email").value.trim();
-      const password = document.querySelector("#password").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
 
-      if (!email || !password) {
-        showToast("Completa todos los campos", "error");
+      const usuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios")) || [];
+      const user = usuarios.find(u => u.email === email && u.password === password);
+
+      if (!user) {
+        alert("⚠️ No se encontró una cuenta registrada. Por favor regístrate.");
         return;
       }
 
-      const db = getDB();
-      let rolEncontrado = null;
+      // Guardar sesión
+      localStorage.setItem("usuarioActivo", JSON.stringify(user));
+      localStorage.setItem("agrolinkRol", user.rol);
 
-      // Buscar el usuario en la base local (solo por correo)
-      for (const rol of ["productor", "transportista"]) {
-        const perfil = db[rol]?.perfil;
-        if (perfil && perfil.email === email) {
-          rolEncontrado = rol;
-          break;
-        }
+      // Redirigir según el rol
+      if (user.rol === "productor") {
+        window.location.href = "productor/dashboard.html";
+      } else {
+        window.location.href = "transportista/dashboard.html";
       }
-
-      if (!rolEncontrado) {
-        showToast("Cuenta no encontrada. Regístrate primero.", "error");
-        return;
-      }
-
-      // Guardar sesión actual
-      localStorage.setItem("agrolinkRol", rolEncontrado);
-      showToast("Inicio de sesión correcto", "success");
-
-      setTimeout(() => {
-        window.location.href =
-          rolEncontrado === "productor"
-            ? "productor/dashboard.html"
-            : "transportista/dashboard.html";
-      }, 1000);
     });
   }
 });
