@@ -5,9 +5,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Iniciar Sesión | AgroLink</title>
-  <link rel="stylesheet" href="css/style.css">
 
-  <!-- Font Awesome para el ícono del tractor -->
+  <!-- Estilos -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="img/logo.png" type="image/png">
+
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 
@@ -16,8 +19,8 @@
   <!-- ====== ENCABEZADO DEL LOGIN ====== -->
   <header class="auth-header">
     <a href="index.html" class="logo-auth">
-      <i class="fa-solid fa-tractor" style="color:#2b7a0b; font-size:1.8rem; margin-right: 8px;"></i>
-      <span style="font-weight: 700; font-size: 1.3rem; color:#2b7a0b;">AgroLink</span>
+      <i class="fa-solid fa-tractor" style="color:#2b7a0b; font-size:1.8rem; margin-right:8px;"></i>
+      <span style="font-weight:700; font-size:1.3rem; color:#2b7a0b;">AgroLink</span>
     </a>
   </header>
 
@@ -27,7 +30,7 @@
       <h2>Bienvenido a AgroLink</h2>
       <p>Inicia sesión para continuar gestionando tus envíos agrícolas.</p>
 
-      <form class="auth-form">
+      <form id="loginForm" class="auth-form">
         <label for="email">Correo electrónico</label>
         <input type="email" id="email" placeholder="usuario@correo.com" required>
 
@@ -40,6 +43,10 @@
           <a href="registro.html">Regístrate aquí</a>
         </p>
       </form>
+
+      <div id="mensajeError" class="mensaje-exito" style="display:none; background-color:#ffeaea; color:#a00000;">
+        ⚠️ Credenciales incorrectas. Intenta nuevamente.
+      </div>
     </div>
   </main>
 
@@ -47,8 +54,48 @@
   <footer class="footer">
     <p>© 2025 AgroLink. Todos los derechos reservados.</p>
   </footer>
+
+  <!-- ====== SCRIPTS ====== -->
+  <script src="js/storage.js"></script>
   <script src="js/script.js"></script>
-  <script src="js/auth.js"></script>
+
+  <!-- ====== LOGIN (Simulación de autenticación) ====== -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("loginForm");
+      const mensajeError = document.getElementById("mensajeError");
+
+      form.addEventListener("submit", e => {
+        e.preventDefault();
+
+        // Datos ingresados
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value.trim();
+
+        // Obtener el rol guardado
+        const rol = localStorage.getItem("agrolinkRol");
+
+        if (!rol) {
+          mensajeError.textContent = "⚠️ No se encontró una cuenta registrada. Por favor regístrate.";
+          mensajeError.style.display = "block";
+          setTimeout(() => mensajeError.style.display = "none", 2500);
+          return;
+        }
+
+        // Simular validación
+        if (email && password) {
+          if (rol === "productor") {
+            window.location.href = "productor/dashboard.html";
+          } else if (rol === "transportista") {
+            window.location.href = "transportista/dashboard.html";
+          }
+        } else {
+          mensajeError.style.display = "block";
+          setTimeout(() => mensajeError.style.display = "none", 2500);
+        }
+      });
+    });
+  </script>
 </body>
 
 </html>

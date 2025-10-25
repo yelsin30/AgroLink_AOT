@@ -1,23 +1,36 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis Envíos | AgroLink</title>
+
+  <!-- Estilos -->
   <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="icon" href="../img/logo.png" type="image/png">
+
+  <!-- Íconos Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
+
 <body>
+  <!-- ====== ENCABEZADO ====== -->
   <header class="dash-header">
-    <h1>📦 AgroLink - Mis Envíos</h1>
+    <div class="logo">
+      <i class="fa-solid fa-tractor" style="color:#fff; font-size:1.5rem; margin-right:8px;"></i>
+      <h1>AgroLink | Mis Envíos</h1>
+    </div>
     <nav>
       <a href="dashboard.html">Inicio</a>
       <a href="solicitudes.html">Nueva Solicitud</a>
       <a href="envios.html" class="active">Mis Envíos</a>
       <a href="perfil.html">Mi Perfil</a>
-      <a href="../index.html" id="logout">Cerrar Sesión</a>
+      <a href="#" id="logout">Cerrar Sesión</a>
     </nav>
   </header>
 
+  <!-- ====== CONTENIDO PRINCIPAL ====== -->
   <main class="dash-content">
     <h2>Solicitudes Realizadas</h2>
     <p>Aquí puedes ver el estado de tus solicitudes de transporte agrícola.</p>
@@ -27,17 +40,42 @@
     </div>
   </main>
 
+  <!-- ====== FOOTER ====== -->
+  <footer class="footer">
+    <p>© 2025 AgroLink. Todos los derechos reservados.</p>
+  </footer>
+
+  <!-- ====== SCRIPTS ====== -->
+  <script src="../js/storage.js"></script>
+  <script src="../js/toast.js"></script>
+
+  <!-- ====== LÓGICA DE ENVÍOS ====== -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const contenedor = document.getElementById("listaEnvios");
-      const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
+      const rol = localStorage.getItem("agrolinkRol");
+      const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")) || {};
+      const db = JSON.parse(localStorage.getItem("agrolinkDB")) || { solicitudes: [] };
 
-      if (solicitudes.length === 0) {
+      // ===== Validar acceso =====
+      if (rol !== "productor") {
+        alert("⚠️ Acceso denegado. Inicia sesión como Productor.");
+        window.location.href = "../login.html";
+        return;
+      }
+
+      // ===== Filtrar solicitudes del productor =====
+      const solicitudesUsuario = db.solicitudes
+        ? db.solicitudes.filter(s => s.productor === usuario.nombre)
+        : [];
+
+      if (solicitudesUsuario.length === 0) {
         contenedor.innerHTML = "<p>No tienes solicitudes registradas aún.</p>";
         return;
       }
 
-      solicitudes.forEach((sol, i) => {
+      // ===== Mostrar solicitudes =====
+      solicitudesUsuario.forEach(sol => {
         const card = document.createElement("div");
         card.classList.add("solicitud-card");
         card.innerHTML = `
@@ -46,11 +84,21 @@
           <p><strong>Destino:</strong> ${sol.destino}</p>
           <p><strong>Fecha:</strong> ${sol.fecha}</p>
           <p><strong>Peso:</strong> ${sol.peso} kg</p>
-          <p><strong>Estado:</strong> ${sol.estado}</p>
+          <p><strong>Estado:</strong> <span style="color:${sol.estado === 'Pendiente' ? '#b58900' : '#2b7a0b'};">${sol.estado}</span></p>
         `;
         contenedor.appendChild(card);
+      });
+
+      // ===== Cerrar sesión =====
+      const logout = document.getElementById("logout");
+      logout.addEventListener("click", e => {
+        e.preventDefault();
+        localStorage.removeItem("agrolinkRol");
+        localStorage.removeItem("agrolinkUsuario");
+        window.location.href = "../index.html";
       });
     });
   </script>
 </body>
+
 </html>

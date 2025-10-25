@@ -1,24 +1,37 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel Productor | AgroLink</title>
+  <title>Panel del Productor | AgroLink</title>
+
+  <!-- Estilos -->
   <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="icon" href="../img/logo.png" type="image/png">
+
+  <!-- Íconos Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
+
 <body>
+  <!-- ====== ENCABEZADO ====== -->
   <header class="dash-header">
-    <h1>🚜 AgroLink - Panel del Productor</h1>
+    <div class="logo">
+      <i class="fa-solid fa-tractor" style="color:#fff; font-size:1.5rem; margin-right:8px;"></i>
+      <h1>AgroLink | Productor</h1>
+    </div>
     <nav>
       <a href="dashboard.html" class="active">Inicio</a>
       <a href="solicitudes.html">Nueva Solicitud</a>
       <a href="perfil.html">Mi Perfil</a>
-      <a href="../index.html" id="logout">Cerrar Sesión</a>
+      <a href="#" id="logout">Cerrar Sesión</a>
     </nav>
   </header>
 
+  <!-- ====== CONTENIDO PRINCIPAL ====== -->
   <main class="dash-content">
-    <h2>Bienvenido, Productor 👨‍🌾</h2>
+    <h2>Bienvenido, <span id="nombreUsuario">Productor 👨‍🌾</span></h2>
     <p>Desde aquí puedes gestionar tus solicitudes de transporte y hacer seguimiento a tus envíos.</p>
 
     <div class="cards">
@@ -42,6 +55,43 @@
     </div>
   </main>
 
+  <!-- ====== FOOTER (opcional si lo usas global) ====== -->
+  <footer class="footer">
+    <p>© 2025 AgroLink. Todos los derechos reservados.</p>
+  </footer>
+
+  <!-- ====== SCRIPTS ====== -->
+  <script src="../js/storage.js"></script>
   <script src="../js/dashboard.js"></script>
+
+  <!-- ====== VALIDACIÓN DE SESIÓN ====== -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const rol = localStorage.getItem("agrolinkRol");
+      const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")) || {};
+
+      // Validar que el usuario sea productor
+      if (rol !== "productor") {
+        alert("⚠️ Acceso denegado. Inicia sesión como Productor.");
+        window.location.href = "../login.html";
+        return;
+      }
+
+      // Mostrar nombre si existe
+      if (usuario.nombre) {
+        document.getElementById("nombreUsuario").textContent = usuario.nombre + " 👨‍🌾";
+      }
+
+      // Cerrar sesión
+      const logout = document.getElementById("logout");
+      logout.addEventListener("click", e => {
+        e.preventDefault();
+        localStorage.removeItem("agrolinkRol");
+        localStorage.removeItem("agrolinkUsuario");
+        window.location.href = "../index.html";
+      });
+    });
+  </script>
 </body>
+
 </html>

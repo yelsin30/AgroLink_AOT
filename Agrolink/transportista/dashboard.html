@@ -1,33 +1,119 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel Transportista | AgroLink</title>
+  <title>Panel del Transportista | AgroLink</title>
+
+  <!-- Estilos -->
   <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="icon" href="../img/logo.png" type="image/png">
+
+  <!-- Íconos Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
+
 <body>
+  <!-- ====== ENCABEZADO ====== -->
   <header class="dash-header">
-    <h1>🚛 AgroLink - Panel del Transportista</h1>
+    <div class="logo">
+      <i class="fa-solid fa-tractor" style="color:#fff; font-size:1.5rem; margin-right:8px;"></i>
+      <h1>AgroLink | Panel del Transportista</h1>
+    </div>
     <nav>
       <a href="dashboard.html" class="active">Inicio</a>
       <a href="viajes.html">Mis Viajes</a>
       <a href="perfil.html">Mi Perfil</a>
-      <a href="../index.html" id="logout">Cerrar Sesión</a>
+      <a href="#" id="logout">Cerrar Sesión</a>
     </nav>
   </header>
 
+  <!-- ====== CONTENIDO PRINCIPAL ====== -->
   <main class="dash-content">
     <h2>Solicitudes Disponibles</h2>
     <p>Aquí puedes ver y aceptar las solicitudes registradas por los productores.</p>
 
     <div id="listaSolicitudes" class="solicitudes-list">
-      <!-- Se cargan dinámicamente con transportista.js -->
+      <!-- Se cargan dinámicamente -->
     </div>
   </main>
 
-  <script src="../js/transportista.js"></script>
+  <!-- ====== FOOTER ====== -->
+  <footer class="footer">
+    <p>© 2025 AgroLink. Todos los derechos reservados.</p>
+  </footer>
+
+  <!-- ====== SCRIPTS ====== -->
+  <script src="../js/storage.js"></script>
   <script src="../js/toast.js"></script>
 
+  <!-- ====== LÓGICA DE DASHBOARD DEL TRANSPORTISTA ====== -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const rol = localStorage.getItem("agrolinkRol");
+      const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")) || {};
+      const db = JSON.parse(localStorage.getItem("agrolinkDB")) || { solicitudes: [], viajes: [] };
+      const contenedor = document.getElementById("listaSolicitudes");
+
+      // ===== Validar acceso =====
+      if (rol !== "transportista") {
+        alert("⚠️ Acceso denegado. Inicia sesión como Transportista.");
+        window.location.href = "../login.html";
+        return;
+      }
+
+      // ===== Mostrar solicitudes disponibles =====
+      const solicitudesPendientes = db.solicitudes?.filter(s => s.estado === "Pendiente") || [];
+
+      if (solicitudesPendientes.length === 0) {
+        contenedor.innerHTML = "<p>No hay solicitudes disponibles por el momento.</p>";
+        return;
+      }
+
+      solicitudesPendientes.forEach(sol => {
+        const card = document.createElement("div");
+        card.classList.add("solicitud-card");
+        card.innerHTML = `
+          <h3>${sol.tipo}</h3>
+          <p><strong>Productor:</strong> ${sol.productor}</p>
+          <p><strong>Origen:</strong> ${sol.origen}</p>
+          <p><strong>Destino:</strong> ${sol.destino}</p>
+          <p><strong>Fecha:</strong> ${sol.fecha}</p>
+          <p><strong>Peso:</strong> ${sol.peso} kg</p>
+          <p><strong>Estado:</strong> <span style="color:#b58900;">${sol.estado}</span></p>
+          <button class="btn btn-primary aceptar-btn">Aceptar Solicitud</button>
+        `;
+
+        // ===== Acción para aceptar solicitud =====
+        card.querySelector(".aceptar-btn").addEventListener("click", () => {
+          sol.estado = "En curso";
+          sol.transportista = usuario.nombre || "Desconocido";
+
+          // Guardar cambios en base local
+          localStorage.setItem("agrolinkDB", JSON.stringify(db));
+
+          showToast(`🚚 Has aceptado la solicitud de ${sol.productor}`, "success");
+          card.querySelector(".aceptar-btn").disabled = true;
+          card.querySelector(".aceptar-btn").textContent = "En curso";
+          card.querySelector("span").textContent = "En curso";
+          card.querySelector("span").style.color = "#2b7a0b";
+        });
+
+        contenedor.appendChild(card);
+      });
+
+      // ===== Cerrar sesión =====
+      const logout = document.getElementById("logout");
+      logout.addEventListener("click", e => {
+        e.preventDefault();
+        showToast("👋 Sesión cerrada correctamente", "info");
+        localStorage.removeItem("agrolinkRol");
+        localStorage.removeItem("agrolinkUsuario");
+        setTimeout(() => (window.location.href = "../index.html"), 1000);
+      });
+    });
+  </script>
 </body>
+
 </html>

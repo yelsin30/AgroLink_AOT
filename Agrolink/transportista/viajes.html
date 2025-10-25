@@ -1,58 +1,117 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis Viajes | AgroLink</title>
+
+  <!-- Estilos -->
   <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="icon" href="../img/logo.png" type="image/png">
+
+  <!-- Íconos Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
+
 <body>
+  <!-- ====== ENCABEZADO ====== -->
   <header class="dash-header">
-    <h1>🚛 AgroLink - Mis Viajes</h1>
+    <div class="logo">
+      <i class="fa-solid fa-tractor" style="color:#fff; font-size:1.5rem; margin-right:8px;"></i>
+      <h1>AgroLink | Mis Viajes</h1>
+    </div>
     <nav>
       <a href="dashboard.html">Inicio</a>
       <a href="viajes.html" class="active">Mis Viajes</a>
       <a href="perfil.html">Mi Perfil</a>
-      <a href="../index.html" id="logout">Cerrar Sesión</a>
+      <a href="#" id="logout">Cerrar Sesión</a>
     </nav>
   </header>
 
+  <!-- ====== CONTENIDO PRINCIPAL ====== -->
   <main class="dash-content">
     <h2>Viajes Aceptados</h2>
     <p>Revisa los transportes que has aceptado recientemente.</p>
 
     <div id="listaViajes" class="solicitudes-list">
-      <!-- Se carga dinámicamente -->
+      <!-- Se cargan dinámicamente -->
     </div>
   </main>
 
+  <!-- ====== FOOTER ====== -->
+  <footer class="footer">
+    <p>© 2025 AgroLink. Todos los derechos reservados.</p>
+  </footer>
+
+  <!-- ====== SCRIPTS ====== -->
+  <script src="../js/storage.js"></script>
+  <script src="../js/toast.js"></script>
+
+  <!-- ====== LÓGICA DE VIAJES ====== -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+      const rol = localStorage.getItem("agrolinkRol");
+      const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")) || {};
+      const db = JSON.parse(localStorage.getItem("agrolinkDB")) || { solicitudes: [] };
       const contenedor = document.getElementById("listaViajes");
-      const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
-      const aceptadas = solicitudes.filter(s => s.estado === "Aceptada ✅");
 
-      if (aceptadas.length === 0) {
+      // === Validar acceso ===
+      if (rol !== "transportista") {
+        alert("⚠️ Acceso denegado. Inicia sesión como Transportista.");
+        window.location.href = "../login.html";
+        return;
+      }
+
+      // === Filtrar viajes aceptados por este transportista ===
+      const viajes = db.solicitudes?.filter(s => s.estado === "En curso" && s.transportista === usuario.nombre) || [];
+
+      if (viajes.length === 0) {
         contenedor.innerHTML = "<p>No has aceptado ningún viaje todavía.</p>";
         return;
       }
 
-      aceptadas.forEach(sol => {
+      // === Renderizar viajes ===
+      viajes.forEach(v => {
         const card = document.createElement("div");
         card.classList.add("solicitud-card");
         card.innerHTML = `
-          <h3>${sol.tipo}</h3>
-          <p><strong>Origen:</strong> ${sol.origen}</p>
-          <p><strong>Destino:</strong> ${sol.destino}</p>
-          <p><strong>Fecha:</strong> ${sol.fecha}</p>
-          <p><strong>Peso:</strong> ${sol.peso} kg</p>
-          <p><strong>Estado:</strong> ${sol.estado}</p>
+          <h3>${v.tipo}</h3>
+          <p><strong>Productor:</strong> ${v.productor}</p>
+          <p><strong>Origen:</strong> ${v.origen}</p>
+          <p><strong>Destino:</strong> ${v.destino}</p>
+          <p><strong>Fecha:</strong> ${v.fecha}</p>
+          <p><strong>Peso:</strong> ${v.peso} kg</p>
+          <p><strong>Estado:</strong> <span style="color:#2b7a0b;">${v.estado}</span></p>
+          <button class="btn btn-outline finalizar-btn">Finalizar Viaje</button>
         `;
+
+        // === Finalizar viaje ===
+        card.querySelector(".finalizar-btn").addEventListener("click", () => {
+          v.estado = "Completado ✅";
+          localStorage.setItem("agrolinkDB", JSON.stringify(db));
+          showToast("✅ Viaje completado con éxito.", "success");
+
+          card.querySelector("span").textContent = "Completado ✅";
+          card.querySelector("span").style.color = "#006400";
+          card.querySelector(".finalizar-btn").disabled = true;
+          card.querySelector(".finalizar-btn").textContent = "Completado";
+        });
+
         contenedor.appendChild(card);
+      });
+
+      // === Cerrar sesión ===
+      const logout = document.getElementById("logout");
+      logout.addEventListener("click", e => {
+        e.preventDefault();
+        showToast("👋 Sesión cerrada correctamente", "info");
+        localStorage.removeItem("agrolinkRol");
+        localStorage.removeItem("agrolinkUsuario");
+        setTimeout(() => (window.location.href = "../index.html"), 1000);
       });
     });
   </script>
-  <script src="../js/toast.js"></script>
-
 </body>
+
 </html>

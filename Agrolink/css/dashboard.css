@@ -1,3 +1,6 @@
+/* =======================
+   ESTILOS GENERALES DASHBOARD
+======================= */
 body {
   font-family: "Poppins", sans-serif;
   background-color: #f7f9f8;
@@ -5,6 +8,9 @@ body {
   margin: 0;
 }
 
+/* =======================
+   ENCABEZADO DEL PANEL
+======================= */
 .dash-header {
   background-color: #2b7a0b;
   color: #fff;
@@ -18,18 +24,20 @@ body {
 .dash-header h1 {
   font-size: 1.4rem;
   margin: 0;
+  font-weight: 600;
 }
 
 .dash-header nav {
   display: flex;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .dash-header a {
   color: #fff;
   text-decoration: none;
   font-weight: 500;
-  transition: opacity 0.2s;
+  transition: opacity 0.3s ease, text-decoration 0.3s ease;
 }
 
 .dash-header a:hover,
@@ -38,6 +46,9 @@ body {
   text-decoration: underline;
 }
 
+/* =======================
+   CONTENIDO PRINCIPAL
+======================= */
 .dash-content {
   padding: 2rem;
 }
@@ -53,24 +64,51 @@ body {
   flex: 1;
   min-width: 250px;
   background: #fff;
-  border-radius: 10px;
+  border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   padding: 1.5rem;
   text-align: center;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card:hover {
   transform: translateY(-5px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
 }
 
+.card h3 {
+  color: #2b7a0b;
+  margin-bottom: 0.5rem;
+}
+
+.card p {
+  color: #444;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+}
+
+/* =======================
+   RESPONSIVE
+======================= */
 @media (max-width: 768px) {
   .cards {
     flex-direction: column;
   }
+
+  .dash-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
+  }
+
+  .dash-header nav {
+    flex-wrap: wrap;
+  }
 }
 
-/* ===== FORMULARIO DE SOLICITUD ===== */
+/* =======================
+   FORMULARIO DE SOLICITUD
+======================= */
 .solicitud-form {
   display: flex;
   flex-direction: column;
@@ -79,7 +117,7 @@ body {
   background: #fff;
   padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   margin-top: 1.5rem;
 }
 
@@ -95,14 +133,35 @@ body {
   border-radius: 8px;
   font-size: 1rem;
   background-color: #f9fff8;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .solicitud-form input:focus,
 .solicitud-form select:focus {
   border-color: #2b7a0b;
+  box-shadow: 0 0 5px rgba(43, 122, 11, 0.2);
   outline: none;
 }
 
+.solicitud-form button {
+  margin-top: 1rem;
+  background-color: #2b7a0b;
+  color: #fff;
+  border: none;
+  padding: 0.8rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.solicitud-form button:hover {
+  background-color: #249009;
+}
+
+/* =======================
+   MENSAJE DE ÉXITO
+======================= */
 .mensaje-exito {
   margin-top: 1rem;
   color: #1f5c0a;
@@ -113,7 +172,9 @@ body {
   text-align: center;
 }
 
-/* ===== LISTA DE SOLICITUDES PARA TRANSPORTISTA ===== */
+/* =======================
+   LISTA DE SOLICITUDES
+======================= */
 .solicitudes-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -145,9 +206,37 @@ body {
   margin-bottom: 0.4rem;
 }
 
-.solicitud-card button {
-  margin-top: 1rem;
-  width: 100%;
+/* =======================
+   BOTONES SECUNDARIOS
+======================= */
+.btn {
+  display: inline-block;
+  padding: 0.7rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background-color: #2b7a0b;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background-color: #1f5c0a;
+}
+
+.btn-outline {
+  border: 2px solid #2b7a0b;
+  color: #2b7a0b;
+  background-color: transparent;
+}
+
+.btn-outline:hover {
+  background-color: #2b7a0b;
+  color: #fff;
 }
 
 /* =======================
@@ -157,12 +246,15 @@ body {
   position: fixed;
   bottom: 30px;
   right: 30px;
-  background-color: #2b7a0b;
-  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   padding: 1rem 1.5rem;
-  border-radius: 10px;
+  border-radius: 12px;
   font-weight: 600;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  font-size: 0.95rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  color: #fff;
   opacity: 0;
   transform: translateY(40px);
   transition: opacity 0.4s ease, transform 0.4s ease;
@@ -177,4 +269,25 @@ body {
 .toast.hide {
   opacity: 0;
   transform: translateY(40px);
+}
+
+/* === Colores según tipo === */
+.toast.success {
+  background-color: #2b7a0b;
+}
+
+.toast.warning {
+  background-color: #f4a100;
+}
+
+.toast.error {
+  background-color: #d32f2f;
+}
+
+.toast.info {
+  background-color: #1976d2;
+}
+
+.toast-icon {
+  font-size: 1.2rem;
 }

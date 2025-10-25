@@ -11,10 +11,11 @@
 body {
   background-color: #f7f9f8;
   color: #333;
+  line-height: 1.6;
 }
 
 /* =======================
-   HEADER (optimizado)
+   HEADER PRINCIPAL
 ======================= */
 .header {
   display: flex;
@@ -28,17 +29,15 @@ body {
   z-index: 1000;
 }
 
-/* LOGO */
 .logo {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.logo img {
-  height: 55px;
-  width: auto;
-  object-fit: contain;
+.logo i {
+  font-size: 1.8rem;
+  color: #2b7a0b;
 }
 
 .logo h1 {
@@ -47,14 +46,15 @@ body {
   font-weight: 700;
 }
 
-/* NAV GENERAL */
+/* =======================
+   NAVBAR
+======================= */
 .nav {
   display: flex;
   align-items: center;
   gap: 2rem;
 }
 
-/* Menú principal */
 .nav ul {
   list-style: none;
   display: flex;
@@ -74,13 +74,45 @@ body {
   color: #2b7a0b;
 }
 
-/* Botones del header */
 .buttons {
   display: flex;
   gap: 1rem;
 }
 
-/* ====== MENÚ RESPONSIVE ====== */
+/* =======================
+   BOTONES
+======================= */
+.btn {
+  padding: 0.6rem 1.2rem;
+  border-radius: 30px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-outline {
+  border: 2px solid #2b7a0b;
+  color: #2b7a0b;
+}
+
+.btn-outline:hover {
+  background-color: #2b7a0b;
+  color: #fff;
+}
+
+.btn-primary {
+  background-color: #2b7a0b;
+  color: #fff;
+  border: 2px solid #2b7a0b;
+}
+
+.btn-primary:hover {
+  background-color: #249009;
+}
+
+/* =======================
+   MENÚ RESPONSIVE
+======================= */
 #menu-toggle {
   display: none;
 }
@@ -92,7 +124,6 @@ body {
   color: #2b7a0b;
 }
 
-/* --- Diseño móvil --- */
 @media (max-width: 850px) {
   .header {
     flex-wrap: wrap;
@@ -128,43 +159,11 @@ body {
     margin-bottom: 1rem;
   }
 
-  /* Mostrar menú al activar el checkbox */
   #menu-toggle:checked + .menu-icon + .nav {
     max-height: 500px;
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-/* =======================
-   BOTONES GENERALES
-======================= */
-.btn {
-  padding: 0.6rem 1.2rem;
-  border-radius: 30px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.btn-outline {
-  border: 2px solid #2b7a0b;
-  color: #2b7a0b;
-}
-
-.btn-outline:hover {
-  background-color: #2b7a0b;
-  color: #fff;
-}
-
-.btn-primary {
-  background-color: #2b7a0b;
-  color: #fff;
-  border: 2px solid #2b7a0b;
-}
-
-.btn-primary:hover {
-  background-color: #249009;
 }
 
 /* =======================
@@ -177,6 +176,10 @@ body {
   height: 80vh;
   text-align: center;
   background: linear-gradient(to right, #e9f9e4, #ffffff);
+}
+
+.hero-content {
+  max-width: 700px;
 }
 
 .hero-content h2 {
@@ -192,143 +195,53 @@ body {
 }
 
 /* =======================
-   FOOTER
+   SECCIÓN FEATURES
 ======================= */
-.footer {
+.features {
+  padding: 4rem 2rem;
   text-align: center;
-  padding: 1rem 0;
-  background-color: #f2f2f2;
-  color: #666;
-  font-size: 0.9rem;
-  margin-top: 2rem;
-}
-
-/* =======================
-   AUTENTICACIÓN (login / registro)
-======================= */
-.auth-body {
-  background-color: #f4f9f4;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.auth-header {
-  text-align: center;
-  margin-top: 2rem;
-}
-
-.logo-auth {
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.logo-auth img {
-  height: 55px;
-  width: auto;
-  object-fit: contain;
-}
-
-.logo-auth h1 {
-  color: #2b7a0b;
-  font-size: 1.6rem;
-}
-
-.auth-container {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem;
-}
-
-.auth-card {
   background-color: #fff;
-  border-radius: 15px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-  padding: 2rem 2.5rem;
-  width: 100%;
-  max-width: 400px;
-  text-align: center;
 }
 
-.auth-card h2 {
+.features h2 {
   color: #1f5c0a;
+  margin-bottom: 2rem;
+}
+
+.features-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.feature-card {
+  background: #f9fff8;
+  border-radius: 15px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  flex: 1;
+  min-width: 250px;
+}
+
+.feature-card h3 {
+  color: #2b7a0b;
   margin-bottom: 0.5rem;
 }
 
-.auth-card p {
-  color: #666;
-  font-size: 0.95rem;
-  margin-bottom: 1.5rem;
-}
-
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.auth-form label {
-  text-align: left;
-  font-weight: 600;
-  color: #333;
-}
-
-.auth-form input,
-.auth-form select {
-  padding: 0.7rem;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  font-size: 1rem;
-  outline: none;
-  transition: border 0.3s ease;
-}
-
-.auth-form input:focus,
-.auth-form select:focus {
-  border-color: #2b7a0b;
-}
-
-.auth-form button {
-  margin-top: 1rem;
-  width: 100%;
-}
-
-.switch-text {
-  margin-top: 1rem;
-  font-size: 0.9rem;
-  color: #555;
-}
-
-.switch-text a {
-  color: #2b7a0b;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.switch-text a:hover {
-  text-decoration: underline;
-}
-
-/* ==========================
-   PÁGINAS DE AUTENTICACIÓN
-   (login.html / registro.html)
-========================== */
-
-/* Fondo general */
+/* =======================
+   AUTENTICACIÓN
+======================= */
 .auth-body {
   min-height: 100vh;
   background: linear-gradient(135deg, #f2fff0 0%, #ffffff 100%);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  font-family: "Poppins", sans-serif;
 }
 
-/* ===== ENCABEZADO CON LOGO ===== */
 .auth-header {
   text-align: center;
   padding: 2rem 0 1rem 0;
@@ -337,12 +250,13 @@ body {
 .logo-auth {
   display: inline-flex;
   align-items: center;
+  gap: 10px;
   text-decoration: none;
 }
 
-.logo-auth img {
-  height: 60px;
-  width: auto;
+.logo-auth i {
+  font-size: 1.8rem;
+  color: #2b7a0b;
 }
 
 .logo-auth span {
@@ -351,7 +265,6 @@ body {
   color: #2b7a0b;
 }
 
-/* ===== CONTENEDOR PRINCIPAL ===== */
 .auth-container {
   display: flex;
   justify-content: center;
@@ -360,7 +273,6 @@ body {
   padding: 2rem;
 }
 
-/* Tarjeta de login/registro */
 .auth-card {
   background: #ffffff;
   border-radius: 15px;
@@ -369,14 +281,9 @@ body {
   max-width: 400px;
   width: 100%;
   text-align: center;
-  transition: transform 0.2s ease;
+  animation: fadeSlideUp 0.8s ease-out both;
 }
 
-.auth-card:hover {
-  transform: translateY(-3px);
-}
-
-/* Títulos */
 .auth-card h2 {
   color: #2b7a0b;
   font-size: 1.7rem;
@@ -388,7 +295,6 @@ body {
   margin-bottom: 1.5rem;
 }
 
-/* ===== FORMULARIO ===== */
 .auth-form {
   display: flex;
   flex-direction: column;
@@ -419,23 +325,6 @@ body {
   outline: none;
 }
 
-/* Botones */
-.btn-primary {
-  background-color: #2b7a0b;
-  color: #fff;
-  padding: 0.9rem;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.btn-primary:hover {
-  background-color: #1f5c0a;
-}
-
-/* Enlace para cambiar entre login y registro */
 .switch-text {
   text-align: center;
   margin-top: 1rem;
@@ -453,7 +342,9 @@ body {
   text-decoration: underline;
 }
 
-/* ===== FOOTER ===== */
+/* =======================
+   FOOTER
+======================= */
 .footer {
   text-align: center;
   background-color: #f8fff6;
@@ -463,9 +354,9 @@ body {
   border-top: 1px solid #e6f3e2;
 }
 
-/* ==========================
-   ANIMACIÓN DE ENTRADA
-========================== */
+/* =======================
+   ANIMACIONES
+======================= */
 @keyframes fadeSlideUp {
   0% {
     opacity: 0;
@@ -475,9 +366,4 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-/* Aplica animación al contenedor */
-.auth-card {
-  animation: fadeSlideUp 0.8s ease-out both;
 }

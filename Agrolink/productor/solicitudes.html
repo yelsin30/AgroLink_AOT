@@ -2,38 +2,122 @@
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nueva Solicitud | AgroLink</title>
-    <link rel="stylesheet" href="../css/dashboard.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nueva Solicitud | AgroLink</title>
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="icon" href="../img/logo.png" type="image/png">
+
+  <!-- Íconos Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 
 <body>
-    <header class="dash-header">
-        <h1>🚜 AgroLink - Solicitud de Transporte</h1>
-        <nav> <a href="dashboard.html">Inicio</a> <a href="solicitudes.html" class="active">Nueva Solicitud</a> <a
-                href="perfil.html">Mi Perfil</a> <a href="../index.html" id="logout">Cerrar Sesión</a> </nav>
-    </header>
-    <main class="dash-content">
-        <h2>Registrar Nueva Solicitud</h2>
-        <p>Completa los datos para encontrar un transportista adecuado para tu carga agrícola.</p>
-        <form id="solicitudForm" class="solicitud-form"> <label for="tipoCarga">Tipo de producto</label> <select
-                id="tipoCarga" required>
-                <option value="">Selecciona un tipo</option>
-                <option value="Granos">Granos y Semillas</option>
-                <option value="Frutas">Frutas</option>
-                <option value="Verduras">Verduras</option>
-                <option value="Maquinaria">Maquinaria Agrícola</option>
-            </select> <label for="origen">Origen</label> <input type="text" id="origen" placeholder="Ej: Cajamarca"
-                required> <label for="destino">Destino</label> <input type="text" id="destino" placeholder="Ej: Lima"
-                required> <label for="fecha">Fecha de envío</label> <input type="date" id="fecha" required> <label
-                for="peso">Peso estimado (kg)</label> <input type="number" id="peso" min="1" placeholder="Ej: 500"
-                required> <button type="submit" class="btn btn-primary">Enviar Solicitud</button> </form>
-        <div id="mensajeExito" class="mensaje-exito" style="display:none;"> ✅ Solicitud registrada exitosamente. </div>
-    </main>
-    <script src="../js/dashboard.js"></script>
-    <script src="../js/toast.js"></script>
+  <!-- ====== ENCABEZADO ====== -->
+  <header class="dash-header">
+    <div class="logo">
+      <i class="fa-solid fa-tractor" style="color:#fff; font-size:1.5rem; margin-right:8px;"></i>
+      <h1>AgroLink | Nueva Solicitud</h1>
+    </div>
+    <nav>
+      <a href="dashboard.html">Inicio</a>
+      <a href="solicitudes.html" class="active">Nueva Solicitud</a>
+      <a href="perfil.html">Mi Perfil</a>
+      <a href="#" id="logout">Cerrar Sesión</a>
+    </nav>
+  </header>
 
+  <!-- ====== CONTENIDO PRINCIPAL ====== -->
+  <main class="dash-content">
+    <h2>Registrar Nueva Solicitud</h2>
+    <p>Completa los datos para encontrar un transportista adecuado para tu carga agrícola.</p>
+
+    <form id="solicitudForm" class="solicitud-form">
+      <label for="tipoCarga">Tipo de producto</label>
+      <select id="tipoCarga" required>
+        <option value="">Selecciona un tipo</option>
+        <option value="Granos">Granos y Semillas</option>
+        <option value="Frutas">Frutas</option>
+        <option value="Verduras">Verduras</option>
+        <option value="Maquinaria">Maquinaria Agrícola</option>
+      </select>
+
+      <label for="origen">Origen</label>
+      <input type="text" id="origen" placeholder="Ej: Cajamarca" required>
+
+      <label for="destino">Destino</label>
+      <input type="text" id="destino" placeholder="Ej: Lima" required>
+
+      <label for="fecha">Fecha de envío</label>
+      <input type="date" id="fecha" required>
+
+      <label for="peso">Peso estimado (kg)</label>
+      <input type="number" id="peso" min="1" placeholder="Ej: 500" required>
+
+      <button type="submit" class="btn btn-primary">Enviar Solicitud</button>
+    </form>
+  </main>
+
+  <!-- ====== FOOTER ====== -->
+  <footer class="footer">
+    <p>© 2025 AgroLink. Todos los derechos reservados.</p>
+  </footer>
+
+  <!-- ====== SCRIPTS ====== -->
+  <script src="../js/storage.js"></script>
+  <script src="../js/dashboard.js"></script>
+  <script src="../js/toast.js"></script>
+
+  <!-- ====== LÓGICA DE NUEVA SOLICITUD ====== -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("solicitudForm");
+      const rol = localStorage.getItem("agrolinkRol");
+      const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")) || {};
+      const db = JSON.parse(localStorage.getItem("agrolinkDB")) || { solicitudes: [] };
+
+      // ===== Validar acceso =====
+      if (rol !== "productor") {
+        alert("⚠️ Acceso denegado. Inicia sesión como Productor.");
+        window.location.href = "../login.html";
+        return;
+      }
+
+      // ===== Enviar formulario =====
+      form.addEventListener("submit", e => {
+        e.preventDefault();
+
+        const solicitud = {
+          id: Date.now(),
+          productor: usuario.nombre || "Desconocido",
+          tipo: document.getElementById("tipoCarga").value,
+          origen: document.getElementById("origen").value,
+          destino: document.getElementById("destino").value,
+          fecha: document.getElementById("fecha").value,
+          peso: document.getElementById("peso").value,
+          estado: "Pendiente"
+        };
+
+        db.solicitudes.push(solicitud);
+        localStorage.setItem("agrolinkDB", JSON.stringify(db));
+
+        showToast("✅ Solicitud registrada exitosamente.", "success");
+
+        form.reset();
+      });
+
+      // ===== Cerrar sesión =====
+      const logout = document.getElementById("logout");
+      logout.addEventListener("click", e => {
+        e.preventDefault();
+        localStorage.removeItem("agrolinkRol");
+        localStorage.removeItem("agrolinkUsuario");
+        window.location.href = "../index.html";
+      });
+    });
+  </script>
 </body>
 
 </html>

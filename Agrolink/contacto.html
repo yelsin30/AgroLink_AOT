@@ -5,8 +5,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Contacto | AgroLink</title>
+  <meta name="description" content="Contáctanos en AgroLink. Estamos listos para ayudarte con tus envíos agrícolas o resolver tus dudas.">
+
+  <!-- Estilos -->
   <link rel="stylesheet" href="css/style.css" />
   <link rel="icon" href="img/logo.png" type="image/png">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 
 <body>
@@ -14,21 +20,20 @@
   <!-- ====== HEADER ====== -->
   <header class="header">
     <div class="logo">
-      <img src="img/logo.png" alt="AgroLink Logo">
+      <i class="fa-solid fa-tractor" style="color:#2b7a0b; font-size:1.8rem;"></i>
+      <h1>AgroLink</h1>
     </div>
 
-    <!-- Toggle para menú responsive -->
+    <!-- Menú responsive -->
     <input type="checkbox" id="menu-toggle">
     <label for="menu-toggle" class="menu-icon">&#9776;</label>
 
-    <!-- Navegación -->
     <nav class="nav">
       <ul>
         <li><a href="index.html">Inicio</a></li>
         <li><a href="servicios.html">Servicios</a></li>
         <li><a href="contacto.html" class="active">Contacto</a></li>
       </ul>
-
       <div class="buttons">
         <a href="login.html" class="btn btn-outline">Iniciar Sesión</a>
         <a href="registro.html" class="btn btn-primary">Registrarse</a>
@@ -37,7 +42,7 @@
   </header>
 
   <!-- ====== HERO ====== -->
-  <section class="hero" style="background: linear-gradient(to right, #f2fff0, #ffffff); height: 45vh;">
+  <section class="hero hero-light">
     <div class="hero-content">
       <h2>Contáctanos</h2>
       <p>Estamos aquí para ayudarte. Envíanos tu consulta o sugerencia.</p>
@@ -45,13 +50,13 @@
   </section>
 
   <!-- ====== SECCIÓN DE CONTACTO ====== -->
-  <main style="padding: 4rem 2rem; background-color: #fff;">
-    <div style="max-width: 1000px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 3rem; align-items: flex-start;">
+  <main class="contact-section">
+    <div class="contact-container">
 
       <!-- FORMULARIO DE CONTACTO -->
-      <div style="flex: 1; min-width: 300px;">
-        <h2 style="color: #1f5c0a; margin-bottom: 1.5rem;">Envíanos un mensaje</h2>
-        <form class="contact-form" style="display: flex; flex-direction: column; gap: 1rem;">
+      <div class="contact-form-container">
+        <h2>Envíanos un mensaje</h2>
+        <form class="contact-form" id="contactForm">
           <label for="nombre">Nombre completo</label>
           <input type="text" id="nombre" placeholder="Ej: Juan Pérez" required>
 
@@ -63,20 +68,23 @@
 
           <button type="submit" class="btn btn-primary">Enviar mensaje</button>
         </form>
+        <div id="mensajeExito" class="mensaje-exito" style="display:none;">
+          ✅ Tu mensaje fue enviado correctamente.
+        </div>
       </div>
 
       <!-- INFORMACIÓN DE CONTACTO -->
-      <div style="flex: 1; min-width: 300px;">
-        <h2 style="color: #1f5c0a; margin-bottom: 1.5rem;">Información de contacto</h2>
+      <div class="contact-info">
+        <h2>Información de contacto</h2>
         <p><strong>📍 Dirección:</strong> Av. Agraria 456, Lima, Perú</p>
         <p><strong>📞 Teléfono:</strong> +51 987 654 321</p>
         <p><strong>✉️ Correo:</strong> contacto@agrolink.pe</p>
         <p><strong>🕒 Horario:</strong> Lunes a Viernes, 8:00 a.m. – 6:00 p.m.</p>
 
-        <div style="margin-top: 2rem;">
+        <div class="map-container">
           <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3900.789996553268!2d-77.033!3d-12.043!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c8be1234567%3A0xabcdef123456789!2sUniversidad%20Agraria%20La%20Molina!5e0!3m2!1ses!2spe!4v1700000000000!5m2!1ses!2spe"
-            width="100%" height="250" style="border:0; border-radius: 10px;" allowfullscreen="" loading="lazy">
+            width="100%" height="250" style="border:0; border-radius:10px;" allowfullscreen="" loading="lazy">
           </iframe>
         </div>
       </div>
@@ -87,7 +95,26 @@
   <footer class="footer">
     <p>© 2025 AgroLink. Todos los derechos reservados.</p>
   </footer>
-<script src="js/script.js"></script>
+
+  <!-- ====== SCRIPTS ====== -->
+  <script src="js/storage.js"></script>
+  <script src="js/script.js"></script>
+
+  <!-- Validación de formulario -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("contactForm");
+      const mensaje = document.getElementById("mensajeExito");
+
+      form.addEventListener("submit", e => {
+        e.preventDefault();
+        form.reset();
+        mensaje.style.display = "block";
+        setTimeout(() => mensaje.style.display = "none", 2500);
+      });
+    });
+  </script>
 
 </body>
+
 </html>
