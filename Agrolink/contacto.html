@@ -56,8 +56,8 @@
 
       <!-- FORMULARIO -->
       <section>
-        <h2 style="color:#1f5c0a; margin-bottom:1rem;">Envíanos un mensaje</h2>
-        <form class="contact-form">
+        <h2>Envíanos un mensaje</h2>
+        <form id="contactForm" class="contact-form">
           <label for="nombre">Nombre completo</label>
           <input type="text" id="nombre" placeholder="Ej: Juan Pérez" required>
 
@@ -67,29 +67,31 @@
           <label for="mensaje">Mensaje</label>
           <textarea id="mensaje" rows="6" placeholder="Escribe tu mensaje aquí..." required></textarea>
 
-          <button type="submit" class="btn btn-primary" style="margin-top:1rem;">Enviar mensaje</button>
+          <button type="submit" class="btn btn-primary">Enviar mensaje</button>
+
+          <p id="mensajeExito" style="display:none; color:#2b7a0b; font-weight:600; margin-top:10px;">
+            ✅ Tu mensaje ha sido enviado con éxito.
+          </p>
         </form>
       </section>
 
       <!-- INFO + MAPA -->
       <section>
-        <h2 style="color:#1f5c0a; margin-bottom:1rem;">Información de contacto</h2>
+        <h2>Información de contacto</h2>
         <p><strong>📍 Dirección:</strong> Av. Agraria 456, Lima, Perú</p>
         <p><strong>📞 Teléfono:</strong> +51 987 654 321</p>
         <p><strong>✉️ Correo:</strong> contacto@agrolink.pe</p>
         <p><strong>🕒 Horario:</strong> Lunes a Viernes, 8:00 a.m. – 6:00 p.m.</p>
 
-        <div class="map-wrap" style="margin-top:1rem;">
+        <div class="map-wrap">
           <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3900.789996553268!2d-77.033!3d-12.043!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c8be1234567%3A0xabcdef123456789!2sUniversidad%20Agraria%20La%20Molina!5e0!3m2!1ses!2spe!4v1700000000000!5m2!1ses!2spe"
-            allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
-          </iframe>
+            allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
         </div>
       </section>
 
     </div>
   </main>
-
 
   <!-- ====== FOOTER ====== -->
   <footer class="footer">
@@ -97,10 +99,6 @@
   </footer>
 
   <!-- ====== SCRIPTS ====== -->
-  <script src="js/storage.js"></script>
-  <script src="js/script.js"></script>
-
-  <!-- Validación de formulario -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const form = document.getElementById("contactForm");
@@ -114,10 +112,6 @@
       });
     });
   </script>
-  <!-- al final del body -->
-  <script src="js/storage.js"></script>
-  <script src="js/script.js"></script>
-
 </body>
 
 </html>

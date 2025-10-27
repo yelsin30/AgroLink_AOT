@@ -2,93 +2,146 @@
 <html lang="es">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Panel del Productor | AgroLink</title>
 
   <!-- Estilos -->
-  <link rel="stylesheet" href="../css/dashboard.css">
-  <link rel="icon" href="../img/logo.png" type="image/png">
-
-  <!-- Íconos Font Awesome -->
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="icon" href="../img/logo.png" type="image/png" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 
 <body>
-  <!-- ====== ENCABEZADO ====== -->
-  <header class="dash-header">
-    <div class="logo">
-      <i class="fa-solid fa-tractor" style="color:#fff; font-size:1.5rem; margin-right:8px;"></i>
-      <h1>AgroLink | Productor</h1>
-    </div>
-    <nav>
-      <a href="dashboard.html" class="active">Inicio</a>
-      <a href="solicitudes.html">Nueva Solicitud</a>
-      <a href="perfil.html">Mi Perfil</a>
-      <a href="#" id="logout">Cerrar Sesión</a>
-    </nav>
-  </header>
-
-  <!-- ====== CONTENIDO PRINCIPAL ====== -->
-  <main class="dash-content">
-    <h2>Bienvenido, <span id="nombreUsuario">Productor 👨‍🌾</span></h2>
-    <p>Desde aquí puedes gestionar tus solicitudes de transporte y hacer seguimiento a tus envíos.</p>
-
-    <div class="cards">
-      <div class="card">
-        <h3>📦 Nueva Solicitud</h3>
-        <p>Solicita un servicio de transporte agrícola fácilmente.</p>
-        <a href="solicitudes.html" class="btn btn-primary">Crear Solicitud</a>
+  <div class="container">
+    <!-- ====== SIDEBAR ====== -->
+    <aside class="sidebar">
+      <div class="logo-section custom-logo">
+        <i class="fa-solid fa-tractor"></i>
+        <div class="logo-text">
+          <span class="brand">AgroLink</span>
+          <span class="role">Productor</span>
+        </div>
       </div>
 
-      <div class="card">
-        <h3>🚚 Mis Envíos</h3>
-        <p>Consulta el estado de tus solicitudes registradas.</p>
-        <a href="#" class="btn btn-outline">Ver Envíos</a>
-      </div>
+      <nav class="nav-links">
+        <a href="dashboard.html" class="active"><i class="fa-solid fa-home"></i> Panel de control</a>
+        <a href="solicitudes.html"><i class="fa-solid fa-file-circle-plus"></i> Nueva solicitud</a>
+        <a href="envios.html"><i class="fa-solid fa-boxes-packing"></i> Mis envíos</a>
+        <a href="perfil.html"><i class="fa-solid fa-user"></i> Perfil</a>
+      </nav>
 
-      <div class="card">
-        <h3>👤 Perfil</h3>
-        <p>Actualiza tu información personal y de contacto.</p>
-        <a href="perfil.html" class="btn btn-outline">Editar Perfil</a>
+      <div class="help-section">
+        <a href="#"><i class="fa-regular fa-circle-question"></i> Ayuda</a>
+        <a href="#" id="logout"><i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión</a>
       </div>
-    </div>
-  </main>
+    </aside>
 
-  <!-- ====== FOOTER (opcional si lo usas global) ====== -->
+    <!-- ====== CONTENIDO PRINCIPAL ====== -->
+    <main class="main-content">
+      <header class="main-header">
+        <h1>Panel de control</h1>
+        <p>Bienvenido, <span id="nombreUsuario">Productor 👨‍🌾</span></p>
+      </header>
+
+      <!-- ====== RESUMEN GENERAL ====== -->
+      <section class="summary">
+        <h2>Resumen general</h2>
+
+        <div class="summary-cards">
+          <div class="card">
+            <h3><i class="fa-solid fa-file"></i> Solicitudes registradas</h3>
+            <p>Has creado <span id="solRegistradas">0</span> solicitudes de transporte.</p>
+            <a href="envios.html" class="btn">Ver solicitudes →</a>
+          </div>
+
+          <div class="card">
+            <h3><i class="fa-solid fa-truck"></i> Envíos en curso</h3>
+            <p>Tienes <span id="enviosActivos">0</span> envíos actualmente en transporte.</p>
+            <a href="envios.html" class="btn">Ver envíos →</a>
+          </div>
+
+          <div class="card">
+            <h3><i class="fa-solid fa-check-circle"></i> Envíos completados</h3>
+            <p><span id="enviosCompletados">0</span> envíos se completaron exitosamente.</p>
+            <a href="envios.html" class="btn">Ver historial →</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== NOTIFICACIONES ====== -->
+      <section class="notificaciones">
+        <h2><i class="fa-solid fa-bell"></i> Notificaciones</h2>
+        <div id="listaNotificaciones" class="notif-list">
+          <p>No tienes notificaciones nuevas.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ====== FOOTER ====== -->
   <footer class="footer">
     <p>© 2025 AgroLink. Todos los derechos reservados.</p>
   </footer>
 
   <!-- ====== SCRIPTS ====== -->
-  <script src="../js/storage.js"></script>
-  <script src="../js/dashboard.js"></script>
-
-  <!-- ====== VALIDACIÓN DE SESIÓN ====== -->
+  <script src="../js/toast.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const rol = localStorage.getItem("agrolinkRol");
       const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")) || {};
+      const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
 
-      // Validar que el usuario sea productor
+      // === Validar acceso ===
       if (rol !== "productor") {
         alert("⚠️ Acceso denegado. Inicia sesión como Productor.");
         window.location.href = "../login.html";
         return;
       }
 
-      // Mostrar nombre si existe
-      if (usuario.nombre) {
-        document.getElementById("nombreUsuario").textContent = usuario.nombre + " 👨‍🌾";
+      // === Mostrar nombre del usuario ===
+      document.getElementById("nombreUsuario").textContent =
+        (usuario.nombre || "Productor") + " 👨‍🌾";
+
+      // === Calcular estadísticas ===
+      const misSolicitudes = solicitudes.filter(s => s.productor === usuario.nombre);
+      const registradas = misSolicitudes.length;
+      const activas = misSolicitudes.filter(s => s.estado === "En curso").length;
+      const completadas = misSolicitudes.filter(s => s.estado === "Completado ✅").length;
+
+      document.getElementById("solRegistradas").textContent = registradas;
+      document.getElementById("enviosActivos").textContent = activas;
+      document.getElementById("enviosCompletados").textContent = completadas;
+
+      // === Simular notificaciones ===
+      const lista = document.getElementById("listaNotificaciones");
+      if (registradas > 0) {
+        lista.innerHTML = `
+          <div class="notif-item">
+            <i class="fa-solid fa-file-circle-check"></i>
+            <div>
+              <strong>Solicitud registrada</strong>
+              <p>Tu solicitud fue enviada correctamente y está pendiente de asignación.</p>
+            </div>
+          </div>
+          <div class="notif-item">
+            <i class="fa-solid fa-truck-fast"></i>
+            <div>
+              <strong>Transporte en curso</strong>
+              <p>Uno de tus envíos está siendo transportado actualmente.</p>
+            </div>
+          </div>
+        `;
       }
 
-      // Cerrar sesión
+      // === Cerrar sesión ===
       const logout = document.getElementById("logout");
       logout.addEventListener("click", e => {
         e.preventDefault();
+        showToast("👋 Sesión cerrada correctamente", "info");
         localStorage.removeItem("agrolinkRol");
         localStorage.removeItem("agrolinkUsuario");
-        window.location.href = "../index.html";
+        setTimeout(() => (window.location.href = "../index.html"), 1000);
       });
     });
   </script>

@@ -2,42 +2,78 @@
 <html lang="es">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Panel del Transportista | AgroLink</title>
 
   <!-- Estilos -->
-  <link rel="stylesheet" href="../css/dashboard.css">
-  <link rel="icon" href="../img/logo.png" type="image/png">
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="icon" href="../img/logo.png" type="image/png" />
 
-  <!-- Íconos Font Awesome -->
+  <!-- Íconos -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 
 <body>
-  <!-- ====== ENCABEZADO ====== -->
-  <header class="dash-header">
-    <div class="logo">
-      <i class="fa-solid fa-tractor" style="color:#fff; font-size:1.5rem; margin-right:8px;"></i>
-      <h1>AgroLink | Panel del Transportista</h1>
-    </div>
-    <nav>
-      <a href="dashboard.html" class="active">Inicio</a>
-      <a href="viajes.html">Mis Viajes</a>
-      <a href="perfil.html">Mi Perfil</a>
-      <a href="#" id="logout">Cerrar Sesión</a>
-    </nav>
-  </header>
+  <div class="container">
+    <!-- ====== SIDEBAR ====== -->
+    <aside class="sidebar">
+      <div class="logo-section custom-logo">
+        <i class="fa-solid fa-tractor"></i>
+        <div class="logo-text">
+          <span class="brand">AgroLink</span>
+          <span class="role">Transportista</span>
+        </div>
+      </div>
 
-  <!-- ====== CONTENIDO PRINCIPAL ====== -->
-  <main class="dash-content">
-    <h2>Solicitudes Disponibles</h2>
-    <p>Aquí puedes ver y aceptar las solicitudes registradas por los productores.</p>
+      <nav class="nav-links">
+        <a href="dashboard.html" class="active"><i class="fa-solid fa-home"></i> Panel de control</a>
+        <a href="solicitudes.html"><i class="fa-solid fa-list"></i> Solicitudes disponibles</a>
+        <a href="viajes.html"><i class="fa-solid fa-truck"></i> Mis viajes</a>
+        <a href="perfil.html"><i class="fa-solid fa-user"></i> Perfil</a>
+      </nav>
 
-    <div id="listaSolicitudes" class="solicitudes-list">
-      <!-- Se cargan dinámicamente -->
-    </div>
-  </main>
+      <div class="help-section">
+        <a href="#"><i class="fa-regular fa-circle-question"></i> Ayuda</a>
+        <a href="#" id="logout"><i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión</a>
+      </div>
+    </aside>
+
+    <!-- ====== CONTENIDO PRINCIPAL ====== -->
+    <main class="main-content">
+      <header class="main-header">
+        <h1>Panel de control</h1>
+        <p>Bienvenido, <span id="nombreUsuario">Transportista 👷‍♂️</span></p>
+      </header>
+
+      <!-- ====== RESUMEN ====== -->
+      <section class="summary">
+        <h2>Resumen general</h2>
+
+        <div class="summary-cards">
+          <div class="card">
+            <h3><i class="fa-solid fa-list"></i> Solicitudes disponibles</h3>
+            <p>Hay <span id="solDisponibles">0</span> solicitudes nuevas esperando respuesta.</p>
+            <a href="solicitudes.html" class="btn">Ver solicitudes →</a>
+          </div>
+
+          <div class="card">
+            <h3><i class="fa-solid fa-truck-fast"></i> Viajes activos</h3>
+            <p>Tienes <span id="viajesActivos">0</span> viajes en curso.</p>
+            <a href="viajes.html" class="btn">Ver viajes →</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== NOTIFICACIONES ====== -->
+      <section class="notificaciones">
+        <h2><i class="fa-solid fa-bell"></i> Notificaciones</h2>
+        <div id="listaNotificaciones" class="notif-list">
+          <p>No tienes notificaciones nuevas.</p>
+        </div>
+      </section>
+    </main>
+  </div>
 
   <!-- ====== FOOTER ====== -->
   <footer class="footer">
@@ -45,65 +81,53 @@
   </footer>
 
   <!-- ====== SCRIPTS ====== -->
-  <script src="../js/storage.js"></script>
   <script src="../js/toast.js"></script>
-
-  <!-- ====== LÓGICA DE DASHBOARD DEL TRANSPORTISTA ====== -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const rol = localStorage.getItem("agrolinkRol");
       const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")) || {};
-      const db = JSON.parse(localStorage.getItem("agrolinkDB")) || { solicitudes: [], viajes: [] };
-      const contenedor = document.getElementById("listaSolicitudes");
+      const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
 
-      // ===== Validar acceso =====
+      // === Validar acceso ===
       if (rol !== "transportista") {
         alert("⚠️ Acceso denegado. Inicia sesión como Transportista.");
         window.location.href = "../login.html";
         return;
       }
 
-      // ===== Mostrar solicitudes disponibles =====
-      const solicitudesPendientes = db.solicitudes?.filter(s => s.estado === "Pendiente") || [];
+      // === Mostrar nombre ===
+      document.getElementById("nombreUsuario").textContent =
+        (usuario.nombre || "Transportista") + " 👷‍♂️";
 
-      if (solicitudesPendientes.length === 0) {
-        contenedor.innerHTML = "<p>No hay solicitudes disponibles por el momento.</p>";
-        return;
+      // === Calcular estadísticas ===
+      const disponibles = solicitudes.filter(s => s.estado === "Pendiente").length;
+      const activos = solicitudes.filter(s => s.transportista === usuario.nombre && s.estado === "En curso").length;
+
+      document.getElementById("solDisponibles").textContent = disponibles;
+      document.getElementById("viajesActivos").textContent = activos;
+
+      // === Notificaciones dinámicas ===
+      const lista = document.getElementById("listaNotificaciones");
+      if (disponibles > 0 || activos > 0) {
+        lista.innerHTML = `
+          <div class="notif-item">
+            <i class="fa-solid fa-bell"></i>
+            <div>
+              <strong>Nueva solicitud disponible</strong>
+              <p>Un productor publicó un nuevo envío que puedes aceptar.</p>
+            </div>
+          </div>
+          <div class="notif-item">
+            <i class="fa-solid fa-truck-moving"></i>
+            <div>
+              <strong>Viaje activo</strong>
+              <p>Actualmente estás transportando un pedido asignado.</p>
+            </div>
+          </div>
+        `;
       }
 
-      solicitudesPendientes.forEach(sol => {
-        const card = document.createElement("div");
-        card.classList.add("solicitud-card");
-        card.innerHTML = `
-          <h3>${sol.tipo}</h3>
-          <p><strong>Productor:</strong> ${sol.productor}</p>
-          <p><strong>Origen:</strong> ${sol.origen}</p>
-          <p><strong>Destino:</strong> ${sol.destino}</p>
-          <p><strong>Fecha:</strong> ${sol.fecha}</p>
-          <p><strong>Peso:</strong> ${sol.peso} kg</p>
-          <p><strong>Estado:</strong> <span style="color:#b58900;">${sol.estado}</span></p>
-          <button class="btn btn-primary aceptar-btn">Aceptar Solicitud</button>
-        `;
-
-        // ===== Acción para aceptar solicitud =====
-        card.querySelector(".aceptar-btn").addEventListener("click", () => {
-          sol.estado = "En curso";
-          sol.transportista = usuario.nombre || "Desconocido";
-
-          // Guardar cambios en base local
-          localStorage.setItem("agrolinkDB", JSON.stringify(db));
-
-          showToast(`🚚 Has aceptado la solicitud de ${sol.productor}`, "success");
-          card.querySelector(".aceptar-btn").disabled = true;
-          card.querySelector(".aceptar-btn").textContent = "En curso";
-          card.querySelector("span").textContent = "En curso";
-          card.querySelector("span").style.color = "#2b7a0b";
-        });
-
-        contenedor.appendChild(card);
-      });
-
-      // ===== Cerrar sesión =====
+      // === Cerrar sesión ===
       const logout = document.getElementById("logout");
       logout.addEventListener("click", e => {
         e.preventDefault();

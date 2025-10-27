@@ -7,37 +7,51 @@
   <title>Mis Viajes | AgroLink</title>
 
   <!-- Estilos -->
-  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="stylesheet" href="../css/style.css">
   <link rel="icon" href="../img/logo.png" type="image/png">
-
-  <!-- Íconos Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 
 <body>
-  <!-- ====== ENCABEZADO ====== -->
-  <header class="dash-header">
-    <div class="logo">
-      <i class="fa-solid fa-tractor" style="color:#fff; font-size:1.5rem; margin-right:8px;"></i>
-      <h1>AgroLink | Mis Viajes</h1>
-    </div>
-    <nav>
-      <a href="dashboard.html">Inicio</a>
-      <a href="viajes.html" class="active">Mis Viajes</a>
-      <a href="perfil.html">Mi Perfil</a>
-      <a href="#" id="logout">Cerrar Sesión</a>
-    </nav>
-  </header>
+  <div class="container">
+    <!-- ====== SIDEBAR ====== -->
+    <aside class="sidebar">
+      <div class="logo-section custom-logo">
+        <i class="fa-solid fa-tractor"></i>
+        <div class="logo-text">
+          <span class="brand">AgroLink</span>
+          <span class="role">Transportista</span>
+        </div>
+      </div>
 
-  <!-- ====== CONTENIDO PRINCIPAL ====== -->
-  <main class="dash-content">
-    <h2>Viajes Aceptados</h2>
-    <p>Revisa los transportes que has aceptado recientemente.</p>
+      <nav class="nav-links">
+        <a href="dashboard.html"><i class="fa-solid fa-home"></i> Panel de control</a>
+        <a href="solicitudes.html"><i class="fa-solid fa-list"></i> Solicitudes disponibles</a>
+        <a href="viajes.html" class="active"><i class="fa-solid fa-truck"></i> Mis viajes</a>
+        <a href="perfil.html"><i class="fa-solid fa-user"></i> Perfil</a>
+      </nav>
 
-    <div id="listaViajes" class="solicitudes-list">
-      <!-- Se cargan dinámicamente -->
-    </div>
-  </main>
+      <div class="help-section">
+        <a href="#"><i class="fa-regular fa-circle-question"></i> Ayuda</a>
+        <a href="#" id="logout"><i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión</a>
+      </div>
+    </aside>
+
+    <!-- ====== CONTENIDO PRINCIPAL ====== -->
+    <main class="main-content">
+      <header class="main-header">
+        <h1>Mis Viajes</h1>
+        <p>Revisa y gestiona los transportes que has aceptado recientemente.</p>
+      </header>
+
+      <section class="summary">
+        <h2><i class="fa-solid fa-truck-moving"></i> Viajes Aceptados</h2>
+        <div id="listaViajes" class="summary-cards">
+          <p>No has aceptado ningún viaje todavía.</p>
+        </div>
+      </section>
+    </main>
+  </div>
 
   <!-- ====== FOOTER ====== -->
   <footer class="footer">
@@ -45,15 +59,11 @@
   </footer>
 
   <!-- ====== SCRIPTS ====== -->
-  <script src="../js/storage.js"></script>
   <script src="../js/toast.js"></script>
-
-  <!-- ====== LÓGICA DE VIAJES ====== -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const rol = localStorage.getItem("agrolinkRol");
       const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")) || {};
-      const db = JSON.parse(localStorage.getItem("agrolinkDB")) || { solicitudes: [] };
       const contenedor = document.getElementById("listaViajes");
 
       // === Validar acceso ===
@@ -63,8 +73,11 @@
         return;
       }
 
-      // === Filtrar viajes aceptados por este transportista ===
-      const viajes = db.solicitudes?.filter(s => s.estado === "En curso" && s.transportista === usuario.nombre) || [];
+      // === Obtener solicitudes ===
+      const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
+
+      // === Filtrar viajes del transportista ===
+      const viajes = solicitudes.filter(s => s.transportista === usuario.nombre && s.estado !== "Pendiente");
 
       if (viajes.length === 0) {
         contenedor.innerHTML = "<p>No has aceptado ningún viaje todavía.</p>";
@@ -74,31 +87,59 @@
       // === Renderizar viajes ===
       viajes.forEach(v => {
         const card = document.createElement("div");
-        card.classList.add("solicitud-card");
+        card.classList.add("card");
+
+        const colorEstado = v.estado === "Completado ✅" ? "#006400" : "#2b7a0b";
+
         card.innerHTML = `
-          <h3>${v.tipo}</h3>
-          <p><strong>Productor:</strong> ${v.productor}</p>
+          <h3><i class="fa-solid fa-box"></i> ${v.tipo}</h3>
+          <p><strong>Productor:</strong> ${v.productor || "Desconocido"}</p>
           <p><strong>Origen:</strong> ${v.origen}</p>
           <p><strong>Destino:</strong> ${v.destino}</p>
           <p><strong>Fecha:</strong> ${v.fecha}</p>
           <p><strong>Peso:</strong> ${v.peso} kg</p>
-          <p><strong>Estado:</strong> <span style="color:#2b7a0b;">${v.estado}</span></p>
-          <button class="btn btn-outline finalizar-btn">Finalizar Viaje</button>
+          <p><strong>Estado:</strong> <span style="color:${colorEstado}">${v.estado}</span></p>
+          ${
+            v.estado !== "Completado ✅"
+              ? `<button class="btn btn-primary finalizar-btn"
+                  data-tipo="${v.tipo}"
+                  data-origen="${v.origen}"
+                  data-destino="${v.destino}"
+                  data-fecha="${v.fecha}"
+                  data-productor="${v.productor}">
+                  Finalizar Viaje
+                </button>`
+              : `<button class="btn btn-outline" disabled>Completado</button>`
+          }
         `;
-
-        // === Finalizar viaje ===
-        card.querySelector(".finalizar-btn").addEventListener("click", () => {
-          v.estado = "Completado ✅";
-          localStorage.setItem("agrolinkDB", JSON.stringify(db));
-          showToast("✅ Viaje completado con éxito.", "success");
-
-          card.querySelector("span").textContent = "Completado ✅";
-          card.querySelector("span").style.color = "#006400";
-          card.querySelector(".finalizar-btn").disabled = true;
-          card.querySelector(".finalizar-btn").textContent = "Completado";
-        });
-
         contenedor.appendChild(card);
+      });
+
+      // === Finalizar viaje ===
+      contenedor.addEventListener("click", e => {
+        if (!e.target.classList.contains("finalizar-btn")) return;
+
+        const tipo = e.target.dataset.tipo;
+        const origen = e.target.dataset.origen;
+        const destino = e.target.dataset.destino;
+        const fecha = e.target.dataset.fecha;
+        const productor = e.target.dataset.productor;
+
+        const solicitudesGlobal = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
+        const index = solicitudesGlobal.findIndex(s =>
+          s.tipo === tipo &&
+          s.origen === origen &&
+          s.destino === destino &&
+          s.fecha === fecha &&
+          s.productor === productor
+        );
+
+        if (index !== -1) {
+          solicitudesGlobal[index].estado = "Completado ✅";
+          localStorage.setItem("solicitudesAgroLink", JSON.stringify(solicitudesGlobal));
+          showToast("✅ Viaje completado con éxito.", "success");
+          setTimeout(() => location.reload(), 800);
+        }
       });
 
       // === Cerrar sesión ===
