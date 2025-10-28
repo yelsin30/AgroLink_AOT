@@ -1,20 +1,189 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mi Perfil | AgroLink</title>
 
-  <!-- Estilos -->
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../img/logo.png" type="image/png" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <style>
+    .perfil-layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .perfil-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .perfil-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .perfil-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: linear-gradient(to right, #f6fff6, #f3fff3);
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .perfil-header img {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #2b7a0b;
+    }
+
+    .perfil-info h2 {
+      margin: 0;
+      color: #2b7a0b;
+    }
+
+    .perfil-fotos {
+      display: flex;
+      gap: 2rem;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .perfil-fotos div {
+      text-align: center;
+      background: #f9fff9;
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .perfil-fotos img {
+      border-radius: 12px;
+      border: 3px solid #2b7a0b;
+      object-fit: cover;
+      width: 220px;
+      height: 140px;
+    }
+
+    .perfil-datos {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem 2rem;
+    }
+
+    .perfil-datos label {
+      font-weight: 600;
+      color: #444;
+    }
+
+    .perfil-datos input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+    }
+
+    .perfil-datos input:disabled {
+      background-color: #f3f3f3;
+      border: 1px solid #ddd;
+      color: #555;
+    }
+
+    .perfil-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .btn-secondary {
+      background-color: #e0e0e0;
+      color: #333;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+      background-color: #ccc;
+    }
+
+    .btn-primary {
+      background-color: #2b7a0b;
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover {
+      background-color: #256707;
+    }
+
+    .ficha-tecnica {
+      background: linear-gradient(to right, #f9fff9, #f3fff3);
+      border: 1px solid #d4efd4;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .ficha-tecnica h3 {
+      color: #2b7a0b;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ficha-tecnica ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .ficha-tecnica li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      color: #333;
+      font-size: 0.95rem;
+      border-bottom: 1px solid #e6f5e6;
+    }
+
+    .ficha-tecnica li:last-child {
+      border-bottom: none;
+    }
+
+    .ficha-tecnica i {
+      color: #2b7a0b;
+      font-size: 1.1rem;
+      width: 22px;
+      text-align: center;
+    }
+  </style>
 </head>
 
 <body>
   <div class="container">
-    <!-- ====== SIDEBAR ====== -->
     <aside class="sidebar">
       <div class="logo-section custom-logo">
         <i class="fa-solid fa-tractor"></i>
@@ -26,8 +195,8 @@
 
       <nav class="nav-links">
         <a href="dashboard.html"><i class="fa-solid fa-home"></i> Panel de control</a>
-        <a href="viajes.html" id="navViajes" style="display:none;"><i class="fa-solid fa-truck"></i> Mis viajes</a>
-        <a href="solicitudes.html" id="navSolicitudes" style="display:none;"><i class="fa-solid fa-file-circle-plus"></i> Nueva solicitud</a>
+        <a href="solicitudes.html"><i class="fa-solid fa-list"></i> Solicitudes disponibles</a>
+        <a href="viajes.html"><i class="fa-solid fa-truck"></i> Mis viajes</a>
         <a href="perfil.html" class="active"><i class="fa-solid fa-user"></i> Perfil</a>
       </nav>
 
@@ -37,103 +206,251 @@
       </div>
     </aside>
 
-    <!-- ====== CONTENIDO PRINCIPAL ====== -->
     <main class="main-content">
       <header class="main-header">
         <h1>Mi Perfil</h1>
-        <p>Actualiza tu información personal para mantener tu cuenta al día.</p>
+        <p>Consulta y actualiza tu información personal y del vehículo.</p>
       </header>
 
-      <form id="perfilForm" class="perfil-form card">
-        <label for="nombre">Nombre completo</label>
-        <input type="text" id="nombre" placeholder="Ej: Juan Pérez" required />
+      <div class="perfil-layout">
+        <div class="perfil-container">
+          <div class="perfil-header">
+            <div style="position: relative; display: inline-block;">
+              <img id="previewPerfil" src="../img/default-user.png" alt="Foto de perfil">
+              <input type="file" id="filePerfil" accept="image/*" style="display:none;">
+              <button id="btnCambiarPerfil" class="btn-secondary" style="display:none; position:absolute; bottom:0; right:0; padding:5px 8px; font-size:12px;">
+                <i class="fa-solid fa-camera"></i>
+              </button>
+            </div>
+            <div class="perfil-info">
+              <h2 id="nombreHeader">Nombre del Usuario</h2>
+              <p id="rolHeader">Transportista</p>
+            </div>
+          </div>
 
-        <label for="correo">Correo electrónico</label>
-        <input type="email" id="correo" placeholder="Ej: usuario@correo.com" required />
+          <div class="perfil-fotos">
+            <div>
+              <label>Foto del vehículo</label><br>
+              <img id="previewVehiculo" src="../img/default-truck.png" alt="Foto del vehículo">
+              <input type="file" id="fileVehiculo" accept="image/*" style="display:none;">
+              <button id="btnCambiarVehiculo" class="btn-secondary" style="display:none; margin-top:8px;">
+                <i class="fa-solid fa-camera"></i> Cambiar foto
+              </button>
+            </div>
+          </div>
 
-        <label for="password">Contraseña</label>
-        <input type="password" id="password" placeholder="••••••••" required />
+          <form id="perfilForm" class="perfil-datos">
+            <label>Nombre completo</label>
+            <input type="text" id="nombre">
+            <label>Correo electrónico</label>
+            <input type="email" id="correo">
+            <label>Contraseña</label>
+            <input type="password" id="password" placeholder="••••••••">
+            <label>Placa del vehículo</label>
+            <input type="text" id="placa">
+            <label>Capacidad de carga (kg)</label>
+            <input type="text" id="capacidad">
+            <label>Licencia de conducir</label>
+            <input type="text" id="licencia">
+            <label>Cuenta bancaria</label>
+            <input type="text" id="cuentaBancaria">
+            <label>SOAT</label>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span id="soatLabel" class="doc-link">No cargado</span>
+              <input type="file" id="fileSoat" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
+              <button id="btnCambiarSoat" class="btn-secondary" style="display:none;"><i class="fa-solid fa-upload"></i></button>
+            </div>
+            <label>Revisión técnica</label>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span id="revisionLabel" class="doc-link">No cargado</span>
+              <input type="file" id="fileRevision" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
+              <button id="btnCambiarRevision" class="btn-secondary" style="display:none;"><i class="fa-solid fa-upload"></i></button>
+            </div>
+          </form>
 
-        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-      </form>
+          <div class="perfil-buttons">
+            <button id="editarBtn" class="btn-secondary"><i class="fa-solid fa-pen"></i> Editar</button>
+            <button id="guardarBtn" class="btn-primary" style="display:none;"><i class="fa-solid fa-save"></i> Guardar</button>
+          </div>
+        </div>
+
+        <div class="ficha-tecnica">
+          <h3><i class="fa-solid fa-id-card-clip"></i> Ficha técnica del vehículo</h3>
+          <ul>
+            <li><i class="fa-solid fa-car"></i> <strong>Placa:</strong> <span id="fichaPlaca">---</span></li>
+            <li><i class="fa-solid fa-weight-hanging"></i> <strong>Capacidad:</strong> <span id="fichaCapacidad">---</span></li>
+            <li><i class="fa-solid fa-id-badge"></i> <strong>Licencia:</strong> <span id="fichaLicencia">---</span></li>
+            <li><i class="fa-solid fa-money-check-dollar"></i> <strong>Cuenta bancaria:</strong> <span id="fichaCuenta">---</span></li>
+            <li><i class="fa-solid fa-file-shield"></i> <strong>SOAT:</strong> <span id="fichaSoat">---</span></li>
+            <li><i class="fa-solid fa-screwdriver-wrench"></i> <strong>Revisión técnica:</strong> <span id="fichaRevision">---</span></li>
+          </ul>
+        </div>
+      </div>
     </main>
   </div>
 
-  <!-- ====== FOOTER ====== -->
   <footer class="footer">
     <p>© 2025 AgroLink. Todos los derechos reservados.</p>
   </footer>
 
-  <!-- ====== SCRIPTS ====== -->
   <script src="../js/toast.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const rol = localStorage.getItem("agrolinkRol");
       const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")) || {};
 
-      const form = document.getElementById("perfilForm");
-      const nombreInput = document.getElementById("nombre");
-      const correoInput = document.getElementById("correo");
-      const passwordInput = document.getElementById("password");
-      const navViajes = document.getElementById("navViajes");
-      const navSolicitudes = document.getElementById("navSolicitudes");
-      const rolTexto = document.getElementById("rolTexto");
+      const previewPerfil = document.getElementById("previewPerfil");
+      const filePerfil = document.getElementById("filePerfil");
+      const btnCambiarPerfil = document.getElementById("btnCambiarPerfil");
 
-      // Mostrar navegación y rol según tipo de usuario
-      if (rol === "transportista") {
-        navViajes.style.display = "inline-flex";
-        rolTexto.textContent = "Transportista";
-      } else if (rol === "productor") {
-        navSolicitudes.style.display = "inline-flex";
-        rolTexto.textContent = "Productor";
-      } else {
-        alert("⚠️ Acceso denegado. Inicia sesión nuevamente.");
-        window.location.href = "../login.html";
-        return;
+      const previewVehiculo = document.getElementById("previewVehiculo");
+      const fileVehiculo = document.getElementById("fileVehiculo");
+      const btnCambiarVehiculo = document.getElementById("btnCambiarVehiculo");
+
+      const fileSoat = document.getElementById("fileSoat");
+      const fileRevision = document.getElementById("fileRevision");
+      const btnCambiarSoat = document.getElementById("btnCambiarSoat");
+      const btnCambiarRevision = document.getElementById("btnCambiarRevision");
+      const soatLabel = document.getElementById("soatLabel");
+      const revisionLabel = document.getElementById("revisionLabel");
+
+      const form = document.getElementById("perfilForm");
+      const inputs = form.querySelectorAll("input");
+      const editarBtn = document.getElementById("editarBtn");
+      const guardarBtn = document.getElementById("guardarBtn");
+
+      const ficha = {
+        placa: document.getElementById("fichaPlaca"),
+        capacidad: document.getElementById("fichaCapacidad"),
+        licencia: document.getElementById("fichaLicencia"),
+        cuenta: document.getElementById("fichaCuenta"),
+        soat: document.getElementById("fichaSoat"),
+        revision: document.getElementById("fichaRevision"),
+      };
+
+      function mostrarDatos() {
+        document.getElementById("nombre").value = usuario.nombre || "";
+        document.getElementById("correo").value = usuario.email || "";
+        document.getElementById("password").value = usuario.password || "";
+        document.getElementById("placa").value = usuario.placa || "";
+        document.getElementById("capacidad").value = usuario.capacidad || "";
+        document.getElementById("licencia").value = usuario.licencia || "";
+        document.getElementById("cuentaBancaria").value = usuario.cuentaBancaria || "";
+
+        if (usuario.fotoPerfil) previewPerfil.src = usuario.fotoPerfil;
+        if (usuario.vehiculoImg) previewVehiculo.src = usuario.vehiculoImg;
+        if (usuario.soatNombre) soatLabel.textContent = `📄 ${usuario.soatNombre}`;
+        if (usuario.revisionNombre) revisionLabel.textContent = `📄 ${usuario.revisionNombre}`;
+
+        ficha.placa.textContent = usuario.placa || "No registrado";
+        ficha.capacidad.textContent = usuario.capacidad ? `${usuario.capacidad} kg` : "No registrado";
+        ficha.licencia.textContent = usuario.licencia || "No registrado";
+        ficha.cuenta.textContent = usuario.cuentaBancaria || "No registrado";
+        ficha.soat.textContent = usuario.soatNombre || "No cargado";
+        ficha.revision.textContent = usuario.revisionNombre || "No cargado";
       }
 
-      // Cargar datos existentes
-      nombreInput.value = usuario.nombre || "";
-      correoInput.value = usuario.correo || "";
-      passwordInput.value = usuario.password || "";
+      mostrarDatos();
+      inputs.forEach(i => i.disabled = true);
 
-      // Guardar cambios
-      form.addEventListener("submit", e => {
-        e.preventDefault();
-
-        const nombre = nombreInput.value.trim();
-        const correo = correoInput.value.trim();
-        const password = passwordInput.value.trim();
-
-        if (!nombre || !correo || !password) {
-          showToast("⚠️ Completa todos los campos.", "error");
-          return;
-        }
-
-        // Actualizar usuario
-        const actualizado = { ...usuario, nombre, correo, password };
-        localStorage.setItem("agrolinkUsuario", JSON.stringify(actualizado));
-        showToast("✅ Datos actualizados correctamente.", "success");
-
-        // Actualizar solicitudes relacionadas
-        const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
-        solicitudes.forEach(s => {
-          if (rol === "productor" && s.productor === usuario.nombre) s.productor = nombre;
-          if (rol === "transportista" && s.transportista === usuario.nombre) s.transportista = nombre;
-        });
-        localStorage.setItem("solicitudesAgroLink", JSON.stringify(solicitudes));
+      editarBtn.addEventListener("click", () => {
+        inputs.forEach(i => i.disabled = false);
+        btnCambiarPerfil.style.display = "inline-block";
+        btnCambiarVehiculo.style.display = "inline-block";
+        btnCambiarSoat.style.display = "inline-block";
+        btnCambiarRevision.style.display = "inline-block";
+        editarBtn.style.display = "none";
+        guardarBtn.style.display = "inline-block";
       });
 
-      // Cerrar sesión
-      document.getElementById("logout").addEventListener("click", e => {
+      guardarBtn.addEventListener("click", e => {
         e.preventDefault();
-        showToast("👋 Sesión cerrada correctamente", "info");
-        localStorage.removeItem("agrolinkRol");
-        localStorage.removeItem("agrolinkUsuario");
-        setTimeout(() => (window.location.href = "../index.html"), 1000);
+        inputs.forEach(i => i.disabled = true);
+        btnCambiarPerfil.style.display = "none";
+        btnCambiarVehiculo.style.display = "none";
+        btnCambiarSoat.style.display = "none";
+        btnCambiarRevision.style.display = "none";
+        editarBtn.style.display = "inline-block";
+        guardarBtn.style.display = "none";
+
+        usuario.nombre = document.getElementById("nombre").value.trim();
+        usuario.email = document.getElementById("correo").value.trim();
+        usuario.password = document.getElementById("password").value.trim();
+        usuario.placa = document.getElementById("placa").value.trim();
+        usuario.capacidad = document.getElementById("capacidad").value.trim();
+        usuario.licencia = document.getElementById("licencia").value.trim();
+        usuario.cuentaBancaria = document.getElementById("cuentaBancaria").value.trim();
+
+        localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
+        mostrarDatos();
+        showToast("✅ Perfil actualizado correctamente.", "success");
+      });
+
+      btnCambiarPerfil.addEventListener("click", e => {
+        e.preventDefault();
+        filePerfil.click();
+      });
+
+      filePerfil.addEventListener("change", e => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          usuario.fotoPerfil = reader.result;
+          localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
+          previewPerfil.src = reader.result;
+          showToast("✅ Foto de perfil actualizada.", "success");
+        };
+        reader.readAsDataURL(file);
+      });
+
+      btnCambiarVehiculo.addEventListener("click", e => {
+        e.preventDefault();
+        fileVehiculo.click();
+      });
+
+      fileVehiculo.addEventListener("change", e => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          usuario.vehiculoImg = reader.result;
+          localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
+          previewVehiculo.src = reader.result;
+          showToast("✅ Foto del vehículo actualizada.", "success");
+        };
+        reader.readAsDataURL(file);
+      });
+
+      btnCambiarSoat.addEventListener("click", e => {
+        e.preventDefault();
+        fileSoat.click();
+      });
+
+      fileSoat.addEventListener("change", e => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        usuario.soatNombre = file.name;
+        localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
+        soatLabel.textContent = `📄 ${file.name}`;
+        ficha.soat.textContent = file.name;
+        showToast("✅ Archivo SOAT cargado correctamente.", "success");
+      });
+
+      btnCambiarRevision.addEventListener("click", e => {
+        e.preventDefault();
+        fileRevision.click();
+      });
+
+      fileRevision.addEventListener("change", e => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        usuario.revisionNombre = file.name;
+        localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
+        revisionLabel.textContent = `📄 ${file.name}`;
+        ficha.revision.textContent = file.name;
+        showToast("✅ Revisión técnica cargada correctamente.", "success");
       });
     });
   </script>
 </body>
-
 </html>

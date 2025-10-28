@@ -10,6 +10,69 @@
   <link rel="stylesheet" href="../css/style.css">
   <link rel="icon" href="../img/logo.png" type="image/png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    .solicitudes-layout {
+      display: grid;
+      grid-template-columns: 1.2fr 2fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    #map {
+      height: 600px;
+      width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      padding: 1rem 1.2rem;
+      margin-bottom: 1rem;
+      transition: transform .2s;
+    }
+
+    .card:hover {
+      transform: scale(1.02);
+    }
+
+    .card h3 {
+      color: #2b7a0b;
+      margin-bottom: 0.5rem;
+    }
+
+    .detalles {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      font-size: 0.95rem;
+      color: #333;
+    }
+
+    .stars {
+      color: gold;
+      font-size: 1rem;
+    }
+
+    .btn {
+      margin-top: 0.8rem;
+      padding: 8px 14px;
+      border-radius: 8px;
+    }
+
+    @media (max-width: 900px) {
+      .solicitudes-layout {
+        grid-template-columns: 1fr;
+      }
+
+      #map {
+        height: 400px;
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -44,46 +107,58 @@
         <p>Bienvenido, <span id="nombreUsuario">Transportista 👷‍♂️</span></p>
       </header>
 
-      <!-- ====== LISTA DE SOLICITUDES ====== -->
-      <section class="summary">
-        <h2><i class="fa-solid fa-box-open"></i> Solicitudes publicadas por productores</h2>
-
-        <div id="listaSolicitudes" class="summary-cards">
-          <p>No hay solicitudes disponibles por ahora.</p>
-        </div>
+      <section class="solicitudes-layout">
+        <!-- LISTA -->
+        <div id="listaSolicitudes"></div>
+        <!-- MAPA -->
+        <div id="map"></div>
       </section>
     </main>
   </div>
 
-  <!-- ====== FOOTER ====== -->
   <footer class="footer">
     <p>© 2025 AgroLink. Todos los derechos reservados.</p>
   </footer>
 
-  <!-- ====== SCRIPTS ====== -->
+  <!-- ====== LIBRERÍAS ====== -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="../js/toast.js"></script>
+
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const rol = localStorage.getItem("agrolinkRol");
       const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")) || {};
       const db = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
 
-      // === Validar acceso ===
       if (rol !== "transportista") {
         alert("⚠️ Acceso denegado. Inicia sesión como Transportista.");
         window.location.href = "../login.html";
         return;
       }
 
-      // === Mostrar nombre ===
       document.getElementById("nombreUsuario").textContent =
         (usuario.nombre || "Transportista") + " 👷‍♂️";
 
-      // === Contenedor principal ===
+      // === MAPA ===
+      const map = L.map('map').setView([-9.189967, -75.015152], 6); // Perú centrado
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      const cityCoords = {
+        Lima: [-12.0464, -77.0428],
+        Trujillo: [-8.1117, -79.0288],
+        Arequipa: [-16.409, -71.5375],
+        Piura: [-5.1945, -80.6328],
+        Chiclayo: [-6.7714, -79.8409],
+        Cusco: [-13.5319, -71.9675],
+        Puno: [-15.8402, -70.0219],
+        Huancayo: [-12.0651, -75.2049],
+      };
+
       const contenedor = document.getElementById("listaSolicitudes");
       contenedor.innerHTML = "";
 
-      // === Filtrar solicitudes disponibles ===
       const disponibles = db.filter(s => s.estado === "Pendiente");
 
       if (disponibles.length === 0) {
@@ -91,23 +166,48 @@
         return;
       }
 
-      // === Renderizar cada solicitud ===
       disponibles.forEach(s => {
         const card = document.createElement("div");
         card.classList.add("card");
 
+        const origenCoord = cityCoords[s.origen] || [-9, -75];
+        const destinoCoord = cityCoords[s.destino] || [-9.2, -75.1];
+        const distancia = map.distance(origenCoord, destinoCoord) / 1000;
+        const tiempo = (distancia / 70).toFixed(1); // velocidad promedio 70km/h
+
         card.innerHTML = `
           <h3><i class="fa-solid fa-seedling"></i> ${s.tipo}</h3>
-          <p><strong>Productor:</strong> ${s.productor}</p>
-          <p><strong>Origen:</strong> ${s.origen}</p>
-          <p><strong>Destino:</strong> ${s.destino}</p>
-          <p><strong>Fecha:</strong> ${s.fecha}</p>
-          <p><strong>Peso:</strong> ${s.peso} kg</p>
-          <button class="btn btn-primary">Aceptar solicitud</button>
+          <div class="detalles">
+            <p><strong>Productor:</strong> ${s.productor}</p>
+            <p><strong>Teléfono:</strong> ${s.telefono || "No registrado"}</p>
+            <p><strong>Calificación:</strong> <span class="stars">⭐ ${s.calificacion || "4.8"}</span></p>
+            <p><strong>Origen:</strong> ${s.origen}</p>
+            <p><strong>Destino:</strong> ${s.destino}</p>
+            <p><strong>Distancia:</strong> ${distancia.toFixed(1)} km</p>
+            <p><strong>Tiempo estimado:</strong> ${tiempo} h</p>
+            <p><strong>Peso:</strong> ${s.peso} kg</p>
+            <p><strong>Producto:</strong> ${s.descripcion || "Sin descripción"}</p>
+            <p><strong>Pago ofrecido:</strong> S/ ${s.pago || "0"}</p>
+          </div>
+          <button class="btn btn-primary">Ver ruta</button>
+          <button class="btn btn-success">Aceptar solicitud</button>
         `;
 
-        // === Evento: aceptar solicitud ===
+        // === Evento: mostrar ruta en mapa ===
         card.querySelector(".btn-primary").addEventListener("click", () => {
+          map.eachLayer(layer => {
+            if (layer instanceof L.Polyline || layer instanceof L.Marker) map.removeLayer(layer);
+          });
+
+          const markerA = L.marker(origenCoord).addTo(map).bindPopup(`<b>${s.origen}</b>`).openPopup();
+          const markerB = L.marker(destinoCoord).addTo(map).bindPopup(`<b>${s.destino}</b>`);
+
+          L.polyline([origenCoord, destinoCoord], { color: "#2b7a0b", weight: 4 }).addTo(map);
+          map.fitBounds([origenCoord, destinoCoord]);
+        });
+
+        // === Evento: aceptar solicitud ===
+        card.querySelector(".btn-success").addEventListener("click", () => {
           s.estado = "En curso";
           s.transportista = usuario.nombre;
           localStorage.setItem("solicitudesAgroLink", JSON.stringify(db));
@@ -118,14 +218,25 @@
         contenedor.appendChild(card);
       });
 
-      // === Cerrar sesión ===
-      const logout = document.getElementById("logout");
-      logout.addEventListener("click", e => {
-        e.preventDefault();
-        showToast("👋 Sesión cerrada correctamente", "info");
-        localStorage.removeItem("agrolinkRol");
-        localStorage.removeItem("agrolinkUsuario");
-        setTimeout(() => (window.location.href = "../index.html"), 1000);
+      // === CERRAR SESIÓN ===
+      document.addEventListener("DOMContentLoaded", () => {
+        const logoutBtn = document.getElementById("logout");
+
+        if (logoutBtn) {
+          logoutBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            showToast("👋 Sesión cerrada correctamente", "info");
+
+            // Eliminar datos guardados
+            localStorage.removeItem("agrolinkRol");
+            localStorage.removeItem("agrolinkUsuario");
+
+            // Redirigir con un pequeño retraso
+            setTimeout(() => {
+              window.location.href = "../index.html";
+            }, 1000);
+          });
+        }
       });
     });
   </script>

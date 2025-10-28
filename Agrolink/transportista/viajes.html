@@ -6,10 +6,148 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis Viajes | AgroLink</title>
 
-  <!-- Estilos -->
   <link rel="stylesheet" href="../css/style.css">
   <link rel="icon" href="../img/logo.png" type="image/png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    .tabs {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .tab {
+      background: #f3f3f3;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      color: #333;
+      transition: 0.2s;
+    }
+
+    .tab.active {
+      background: #2b7a0b;
+      color: #fff;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      background: #f9fff9;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .stat {
+      flex: 1;
+      text-align: center;
+    }
+
+    .stat h3 {
+      color: #2b7a0b;
+      margin-bottom: 0.3rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      padding: 1rem 1.2rem;
+      margin-bottom: 1rem;
+      transition: transform .2s;
+    }
+
+    .card:hover {
+      transform: scale(1.02);
+    }
+
+    .viaje-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .estado {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .estado.en-curso {
+      background: #2b7a0b;
+    }
+
+    .estado.completado {
+      background: #0077cc;
+    }
+
+    .estado.cancelado {
+      background: #555;
+    }
+
+    .progress-bar {
+      background: #eee;
+      height: 8px;
+      border-radius: 5px;
+      margin: 8px 0 10px 0;
+    }
+
+    .progress {
+      height: 8px;
+      background: #2b7a0b;
+      border-radius: 5px;
+      transition: width .5s;
+    }
+
+    .btns {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    #map {
+      height: 400px;
+      border-radius: 12px;
+      margin-top: 1rem;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 600px;
+      position: relative;
+    }
+
+    .close {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #333;
+    }
+  </style>
 </head>
 
 <body>
@@ -40,119 +178,201 @@
     <!-- ====== CONTENIDO PRINCIPAL ====== -->
     <main class="main-content">
       <header class="main-header">
-        <h1>Mis Viajes</h1>
-        <p>Revisa y gestiona los transportes que has aceptado recientemente.</p>
+        <h1>Historial de Viajes</h1>
+        <p>Consulta tus viajes completados, en curso y cancelados.</p>
       </header>
 
-      <section class="summary">
-        <h2><i class="fa-solid fa-truck-moving"></i> Viajes Aceptados</h2>
-        <div id="listaViajes" class="summary-cards">
-          <p>No has aceptado ningún viaje todavía.</p>
+      <!-- Panel de estadísticas -->
+      <section class="stats">
+        <div class="stat">
+          <h3>🚛 En curso</h3>
+          <p id="statEnCurso">0</p>
+        </div>
+        <div class="stat">
+          <h3>✅ Completados</h3>
+          <p id="statCompletados">0</p>
+        </div>
+        <div class="stat">
+          <h3>💰 Ingresos Totales</h3>
+          <p>S/ <span id="statGanancias">0</span></p>
+        </div>
+        <div class="stat">
+          <h3>⭐ Promedio</h3>
+          <p id="statCalificacion">4.8</p>
         </div>
       </section>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active" data-tab="enCurso">En curso</button>
+        <button class="tab" data-tab="completado">Completados</button>
+        <button class="tab" data-tab="cancelado">Cancelados</button>
+      </div>
+
+      <!-- Contenedor de viajes -->
+      <section id="listaViajes"></section>
+
+      <!-- Mapa -->
+      <div id="map"></div>
     </main>
   </div>
 
-  <!-- ====== FOOTER ====== -->
+  <!-- Modal Detalles -->
+  <div class="modal" id="modalDetalles">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Detalles del viaje</h2>
+      <div id="detalleContenido"></div>
+    </div>
+  </div>
+
   <footer class="footer">
     <p>© 2025 AgroLink. Todos los derechos reservados.</p>
   </footer>
 
-  <!-- ====== SCRIPTS ====== -->
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="../js/toast.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const rol = localStorage.getItem("agrolinkRol");
       const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")) || {};
-      const contenedor = document.getElementById("listaViajes");
+      const db = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
+      const lista = document.getElementById("listaViajes");
+      const map = L.map('map').setView([-9.189967, -75.015152], 6);
 
-      // === Validar acceso ===
-      if (rol !== "transportista") {
-        alert("⚠️ Acceso denegado. Inicia sesión como Transportista.");
-        window.location.href = "../login.html";
-        return;
-      }
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(map);
 
-      // === Obtener solicitudes ===
-      const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
+      const coords = {
+        Lima: [-12.0464, -77.0428],
+        Trujillo: [-8.1117, -79.0288],
+        Arequipa: [-16.409, -71.5375],
+        Piura: [-5.1945, -80.6328],
+        Chiclayo: [-6.7714, -79.8409],
+        Cusco: [-13.5319, -71.9675],
+      };
 
-      // === Filtrar viajes del transportista ===
-      const viajes = solicitudes.filter(s => s.transportista === usuario.nombre && s.estado !== "Pendiente");
+      const viajes = db.filter(s => s.transportista === usuario.nombre && s.estado !== "Pendiente");
 
-      if (viajes.length === 0) {
-        contenedor.innerHTML = "<p>No has aceptado ningún viaje todavía.</p>";
-        return;
-      }
+      // === Estadísticas ===
+      const enCurso = viajes.filter(v => v.estado === "En curso").length;
+      const completados = viajes.filter(v => v.estado === "Completado ✅").length;
+      const totalGanado = viajes.reduce((acc, v) => acc + (parseFloat(v.pago) || 0), 0);
 
-      // === Renderizar viajes ===
-      viajes.forEach(v => {
-        const card = document.createElement("div");
-        card.classList.add("card");
+      document.getElementById("statEnCurso").textContent = enCurso;
+      document.getElementById("statCompletados").textContent = completados;
+      document.getElementById("statGanancias").textContent = totalGanado.toFixed(2);
 
-        const colorEstado = v.estado === "Completado ✅" ? "#006400" : "#2b7a0b";
+      // === Render ===
+      function render(tab = "enCurso") {
+        lista.innerHTML = "";
 
-        card.innerHTML = `
-          <h3><i class="fa-solid fa-box"></i> ${v.tipo}</h3>
-          <p><strong>Productor:</strong> ${v.productor || "Desconocido"}</p>
-          <p><strong>Origen:</strong> ${v.origen}</p>
-          <p><strong>Destino:</strong> ${v.destino}</p>
-          <p><strong>Fecha:</strong> ${v.fecha}</p>
-          <p><strong>Peso:</strong> ${v.peso} kg</p>
-          <p><strong>Estado:</strong> <span style="color:${colorEstado}">${v.estado}</span></p>
-          ${
-            v.estado !== "Completado ✅"
-              ? `<button class="btn btn-primary finalizar-btn"
-                  data-tipo="${v.tipo}"
-                  data-origen="${v.origen}"
-                  data-destino="${v.destino}"
-                  data-fecha="${v.fecha}"
-                  data-productor="${v.productor}">
-                  Finalizar Viaje
-                </button>`
-              : `<button class="btn btn-outline" disabled>Completado</button>`
-          }
-        `;
-        contenedor.appendChild(card);
-      });
-
-      // === Finalizar viaje ===
-      contenedor.addEventListener("click", e => {
-        if (!e.target.classList.contains("finalizar-btn")) return;
-
-        const tipo = e.target.dataset.tipo;
-        const origen = e.target.dataset.origen;
-        const destino = e.target.dataset.destino;
-        const fecha = e.target.dataset.fecha;
-        const productor = e.target.dataset.productor;
-
-        const solicitudesGlobal = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
-        const index = solicitudesGlobal.findIndex(s =>
-          s.tipo === tipo &&
-          s.origen === origen &&
-          s.destino === destino &&
-          s.fecha === fecha &&
-          s.productor === productor
+        const filtrados = viajes.filter(v =>
+          tab === "enCurso" ? v.estado === "En curso" :
+            tab === "completado" ? v.estado === "Completado ✅" :
+              v.estado === "Cancelado ❌"
         );
 
-        if (index !== -1) {
-          solicitudesGlobal[index].estado = "Completado ✅";
-          localStorage.setItem("solicitudesAgroLink", JSON.stringify(solicitudesGlobal));
-          showToast("✅ Viaje completado con éxito.", "success");
-          setTimeout(() => location.reload(), 800);
+        if (filtrados.length === 0) {
+          lista.innerHTML = "<p>No hay viajes en esta categoría.</p>";
+          return;
         }
+
+        filtrados.forEach(v => {
+          const origen = coords[v.origen] || [-9, -75];
+          const destino = coords[v.destino] || [-9.1, -75.1];
+          const distancia = (map.distance(origen, destino) / 1000).toFixed(1);
+          const duracion = (distancia / 70).toFixed(1);
+
+          const estadoClass = v.estado.includes("Completado") ? "completado" :
+            v.estado.includes("Cancelado") ? "cancelado" : "en-curso";
+
+          const progress = v.estado.includes("Completado") ? 100 :
+            v.estado.includes("En curso") ? 60 : 0;
+
+          const card = document.createElement("div");
+          card.classList.add("card");
+
+          card.innerHTML = `
+            <div class="viaje-header">
+              <h3>🚛 ${v.origen} → ${v.destino}</h3>
+              <span class="estado ${estadoClass}">${v.estado}</span>
+            </div>
+            <p><strong>Producto:</strong> ${v.tipo}</p>
+            <p><strong>Productor:</strong> ${v.productor || "Desconocido"}</p>
+            <p><strong>Distancia:</strong> ${distancia} km | <strong>Duración:</strong> ${duracion} h</p>
+            <div class="progress-bar"><div class="progress" style="width:${progress}%;"></div></div>
+            <div class="btns">
+              <button class="btn btn-mapa" data-origen="${v.origen}" data-destino="${v.destino}">Ver ruta</button>
+              <button class="btn btn-info" data-detalles='${JSON.stringify(v)}'>Detalles</button>
+            </div>
+          `;
+
+          lista.appendChild(card);
+        });
+      }
+
+      render();
+
+      // === Tabs ===
+      document.querySelectorAll(".tab").forEach(tab => {
+        tab.addEventListener("click", () => {
+          document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+          tab.classList.add("active");
+          render(tab.dataset.tab);
+        });
       });
 
-      // === Cerrar sesión ===
-      const logout = document.getElementById("logout");
-      logout.addEventListener("click", e => {
+      // === Ver ruta ===
+      lista.addEventListener("click", e => {
+        if (!e.target.classList.contains("btn-mapa")) return;
+        const origen = coords[e.target.dataset.origen];
+        const destino = coords[e.target.dataset.destino];
+        if (!origen || !destino) return;
+        L.marker(origen).addTo(map).bindPopup("Origen: " + e.target.dataset.origen);
+        L.marker(destino).addTo(map).bindPopup("Destino: " + e.target.dataset.destino);
+        L.polyline([origen, destino], { color: "#2b7a0b", weight: 4 }).addTo(map);
+        map.fitBounds([origen, destino]);
+      });
+
+      // === Modal detalles ===
+      const modal = document.getElementById("modalDetalles");
+      const detalleContenido = document.getElementById("detalleContenido");
+
+      lista.addEventListener("click", e => {
+        if (!e.target.classList.contains("btn-info")) return;
+        const data = JSON.parse(e.target.dataset.detalles);
+
+        detalleContenido.innerHTML = `
+          <p><strong>Productor:</strong> ${data.productor}</p>
+          <p><strong>Producto:</strong> ${data.tipo}</p>
+          <p><strong>Origen:</strong> ${data.origen}</p>
+          <p><strong>Destino:</strong> ${data.destino}</p>
+          <p><strong>Fecha:</strong> ${data.fecha}</p>
+          <p><strong>Peso:</strong> ${data.peso} kg</p>
+          <p><strong>Pago:</strong> S/ ${data.pago}</p>
+          <button id="btnComprobante" class="btn btn-primary">Descargar comprobante</button>
+        `;
+        modal.style.display = "flex";
+
+        document.getElementById("btnComprobante").addEventListener("click", () => {
+          showToast("📄 Comprobante descargado correctamente.", "success");
+        });
+      });
+
+      document.querySelector(".close").addEventListener("click", () => modal.style.display = "none");
+      modal.addEventListener("click", e => { if (e.target === modal) modal.style.display = "none"; });
+
+      // === Logout ===
+      document.getElementById("logout").addEventListener("click", e => {
         e.preventDefault();
         showToast("👋 Sesión cerrada correctamente", "info");
         localStorage.removeItem("agrolinkRol");
         localStorage.removeItem("agrolinkUsuario");
-        setTimeout(() => (window.location.href = "../index.html"), 1000);
+        setTimeout(() => location.href = "../index.html", 1000);
       });
     });
   </script>
 </body>
-
 </html>

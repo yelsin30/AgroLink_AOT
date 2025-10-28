@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -26,25 +27,51 @@
       <p>Conecta con transportistas y productores rurales fácilmente.</p>
 
       <form id="registroForm" class="auth-form">
-        <label for="rol">Selecciona tu rol</label>
-        <select id="rol" required>
-          <option value="">Seleccione su rol</option>
+        <label for="nombre">Nombre completo</label>
+        <input type="text" id="nombre" name="nombre" required>
+
+        <label for="email">Correo electrónico</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" name="password" required>
+
+        <label for="rol">Rol</label>
+        <select id="rol" name="rol" required>
+          <option value="">Seleccione un rol</option>
           <option value="productor">Productor</option>
           <option value="transportista">Transportista</option>
         </select>
 
-        <label for="nombre">Nombre completo</label>
-        <input type="text" id="nombre" placeholder="Ej: Juan Pérez" required />
+        <!-- 🔽 Sección solo para transportistas -->
+        <div id="camposTransportista" class="hidden">
+          <label for="fotoPerfil">Foto de perfil</label>
+          <input type="file" id="fotoPerfil" accept="image/*">
 
-        <label for="email">Correo electrónico</label>
-        <input type="email" id="email" placeholder="usuario@correo.com" required />
+          <label for="vehiculoImg">Imagen del vehículo</label>
+          <input type="file" id="vehiculoImg" accept="image/*">
 
-        <label for="password">Contraseña</label>
-        <input type="password" id="password" placeholder="********" required />
+          <label for="placa">Placa del vehículo</label>
+          <input type="text" id="placa" name="placa" placeholder="ABC-123">
+
+          <label for="capacidad">Capacidad de carga (kg)</label>
+          <input type="number" id="capacidad" name="capacidad" min="0" step="100">
+
+          <label for="licencia">Número de licencia de conducir</label>
+          <input type="text" id="licencia" name="licencia">
+
+          <label for="cuentaBancaria">Cuenta bancaria (para pagos)</label>
+          <input type="text" id="cuentaBancaria" name="cuentaBancaria">
+
+          <label for="soat">SOAT del vehículo</label>
+          <input type="file" id="soat" accept=".pdf,.jpg,.png">
+
+          <label for="revision">Certificado de revisión técnica</label>
+          <input type="file" id="revision" accept=".pdf,.jpg,.png">
+        </div>
 
         <button type="submit" class="btn btn-primary">Registrarse</button>
-
-        <p class="switch-text">¿Ya tienes una cuenta? 
+        <p class="switch-text">¿Ya tienes una cuenta?
           <a href="login.html">Inicia sesión aquí</a>
         </p>
       </form>
@@ -65,11 +92,24 @@
     document.addEventListener("DOMContentLoaded", () => {
       const form = document.getElementById("registroForm");
       const mensajeExito = document.getElementById("mensajeExito");
+      const rolSelect = document.getElementById("rol");
+      const camposTransportista = document.getElementById("camposTransportista");
 
+      // Mostrar/ocultar campos del transportista
+      rolSelect.addEventListener("change", () => {
+        const esTransportista = rolSelect.value === "transportista";
+        camposTransportista.classList.toggle("hidden", !esTransportista);
+
+        if (!esTransportista) {
+          camposTransportista.querySelectorAll("input").forEach(i => (i.value = ""));
+        }
+      });
+
+      // Validación del formulario
       form.addEventListener("submit", e => {
         e.preventDefault();
 
-        const rol = document.getElementById("rol").value.trim();
+        const rol = rolSelect.value.trim();
         const nombre = document.getElementById("nombre").value.trim();
         const email = document.getElementById("email").value.trim().toLowerCase();
         const password = document.getElementById("password").value.trim();
@@ -77,6 +117,16 @@
         if (!rol || !nombre || !email || !password) {
           alert("⚠️ Por favor, completa todos los campos antes de continuar.");
           return;
+        }
+
+        // Crea el objeto de usuario
+        const nuevoUsuario = { rol, nombre, email, password };
+
+        if (rol === "transportista") {
+          nuevoUsuario.placa = document.getElementById("placa").value.trim();
+          nuevoUsuario.capacidad = document.getElementById("capacidad").value.trim();
+          nuevoUsuario.licencia = document.getElementById("licencia").value.trim();
+          nuevoUsuario.cuentaBancaria = document.getElementById("cuentaBancaria").value.trim();
         }
 
         const usuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios")) || [];
@@ -87,25 +137,21 @@
           return;
         }
 
-        const nuevoUsuario = { rol, nombre, email, password };
         usuarios.push(nuevoUsuario);
-
         localStorage.setItem("agrolinkUsuarios", JSON.stringify(usuarios));
         localStorage.setItem("agrolinkUsuario", JSON.stringify(nuevoUsuario));
         localStorage.setItem("agrolinkRol", rol);
 
         mensajeExito.style.display = "block";
-
         setTimeout(() => {
           mensajeExito.style.display = "none";
-          if (rol === "productor") {
-            window.location.href = "productor/dashboard.html";
-          } else {
-            window.location.href = "transportista/dashboard.html";
-          }
+          window.location.href = rol === "productor"
+            ? "productor/dashboard.html"
+            : "transportista/dashboard.html";
         }, 1800);
       });
     });
   </script>
 </body>
+
 </html>
