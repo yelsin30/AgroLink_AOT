@@ -1,22 +1,99 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mis Envíos | AgroLink</title>
 
-  <!-- Estilos -->
-  <link rel="stylesheet" href="../css/style.css">
-  <link rel="icon" href="../img/logo.png" type="image/png">
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link rel="icon" href="../img/logo.png" type="image/png"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
-  <!-- Íconos Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    /* ======= Layout base (coherente con AgroLink) ======= */
+    .page-actions{
+      display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;margin:1rem 0 1.25rem;
+    }
+    .search{
+      flex:1;min-width:240px;background:#fff;border:1px solid #e6f3e6;
+      border-radius:10px;display:flex;align-items:center;gap:.5rem;padding:.55rem .8rem;
+      box-shadow:0 1px 4px rgba(0,0,0,.04);
+    }
+    .search input{border:none;outline:0;width:100%;}
+    .chip{
+      background:#f3fff3;border:1px solid #d7efd7;color:#2b7a0b;font-weight:600;
+      padding:.45rem .7rem;border-radius:999px;cursor:pointer;transition:.15s;
+    }
+    .chip.active,.chip:hover{background:#2b7a0b;color:#fff;border-color:#2b7a0b}
+    .btn{
+      background:#2b7a0b;color:#fff;border:none;border-radius:10px;
+      padding:.55rem .9rem;font-weight:600;cursor:pointer;
+    }
+    .btn.outline{background:#fff;color:#2b7a0b;border:1px solid #2b7a0b}
+    .btn.gray{background:#f3f3f3;color:#333}
+    .btn.warn{background:#c62828}
+    .btn.success{background:#2e7d32}
+    .btn:hover{filter:brightness(.97)}
+    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin:.5rem 0 1.25rem}
+    .kpi{background:#f9fff9;border:1px solid #e6f3e6;border-radius:12px;padding:.9rem 1rem}
+    .kpi h4{margin:0;color:#2b7a0b}
+    .kpi p{margin:.25rem 0 0;font-size:1.15rem;font-weight:700}
+
+    /* ======= Cards ======= */
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+    .card{
+      background:#fff;border-radius:12px;border:1px solid #eef6ee;
+      box-shadow:0 2px 10px rgba(0,0,0,.05);padding:1rem 1.1rem;
+    }
+    .muted{color:#555}
+    .pill{
+      padding:.25rem .55rem;border-radius:8px;color:#fff;font-weight:700;font-size:.8rem;
+    }
+    .pill.en-curso{background:#2b7a0b}
+    .pill.completado{background:#0077cc}
+    .pill.cancelado{background:#666}
+    .card-rows{display:grid;grid-template-columns:1.1fr 1fr 1fr 1fr .8fr;gap:.5rem;align-items:center}
+    .card-actions{display:flex;gap:.5rem;justify-content:flex-end}
+
+    /* ======= Tabla ======= */
+    table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden}
+    th,td{padding:.75rem;border-bottom:1px solid #eef6ee;text-align:left}
+    thead th{background:#f6fff6;color:#2b7a0b}
+    tbody tr:hover{background:#fafefa}
+
+    /* ======= Slide-over (panel lateral) ======= */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;z-index:1000}
+    .slideover{
+      position:fixed;top:0;right:0;height:100%;width:min(420px,100%);background:#fff;
+      transform:translateX(100%);transition:.25s ease;z-index:1001;display:flex;flex-direction:column;
+      box-shadow:-8px 0 24px rgba(0,0,0,.1)
+    }
+    .slideover.open{transform:translateX(0)}
+    .overlay.show{display:block}
+    .slideover header{
+      padding:1rem 1rem .5rem;border-bottom:1px solid #eef6ee;display:flex;align-items:center;gap:.5rem;
+    }
+    .slideover main{padding:1rem 1rem 1.2rem;overflow:auto}
+    .kv{display:grid;grid-template-columns:.55fr 1fr;gap:.4rem .8rem;margin:.6rem 0}
+    .stars{color:gold}
+    .progress-wrap{margin:.5rem 0}
+    .progress-bar{height:8px;background:#eee;border-radius:6px;overflow:hidden}
+    .progress{height:8px;background:#2b7a0b;width:0}
+
+    /* ======= Mapa en panel aparte ======= */
+    .map-panel{position:fixed;inset:0;display:none;z-index:1100}
+    .map-panel .sheet{position:absolute;inset:auto 0 0 0;height:70%;background:#fff;border-top-left-radius:16px;border-top-right-radius:16px;box-shadow:0 -10px 24px rgba(0,0,0,.15);display:flex;flex-direction:column}
+    .map-toolbar{display:flex;justify-content:space-between;align-items:center;padding:.75rem 1rem;border-bottom:1px solid #eef6ee}
+    #mapGeneral{flex:1}
+
+    @media (max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)} .card-rows{grid-template-columns:1fr 1fr}}
+    @media (max-width:720px){.grid{grid-template-columns:1fr}}
+  </style>
 </head>
-
 <body>
   <div class="container">
-    <!-- ====== SIDEBAR ====== -->
+    <!-- ======= SIDEBAR ======= -->
     <aside class="sidebar">
       <div class="logo-section custom-logo">
         <i class="fa-solid fa-tractor"></i>
@@ -28,8 +105,8 @@
 
       <nav class="nav-links">
         <a href="dashboard.html"><i class="fa-solid fa-home"></i> Panel de control</a>
-        <a href="solicitudes.html"><i class="fa-solid fa-file-circle-plus"></i> Nueva solicitud</a>
-        <a href="envios.html" class="active"><i class="fa-solid fa-boxes-packing"></i> Mis envíos</a>
+        <a href="solicitudes.html"><i class="fa-solid fa-plus"></i> Nueva solicitud</a>
+        <a href="envios.html" class="active"><i class="fa-solid fa-truck"></i> Mis envíos</a>
         <a href="perfil.html"><i class="fa-solid fa-user"></i> Perfil</a>
       </nav>
 
@@ -39,88 +116,447 @@
       </div>
     </aside>
 
-    <!-- ====== CONTENIDO PRINCIPAL ====== -->
+    <!-- ======= MAIN ======= -->
     <main class="main-content">
       <header class="main-header">
         <h1>Mis Envíos</h1>
         <p>Aquí puedes ver el estado de tus solicitudes de transporte agrícola.</p>
       </header>
 
-      <section class="summary">
-        <h2>Solicitudes realizadas</h2>
-        <div id="listaEnvios" class="solicitudes-list">
-          <p>Cargando tus envíos...</p>
+      <!-- KPIs -->
+      <section class="kpis">
+        <div class="kpi"><h4>En curso</h4><p id="kpiEnCurso">0</p></div>
+        <div class="kpi"><h4>Completados</h4><p id="kpiCompletados">0</p></div>
+        <div class="kpi"><h4>Cancelados</h4><p id="kpiCancelados">0</p></div>
+        <div class="kpi"><h4>Pago total (S/)</h4><p id="kpiPago">0.00</p></div>
+      </section>
+
+      <!-- Actions -->
+      <div class="page-actions">
+        <div class="search">
+          <i class="fa-solid fa-magnifying-glass" style="color:#2b7a0b"></i>
+          <input id="q" placeholder="Buscar por ID o producto...">
         </div>
+
+        <button class="chip active" data-estado="Todos">Todos</button>
+        <button class="chip" data-estado="En curso">En curso</button>
+        <button class="chip" data-estado="Completado ✅">Completados</button>
+        <button class="chip" data-estado="Cancelado ❌">Cancelados</button>
+
+        <button id="toggleVista" class="btn gray"><i class="fa-solid fa-table-cells"></i> Vista tabla</button>
+        <button id="btnMapaGeneral" class="btn outline"><i class="fa-solid fa-map"></i> Mapa general</button>
+        <button id="btnExport" class="btn"><i class="fa-solid fa-file-arrow-down"></i> Exportar CSV</button>
+      </div>
+
+      <!-- CONTENEDORES -->
+      <section id="grid" class="grid"></section>
+
+      <section id="tablaWrap" style="display:none">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>Producto</th><th>Origen</th><th>Destino</th>
+              <th>Transportista</th><th>Fecha</th><th>Estado</th><th>Pago</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
       </section>
     </main>
   </div>
 
-  <!-- ====== FOOTER ====== -->
+  <!-- ======= SLIDE-OVER DETALLES ======= -->
+  <div id="overlay" class="overlay"></div>
+  <aside id="slideover" class="slideover" aria-hidden="true">
+    <header>
+      <button id="closeSlide" class="btn gray"><i class="fa-solid fa-xmark"></i></button>
+      <h3 style="margin:0;color:#2b7a0b">Detalle de solicitud</h3>
+    </header>
+    <main>
+      <div id="detailHead" class="muted" style="margin-bottom:.5rem"></div>
+
+      <div class="kv">
+        <div class="muted">Producto</div><div id="dProducto"></div>
+        <div class="muted">Transportista</div><div id="dTransp"></div>
+        <div class="muted">Teléfono</div><div id="dTelefono"></div>
+        <div class="muted">Origen</div><div id="dOrigen"></div>
+        <div class="muted">Destino</div><div id="dDestino"></div>
+        <div class="muted">Fecha</div><div id="dFecha"></div>
+        <div class="muted">Peso</div><div id="dPeso"></div>
+        <div class="muted">Pago</div><div id="dPago"></div>
+        <div class="muted">Estado</div><div id="dEstado"></div>
+      </div>
+
+      <div class="progress-wrap">
+        <small class="muted">Progreso</small>
+        <div class="progress-bar"><div id="dProgress" class="progress"></div></div>
+      </div>
+
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin:.6rem 0 1rem">
+        <a id="btnContactar" class="btn outline" target="_blank"><i class="fa-solid fa-phone"></i> Contactar</a>
+        <button id="btnRuta" class="btn outline"><i class="fa-solid fa-route"></i> Ver ruta (panel)</button>
+        <button id="btnDuplicar" class="btn gray"><i class="fa-solid fa-copy"></i> Duplicar</button>
+        <button id="btnCancelar" class="btn warn"><i class="fa-solid fa-ban"></i> Cancelar</button>
+      </div>
+
+      <div id="mapPanel" style="height:260px;border-radius:12px;border:1px solid #eef6ee;display:none"></div>
+
+      <div id="calificarWrap" style="margin-top:1rem;display:none">
+        <small class="muted">Calificación al transportista</small><br/>
+        <span id="rateStars" class="stars" style="font-size:1.3rem;cursor:pointer">☆☆☆☆☆</span>
+      </div>
+    </main>
+  </aside>
+
+  <!-- ======= PANEL APARTE MAPA GENERAL ======= -->
+  <div id="mapSheet" class="map-panel">
+    <div class="sheet">
+      <div class="map-toolbar">
+        <strong style="color:#2b7a0b"><i class="fa-solid fa-map"></i> Mapa general de envíos</strong>
+        <button id="closeMapSheet" class="btn gray">Cerrar</button>
+      </div>
+      <div id="mapGeneral"></div>
+    </div>
+  </div>
+
   <footer class="footer">
     <p>© 2025 AgroLink. Todos los derechos reservados.</p>
   </footer>
 
-  <!-- ====== SCRIPTS ====== -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="../js/toast.js"></script>
-
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const contenedor = document.getElementById("listaEnvios");
+      // ==== Datos base ====
       const rol = localStorage.getItem("agrolinkRol");
-      const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")) || {};
-      const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
-
-      // ===== Validar acceso =====
-      if (rol !== "productor") {
+      const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")||"{}");
+      if (rol!=="productor") {
         alert("⚠️ Acceso denegado. Inicia sesión como Productor.");
-        window.location.href = "../login.html";
-        return;
+        location.href="../login.html"; return;
+      }
+      const all = JSON.parse(localStorage.getItem("solicitudesAgroLink")||"[]");
+      // solo envíos del productor actual
+      let envios = all.filter(s => (s.productor||"").toLowerCase() === (usuario.nombre||"").toLowerCase());
+
+      // ==== Estado UI ====
+      let vista = "grid";              // grid | table
+      let filtroEstado = "Todos";      // chip seleccionada
+      let query = "";                  // texto búsqueda
+      let seleccion = null;            // envío seleccionado en slide-over
+
+      // ==== elementos ====
+      const grid = document.getElementById("grid");
+      const tbody = document.getElementById("tbody");
+      const tablaWrap = document.getElementById("tablaWrap");
+      const toggleVista = document.getElementById("toggleVista");
+      const chips = document.querySelectorAll(".chip");
+      const q = document.getElementById("q");
+
+      // KPIs
+      function setKPIs(list){
+        const enCurso = list.filter(e=>e.estado==="En curso").length;
+        const comp = list.filter(e=>e.estado==="Completado ✅").length;
+        const canc = list.filter(e=>e.estado==="Cancelado ❌").length;
+        const pago = list.reduce((a,e)=>a+(parseFloat(e.pago)||0),0);
+        document.getElementById("kpiEnCurso").textContent = enCurso;
+        document.getElementById("kpiCompletados").textContent = comp;
+        document.getElementById("kpiCancelados").textContent = canc;
+        document.getElementById("kpiPago").textContent = pago.toFixed(2);
       }
 
-      // ===== Filtrar solicitudes del productor =====
-      const solicitudesUsuario = solicitudes.filter(s => s.productor === usuario.nombre);
-
-      if (solicitudesUsuario.length === 0) {
-        contenedor.innerHTML = "<p>No tienes solicitudes registradas aún.</p>";
-        return;
+      // Filtros aplicados
+      function filtrar(){
+        let out = envios.slice();
+        if (filtroEstado!=="Todos") out = out.filter(e=>e.estado===filtroEstado);
+        if (query.trim()){
+          const ql = query.trim().toLowerCase();
+          out = out.filter(e =>
+            (String(e.id||"").toLowerCase().includes(ql)) ||
+            (String(e.tipo||"").toLowerCase().includes(ql))
+          );
+        }
+        setKPIs(out);
+        return out;
       }
 
-      // ===== Mostrar solicitudes =====
-      contenedor.innerHTML = "";
-      solicitudesUsuario.forEach(sol => {
-        const colorEstado =
-          sol.estado === "Pendiente" ? "#b58900" :
-          sol.estado === "En curso" ? "#2b7a0b" :
-          "#006400";
+      // Render tarjetas
+      function renderGrid(list){
+        grid.innerHTML = "";
+        if (list.length===0){ grid.innerHTML = "<p>No hay envíos.</p>"; return;}
+        list.forEach(e=>{
+          const pillClass = e.estado.includes("En curso")?"en-curso":e.estado.includes("Completado")?"completado":"cancelado";
+          const card = document.createElement("div");
+          card.className = "card";
+          card.innerHTML = `
+            <div class="card-rows">
+              <div>
+                <h3 style="margin:.1rem 0;color:#2b7a0b">${e.tipo||"-"}</h3>
+                <div class="muted">ID: ${e.id||"-"}</div>
+              </div>
+              <div class="muted"><strong>Origen:</strong> ${e.origen||"-"}</div>
+              <div class="muted"><strong>Destino:</strong> ${e.destino||"-"}</div>
+              <div class="muted"><strong>Fecha:</strong> ${e.fecha||"-"}</div>
+              <div style="display:flex;justify-content:flex-end"><span class="pill ${pillClass}">${e.estado||"-"}</span></div>
+            </div>
+            <div class="card-actions" style="margin-top:.7rem">
+              <button class="btn outline btn-det" data-id="${e.id||""}"><i class="fa-solid fa-eye"></i> Ver detalles</button>
+              <button class="btn gray btn-dup" data-id="${e.id||""}"><i class="fa-solid fa-copy"></i> Duplicar</button>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+      }
 
-        const card = document.createElement("div");
-        card.classList.add("solicitud-card");
-        card.innerHTML = `
-          <h3>${sol.tipo}</h3>
-          <p><strong>Origen:</strong> ${sol.origen}</p>
-          <p><strong>Destino:</strong> ${sol.destino}</p>
-          <p><strong>Fecha:</strong> ${sol.fecha}</p>
-          <p><strong>Peso:</strong> ${sol.peso} kg</p>
-          <p><strong>Estado:</strong> <span style="color:${colorEstado}; font-weight:600;">${sol.estado}</span></p>
-        `;
-        contenedor.appendChild(card);
+      // Render tabla
+      function renderTable(list){
+        tbody.innerHTML = "";
+        if (list.length===0){ tbody.innerHTML = `<tr><td colspan="9">No hay envíos.</td></tr>`; return;}
+        list.forEach(e=>{
+          const pillClass = e.estado.includes("En curso")?"en-curso":e.estado.includes("Completado")?"completado":"cancelado";
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${e.id||"-"}</td>
+            <td>${e.tipo||"-"}</td>
+            <td>${e.origen||"-"}</td>
+            <td>${e.destino||"-"}</td>
+            <td>${e.transportista||"—"}</td>
+            <td>${e.fecha||"—"}</td>
+            <td><span class="pill ${pillClass}">${e.estado||"-"}</span></td>
+            <td>S/ ${e.pago||0}</td>
+            <td style="text-align:right">
+              <button class="btn outline btn-det" data-id="${e.id||""}">Ver detalles</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      function render(){
+        const list = filtrar();
+        if (vista==="grid"){
+          grid.style.display = "";
+          tablaWrap.style.display = "none";
+          renderGrid(list);
+        }else{
+          grid.style.display = "none";
+          tablaWrap.style.display = "";
+          renderTable(list);
+        }
+      }
+
+      // Eventos filtros
+      chips.forEach(ch=>{
+        ch.addEventListener("click", ()=>{
+          chips.forEach(x=>x.classList.remove("active"));
+          ch.classList.add("active");
+          filtroEstado = ch.dataset.estado;
+          render();
+        })
+      });
+      q.addEventListener("input", (e)=>{ query = e.target.value; render(); });
+
+      // Toggle vista
+      toggleVista.addEventListener("click", ()=>{
+        vista = (vista==="grid")?"table":"grid";
+        toggleVista.innerHTML = vista==="grid" ? `<i class="fa-solid fa-table-cells"></i> Vista tabla`
+                                               : `<i class="fa-solid fa-grip"></i> Vista tarjetas`;
+        render();
       });
 
-      // ===== Cerrar sesión =====
-      const logout = document.getElementById("logout");
-      logout.addEventListener("click", e => {
+      // ====== Slide-over ======
+      const overlay = document.getElementById("overlay");
+      const slide = document.getElementById("slideover");
+      const closeSlide = document.getElementById("closeSlide");
+
+      function openSlide(){
+        overlay.classList.add("show");
+        slide.classList.add("open");
+      }
+      function closeSlideFn(){
+        slide.classList.remove("open");
+        overlay.classList.remove("show");
+        // ocultar mapa interno si estaba visible
+        if (mapPanel) { mapPanel.style.display="none"; if (_mapPanel) { _mapPanel.remove(); _mapPanel=null; } }
+      }
+      closeSlide.addEventListener("click", closeSlideFn);
+      overlay.addEventListener("click", closeSlideFn);
+
+      // Datos a UI del slide
+      const dProducto = document.getElementById("dProducto");
+      const dTransp = document.getElementById("dTransp");
+      const dTelefono = document.getElementById("dTelefono");
+      const dOrigen = document.getElementById("dOrigen");
+      const dDestino = document.getElementById("dDestino");
+      const dFecha = document.getElementById("dFecha");
+      const dPeso = document.getElementById("dPeso");
+      const dPago = document.getElementById("dPago");
+      const dEstado = document.getElementById("dEstado");
+      const dProgress = document.getElementById("dProgress");
+      const detailHead = document.getElementById("detailHead");
+      const btnContactar = document.getElementById("btnContactar");
+      const btnRuta = document.getElementById("btnRuta");
+      const btnDuplicar = document.getElementById("btnDuplicar");
+      const btnCancelar = document.getElementById("btnCancelar");
+      const calificarWrap = document.getElementById("calificarWrap");
+      const rateStars = document.getElementById("rateStars");
+      const mapPanel = document.getElementById("mapPanel");
+      let _mapPanel = null;
+
+      const coords = {
+        Lima:[-12.0464,-77.0428], Trujillo:[-8.1117,-79.0288], Arequipa:[-16.409,-71.5375],
+        Piura:[-5.1945,-80.6328], Chiclayo:[-6.7714,-79.8409], Cusco:[-13.5319,-71.9675],
+        Puno:[-15.8402,-70.0219], Huancayo:[-12.0651,-75.2049]
+      };
+
+      function progressPct(estado){
+        if (/Completado/.test(estado)) return 100;
+        if (/En curso/.test(estado)) return 60;
+        if (/Cancelado/.test(estado)) return 0;
+        return 20;
+      }
+
+      // Delegación para abrir detalles / duplicar
+      document.addEventListener("click", (e)=>{
+        const det = e.target.closest(".btn-det");
+        const dup = e.target.closest(".btn-dup");
+        if (det){
+          const id = det.dataset.id;
+          seleccion = envios.find(x=>String(x.id||"")===String(id));
+          if (!seleccion) return;
+
+          detailHead.textContent = `ID: ${seleccion.id||"—"}`;
+          dProducto.textContent = seleccion.tipo||"—";
+          dTransp.textContent = seleccion.transportista||"—";
+          dTelefono.textContent = seleccion.telefono||"—";
+          dOrigen.textContent = seleccion.origen||"—";
+          dDestino.textContent = seleccion.destino||"—";
+          dFecha.textContent = seleccion.fecha||"—";
+          dPeso.textContent = (seleccion.peso||0)+" kg";
+          dPago.textContent = "S/ " + (seleccion.pago||0);
+          dEstado.textContent = seleccion.estado||"—";
+          dProgress.style.width = progressPct(seleccion.estado)+"%";
+
+          btnContactar.href = seleccion.telefono ? `https://wa.me/51${(seleccion.telefono+"").replace(/\D/g,"")}` : "#";
+          calificarWrap.style.display = /Completado/.test(seleccion.estado) ? "block" : "none";
+          // pintar estrellas si ya existe
+          const current = Math.round(parseFloat(seleccion.calificacion)||0);
+          paintStars(current);
+
+          openSlide();
+        }
+        if (dup){
+          const id = dup.dataset.id;
+          const env = envios.find(x=>String(x.id||"")===String(id));
+          if (!env) return;
+          const copy = {...env, id: Date.now(), estado:"Pendiente"};
+          all.push(copy);
+          localStorage.setItem("solicitudesAgroLink", JSON.stringify(all));
+          envios = all.filter(s => (s.productor||"").toLowerCase()===(usuario.nombre||"").toLowerCase());
+          showToast("📄 Solicitud duplicada.", "success");
+          render();
+        }
+      });
+
+      // Ver ruta dentro del slide
+      btnRuta.addEventListener("click", ()=>{
+        if (!seleccion) return;
+        const A = coords[seleccion.origen], B = coords[seleccion.destino];
+        if (!A || !B){ showToast("No hay coordenadas para esa ruta.", "info"); return; }
+        mapPanel.style.display="block";
+        if (_mapPanel){ _mapPanel.remove(); _mapPanel=null; }
+        _mapPanel = L.map('mapPanel').setView(A, 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:"&copy; OpenStreetMap"}).addTo(_mapPanel);
+        L.marker(A).addTo(_mapPanel).bindPopup(seleccion.origen);
+        L.marker(B).addTo(_mapPanel).bindPopup(seleccion.destino);
+        L.polyline([A,B], {color:"#2b7a0b", weight:4}).addTo(_mapPanel);
+        _mapPanel.fitBounds([A,B]);
+      });
+
+      // Cancelar
+      btnCancelar.addEventListener("click", ()=>{
+        if (!seleccion) return;
+        if (!confirm("¿Cancelar esta solicitud?")) return;
+        const idx = all.findIndex(x=>String(x.id||"")===String(seleccion.id||""));
+        if (idx>-1){ all[idx].estado = "Cancelado ❌"; }
+        localStorage.setItem("solicitudesAgroLink", JSON.stringify(all));
+        envios = all.filter(s => (s.productor||"").toLowerCase()===(usuario.nombre||"").toLowerCase());
+        showToast("❌ Envío cancelado.", "info");
+        render();
+        closeSlideFn();
+      });
+
+      // Calificación por estrellas
+      function paintStars(n){
+        rateStars.textContent = "★★★★★".slice(0,n) + "☆☆☆☆☆".slice(0,5-n);
+      }
+      rateStars.addEventListener("mousemove",(e)=>{
+        if (!seleccion) return;
+        const rect = rateStars.getBoundingClientRect();
+        const pct = (e.clientX-rect.left)/rect.width;
+        const n = Math.min(5,Math.max(1, Math.ceil(pct*5)));
+        paintStars(n);
+      });
+      rateStars.addEventListener("click",(e)=>{
+        if (!seleccion) return;
+        const rect = rateStars.getBoundingClientRect();
+        const pct = (e.clientX-rect.left)/rect.width;
+        const n = Math.min(5,Math.max(1, Math.ceil(pct*5)));
+        const idx = all.findIndex(x=>String(x.id||"")===String(seleccion.id||""));
+        if (idx>-1){ all[idx].calificacion = n; }
+        localStorage.setItem("solicitudesAgroLink", JSON.stringify(all));
+        showToast("⭐ Calificación guardada.", "success");
+      });
+
+      // ====== Mapa general (panel aparte) ======
+      const mapSheet = document.getElementById("mapSheet");
+      const closeMapSheet = document.getElementById("closeMapSheet");
+      let mapGeneral = null;
+
+      document.getElementById("btnMapaGeneral").addEventListener("click", ()=>{
+        mapSheet.style.display="block";
+        setTimeout(()=>{ // init una vez visible
+          if (mapGeneral) { mapGeneral.invalidateSize(); return; }
+          mapGeneral = L.map('mapGeneral').setView([-9.189967,-75.015152],6);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:"&copy; OpenStreetMap"}).addTo(mapGeneral);
+          const list = filtrar();
+          list.forEach(e=>{
+            const A = coords[e.origen], B = coords[e.destino];
+            if (!A||!B) return;
+            L.marker(A).addTo(mapGeneral).bindPopup(`<b>${e.tipo}</b><br>Origen: ${e.origen}`);
+            L.marker(B).addTo(mapGeneral).bindPopup(`Destino: ${e.destino}`);
+            L.polyline([A,B],{color:"#2b7a0b",weight:3,opacity:.8}).addTo(mapGeneral);
+          });
+        },50);
+      });
+      closeMapSheet.addEventListener("click", ()=>{ mapSheet.style.display="none"; });
+
+      // ====== Exportar CSV ======
+      document.getElementById("btnExport").addEventListener("click", ()=>{
+        const list = filtrar();
+        if (!list.length){ showToast("No hay datos para exportar.","info"); return; }
+        const cols = ["id","tipo","origen","destino","fecha","peso","pago","estado","transportista","telefono","calificacion"];
+        const header = cols.join(",");
+        const rows = list.map(r=>cols.map(k=>JSON.stringify(r[k]??"")).join(","));
+        const csv = [header,...rows].join("\n");
+        const blob = new Blob([csv],{type:"text/csv;charset=utf-8;"});
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "mis_envios.csv";
+        a.click();
+      });
+
+      // ====== Logout ======
+      document.getElementById("logout").addEventListener("click",(e)=>{
         e.preventDefault();
-        showToast("👋 Sesión cerrada correctamente", "info");
+        showToast("👋 Sesión cerrada correctamente","info");
         localStorage.removeItem("agrolinkRol");
         localStorage.removeItem("agrolinkUsuario");
-        setTimeout(() => (window.location.href = "../index.html"), 1000);
+        setTimeout(()=>location.href="../index.html",900);
       });
+
+      // Primera render
+      render();
     });
   </script>
 </body>
-<button class="menu-toggle" id="menuToggle">
-  <i class="fa-solid fa-bars"></i>
-</button>
-<div class="overlay" id="overlay"></div>
-
 </html>

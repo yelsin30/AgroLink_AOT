@@ -1,15 +1,93 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Panel del Productor | AgroLink</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Panel de control | AgroLink</title>
 
-  <!-- Estilos -->
-  <link rel="stylesheet" href="../css/style.css" />
-  <link rel="icon" href="../img/logo.png" type="image/png" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <!-- Estilos base del proyecto -->
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link rel="icon" href="../img/logo.png" type="image/png"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+  <style>
+    /* ===== Visual cohesivo con AgroLink (header corregido) ===== */
+    .dashboard-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;   /* sube el bloque de bienvenida */
+      margin-top:-0.4rem;       /* reduce espacio superior */
+    }
+    .hello{
+      display:flex;
+      align-items:flex-start;   /* alinea el texto más arriba */
+      gap:.6rem;
+    }
+    .hello .wave{
+      font-size:1.35rem;
+      margin-top:0.1rem;        /* sutil corrección visual */
+    }
+    .hello .name{font-weight:700}
+    .avatar{
+      width:42px;height:42px;border-radius:999px;display:grid;place-items:center;
+      background:#e6f3e6;color:#2b7a0b;font-weight:800;border:2px solid #cfe8cf;
+      margin-top:-0.2rem;       /* lo sube un poco para emparejar */
+    }
+
+    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin:1rem 0 1.25rem}
+    .kpi{
+      background:#f9fff9;border:1px solid #e6f3e6;border-radius:14px;padding:1rem;min-height:92px;
+      box-shadow:0 2px 10px rgba(0,0,0,.05); position:relative; overflow:hidden;
+    }
+    .kpi h4{margin:0;color:#2b7a0b;font-weight:800}
+    .kpi .val{font-size:1.45rem;font-weight:800;margin-top:.35rem}
+    .kpi i{position:absolute;right:.85rem;top:.8rem;color:#2b7a0b22;font-size:2.1rem}
+
+    .grid-2{display:grid;grid-template-columns:1.25fr .75fr;gap:1rem;align-items:start}
+    .card{background:#fff;border:1px solid #eef6ee;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+    .card header{
+      padding:.9rem 1rem;border-bottom:1px solid #eef6ee;
+      display:flex;justify-content:space-between;align-items:center
+    }
+    .card header h3{margin:0;color:#2b7a0b}
+    .card .body{padding:1rem}
+
+    /* Mini mapa */
+    #miniMap{height:320px;border-radius:12px}
+
+    /* Gráficos */
+    .charts{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    .chart-box{background:#fff;border:1px solid #eef6ee;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+    .chart-box header{padding:.8rem 1rem;border-bottom:1px solid #eef6ee}
+    .chart-box header h4{margin:0;color:#2b7a0b}
+    .chart-box .body{padding:.6rem .8rem 1rem}
+
+    /* Acciones rápidas */
+    .quick-actions{display:flex;flex-wrap:wrap;gap:.6rem}
+    .btn{
+      background:#2b7a0b;color:#fff;border:none;border-radius:10px;
+      padding:.6rem .9rem;font-weight:700;cursor:pointer;display:inline-flex;gap:.5rem;align-items:center
+    }
+    .btn.outline{background:#fff;color:#2b7a0b;border:1px solid #2b7a0b}
+    .btn.gray{background:#f3f3f3;color:#333}
+    .btn:hover{filter:brightness(.97)}
+
+    /* Timeline */
+    .timeline{display:grid;gap:.7rem}
+    .t-item{
+      display:grid;grid-template-columns:auto 1fr auto;gap:.65rem;align-items:center;
+      padding:.55rem .65rem;border:1px solid #eef6ee;border-radius:10px;background:#fff
+    }
+    .t-item i{color:#2b7a0b}
+    .t-item .when{color:#666;font-size:.9rem}
+
+    @media (max-width:1100px){
+      .kpis{grid-template-columns:repeat(2,1fr)}
+      .grid-2{grid-template-columns:1fr}
+      .charts{grid-template-columns:1fr}
+    }
+  </style>
 </head>
 
 <body>
@@ -37,118 +115,298 @@
       </div>
     </aside>
 
-    <!-- ====== CONTENIDO PRINCIPAL ====== -->
+    <!-- ====== MAIN ====== -->
     <main class="main-content">
-      <header class="main-header">
-        <h1>Panel de control</h1>
-        <p>Bienvenido, <span id="nombreUsuario">Productor 👨‍🌾</span></p>
+      <header class="main-header dashboard-header">
+        <div class="hello">
+          <span class="wave">👋</span>
+          <div>
+            <div>Bienvenido, <span id="helloName" class="name">Productor</span></div>
+            <small id="helloSub" style="color:#555">Tu operación al día.</small>
+          </div>
+        </div>
+        <div id="avatar" class="avatar">AG</div>
       </header>
 
-      <!-- ====== RESUMEN GENERAL ====== -->
-      <section class="summary">
-        <h2>Resumen general</h2>
-
-        <div class="summary-cards">
-          <div class="card">
-            <h3><i class="fa-solid fa-file"></i> Solicitudes registradas</h3>
-            <p>Has creado <span id="solRegistradas">0</span> solicitudes de transporte.</p>
-            <a href="envios.html" class="btn">Ver solicitudes →</a>
-          </div>
-
-          <div class="card">
-            <h3><i class="fa-solid fa-truck"></i> Envíos en curso</h3>
-            <p>Tienes <span id="enviosActivos">0</span> envíos actualmente en transporte.</p>
-            <a href="envios.html" class="btn">Ver envíos →</a>
-          </div>
-
-          <div class="card">
-            <h3><i class="fa-solid fa-check-circle"></i> Envíos completados</h3>
-            <p><span id="enviosCompletados">0</span> envíos se completaron exitosamente.</p>
-            <a href="envios.html" class="btn">Ver historial →</a>
-          </div>
+      <!-- KPIs -->
+      <section class="kpis">
+        <div class="kpi">
+          <i class="fa-solid fa-money-bill-trend-up"></i>
+          <h4>Ganancias estimadas</h4>
+          <div class="val">S/ <span id="kpiGanancias">0.00</span></div>
+        </div>
+        <div class="kpi">
+          <i class="fa-solid fa-truck"></i>
+          <h4>Envíos totales</h4>
+          <div class="val" id="kpiEnvios">0</div>
+        </div>
+        <div class="kpi">
+          <i class="fa-solid fa-weight-hanging"></i>
+          <h4>Toneladas transportadas</h4>
+          <div class="val"><span id="kpiToneladas">0.0</span> t</div>
+        </div>
+        <div class="kpi">
+          <i class="fa-solid fa-star"></i>
+          <h4>Calificación promedio</h4>
+          <div class="val"><span id="kpiRating">—</span> ⭐</div>
         </div>
       </section>
 
-      <!-- ====== NOTIFICACIONES ====== -->
-      <section class="notificaciones">
-        <h2><i class="fa-solid fa-bell"></i> Notificaciones</h2>
-        <div id="listaNotificaciones" class="notif-list">
-          <p>No tienes notificaciones nuevas.</p>
+      <section class="grid-2">
+        <!-- ====== Mapa + Acciones ====== -->
+        <div class="card">
+          <header>
+            <h3><i class="fa-solid fa-map"></i> Actividad reciente</h3>
+            <div class="quick-actions">
+              <a href="solicitudes.html" class="btn"><i class="fa-solid fa-plus"></i> Nueva solicitud</a>
+              <a href="envios.html" class="btn outline"><i class="fa-solid fa-truck"></i> Ver mis envíos</a>
+              <button id="exportBtn" class="btn gray"><i class="fa-solid fa-file-arrow-down"></i> Exportar CSV</button>
+            </div>
+          </header>
+          <div class="body">
+            <div id="miniMap"></div>
+          </div>
+        </div>
+
+        <!-- ====== Timeline ====== -->
+        <div class="card">
+          <header><h3><i class="fa-solid fa-bolt"></i> Actividad reciente</h3></header>
+          <div id="timeline" class="body timeline"></div>
+        </div>
+      </section>
+
+      <!-- ====== Gráficos ====== -->
+      <section class="charts" style="margin-top:1rem">
+        <div class="chart-box">
+          <header><h4><i class="fa-solid fa-chart-line"></i> Envíos por mes</h4></header>
+          <div class="body"><canvas id="chartMeses" height="120"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <header><h4><i class="fa-solid fa-seedling"></i> Productos más enviados</h4></header>
+          <div class="body"><canvas id="chartProductos" height="120"></canvas></div>
         </div>
       </section>
     </main>
   </div>
 
-  <!-- ====== FOOTER ====== -->
   <footer class="footer">
     <p>© 2025 AgroLink. Todos los derechos reservados.</p>
   </footer>
 
-  <!-- ====== SCRIPTS ====== -->
+  <!-- Librerías -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="../js/toast.js"></script>
+
+  <!-- JS del dashboard (completo) -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+      // ====== Seguridad mínima ======
       const rol = localStorage.getItem("agrolinkRol");
-      const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")) || {};
-      const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
-
-      // === Validar acceso ===
+      const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")||"{}");
       if (rol !== "productor") {
         alert("⚠️ Acceso denegado. Inicia sesión como Productor.");
-        window.location.href = "../login.html";
-        return;
+        location.href = "../login.html"; return;
       }
 
-      // === Mostrar nombre del usuario ===
-      document.getElementById("nombreUsuario").textContent =
-        (usuario.nombre || "Productor") + " 👨‍🌾";
+      // ====== Datos ======
+      const all = JSON.parse(localStorage.getItem("solicitudesAgroLink")||"[]");
+      const envios = all.filter(s => (s.productor||"").toLowerCase() === (usuario.nombre||"").toLowerCase());
 
-      // === Calcular estadísticas ===
-      const misSolicitudes = solicitudes.filter(s => s.productor === usuario.nombre);
-      const registradas = misSolicitudes.length;
-      const activas = misSolicitudes.filter(s => s.estado === "En curso").length;
-      const completadas = misSolicitudes.filter(s => s.estado === "Completado ✅").length;
+      // ====== Header/Avatar ======
+      const name = usuario.nombre || "Productor";
+      document.getElementById("helloName").textContent = name;
+      document.getElementById("helloSub").textContent = saludoDia() + resumenRapido(envios);
+      document.getElementById("avatar").textContent = (name[0]||"A").toUpperCase();
 
-      document.getElementById("solRegistradas").textContent = registradas;
-      document.getElementById("enviosActivos").textContent = activas;
-      document.getElementById("enviosCompletados").textContent = completadas;
+      // ====== KPIs ======
+      const completados = envios.filter(e => /Completado/.test(e.estado));
+      const ganancias = completados.reduce((a,e)=>a+(parseFloat(e.pago)||0),0);
+      const toneladas = completados.reduce((a,e)=>a+(parseFloat(e.peso)||0),0)/1000;
+      const ratings = completados.map(e => parseFloat(e.calificacion)).filter(v => !isNaN(v));
+      const ratingProm = ratings.length ? (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1) : "—";
 
-      // === Simular notificaciones ===
-      const lista = document.getElementById("listaNotificaciones");
-      if (registradas > 0) {
-        lista.innerHTML = `
-          <div class="notif-item">
-            <i class="fa-solid fa-file-circle-check"></i>
-            <div>
-              <strong>Solicitud registrada</strong>
-              <p>Tu solicitud fue enviada correctamente y está pendiente de asignación.</p>
-            </div>
-          </div>
-          <div class="notif-item">
-            <i class="fa-solid fa-truck-fast"></i>
-            <div>
-              <strong>Transporte en curso</strong>
-              <p>Uno de tus envíos está siendo transportado actualmente.</p>
-            </div>
-          </div>
-        `;
+      animateNumber("kpiGanancias", ganancias, 2);
+      animateNumber("kpiEnvios", envios.length, 0);
+      animateNumber("kpiToneladas", toneladas, 1);
+      document.getElementById("kpiRating").textContent = ratingProm;
+
+      // ====== Mini mapa con últimos 3 completados ======
+      const coords = {
+        Lima:[-12.0464,-77.0428], Trujillo:[-8.1117,-79.0288], Arequipa:[-16.409,-71.5375],
+        Piura:[-5.1945,-80.6328], Chiclayo:[-6.7714,-79.8409], Cusco:[-13.5319,-71.9675],
+        Puno:[-15.8402,-70.0219], Huancayo:[-12.0651,-75.2049], "San Juan de Lurigancho":[-12.0245,-77.0058]
+      };
+      const last3 = completados
+        .slice()
+        .sort((a,b)=> new Date(b.fecha||0) - new Date(a.fecha||0))
+        .slice(0,3);
+
+      const map = L.map('miniMap').setView([-9.189967, -75.015152], 5.9);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        {attribution: "&copy; OpenStreetMap"}).addTo(map);
+
+      if (last3.length === 0) {
+        L.marker([-9.189967, -75.015152]).addTo(map).bindPopup("Sin envíos completados aún.");
+      } else {
+        last3.forEach(e => {
+          const A = coords[e.origen], B = coords[e.destino];
+          if (!A || !B) return;
+          L.marker(A).addTo(map).bindPopup(`<b>${e.tipo}</b><br>Origen: ${e.origen}`);
+          L.marker(B).addTo(map).bindPopup(`Destino: ${e.destino}<br>Pago: S/ ${e.pago||0}`);
+          L.polyline([A,B], {color:"#2b7a0b", weight:4, opacity:.9}).addTo(map);
+        });
+        // Fit a todos los puntos usados
+        const bounds = [];
+        last3.forEach(e => { if(coords[e.origen]) bounds.push(coords[e.origen]); if(coords[e.destino]) bounds.push(coords[e.destino]); });
+        if (bounds.length) map.fitBounds(bounds, {padding:[30,30]});
       }
 
-      // === Cerrar sesión ===
-      const logout = document.getElementById("logout");
-      logout.addEventListener("click", e => {
+      // ====== Timeline (actividad reciente) ======
+      const tl = document.getElementById("timeline");
+      if (envios.length === 0) {
+        tl.innerHTML = `<div class="t-item"><i class="fa-regular fa-circle-check"></i><div>No tienes actividad todavía</div><div class="when">—</div></div>`;
+      } else {
+        envios
+          .slice()
+          .sort((a,b)=> new Date(b.fecha||0) - new Date(a.fecha||0))
+          .slice(0,6)
+          .forEach(e => {
+            const icon = /Completado/.test(e.estado) ? 'fa-circle-check' :
+                         /En curso/.test(e.estado) ? 'fa-truck' :
+                         /Cancelado/.test(e.estado) ? 'fa-ban' : 'fa-file';
+            const when = formatFechaRelativa(e.fecha);
+            const pago = e.pago ? ` — S/ ${e.pago}` : "";
+            const row = document.createElement("div");
+            row.className = "t-item";
+            row.innerHTML = `
+              <i class="fa-solid ${icon}"></i>
+              <div><b>${e.tipo||"Solicitud"}</b> • ${e.origen||"?"} → ${e.destino||"?"} • <span style="color:${colorEstado(e.estado)}">${e.estado||"—"}</span>${pago}</div>
+              <div class="when">${when}</div>
+            `;
+            tl.appendChild(row);
+          });
+      }
+
+      // ====== Gráficos ======
+      const porMes = agrupadoPorMes(envios);
+      const porProducto = agrupadoPorProducto(envios);
+
+      new Chart(document.getElementById("chartMeses"), {
+        type: 'line',
+        data: {
+          labels: porMes.labels,
+          datasets: [{
+            label: 'Envíos',
+            data: porMes.data,
+            borderWidth: 2,
+            tension:.25,
+            borderColor:'#2b7a0b',
+            pointBackgroundColor:'#2b7a0b',
+            backgroundColor:'rgba(43,122,11,0.08)'
+          }]
+        },
+        options: {
+          scales: { y: { beginAtZero:true, ticks:{ precision:0 } } },
+          plugins:{ legend:{ display:false } }
+        }
+      });
+
+      new Chart(document.getElementById("chartProductos"), {
+        type: 'bar',
+        data: {
+          labels: porProducto.labels,
+          datasets: [{
+            label: 'Cantidad',
+            data: porProducto.data,
+            backgroundColor:'#2b7a0b'
+          }]
+        },
+        options: {
+          scales: { y: { beginAtZero:true, ticks:{ precision:0 } } },
+          plugins:{ legend:{ display:false } }
+        }
+      });
+
+      // ====== Exportar CSV rápido ======
+      document.getElementById("exportBtn").addEventListener("click", () => {
+        if (!envios.length) { showToast("No hay datos para exportar.","info"); return; }
+        const cols = ["id","tipo","origen","destino","fecha","peso","pago","estado","transportista","telefono","calificacion"];
+        const header = cols.join(",");
+        const rows = envios.map(r=>cols.map(k=>JSON.stringify(r[k]??"")).join(","));
+        const csv = [header,...rows].join("\n");
+        const blob = new Blob([csv],{type:"text/csv;charset=utf-8;"});
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "dashboard_envios.csv";
+        a.click();
+      });
+
+      // ====== Logout ======
+      document.getElementById("logout").addEventListener("click",(e)=>{
         e.preventDefault();
-        showToast("👋 Sesión cerrada correctamente", "info");
+        showToast("👋 Sesión cerrada correctamente","info");
         localStorage.removeItem("agrolinkRol");
         localStorage.removeItem("agrolinkUsuario");
-        setTimeout(() => (window.location.href = "../index.html"), 1000);
+        setTimeout(()=>location.href="../index.html",900);
       });
+
+      // ====== Helpers ======
+      function saludoDia(){
+        const h = new Date().getHours();
+        if (h < 12) return "Buenos días. ";
+        if (h < 19) return "Buenas tardes. ";
+        return "Buenas noches. ";
+      }
+      function resumenRapido(list){
+        const enCurso = list.filter(e=>/En curso/.test(e.estado)).length;
+        const pendientes = list.filter(e=>/Pendiente/.test(e.estado)).length;
+        return `Tienes ${enCurso} envío(s) en curso y ${pendientes} pendiente(s).`;
+      }
+      function animateNumber(id, value, dec=0){
+        const el = document.getElementById(id);
+        let cur = 0, steps = 24, i = 0;
+        const inc = value/steps;
+        const it = setInterval(()=>{
+          i++; cur += inc;
+          if (i>=steps){ cur = value; clearInterval(it); }
+          el.textContent = Number(cur).toFixed(dec);
+        }, 18);
+      }
+      function colorEstado(e){
+        if (/Completado/.test(e)) return '#0a7ad1';
+        if (/En curso/.test(e)) return '#2b7a0b';
+        if (/Cancelado/.test(e)) return '#666';
+        return '#8a8a8a';
+      }
+      function formatFechaRelativa(iso){
+        if (!iso) return "—";
+        const d = new Date(iso), now = new Date();
+        const diff = Math.floor((now - d)/86400000);
+        if (diff <= 0) return "hoy";
+        if (diff === 1) return "ayer";
+        return `hace ${diff} días`;
+      }
+      function agrupadoPorMes(list){
+        const map = new Map();
+        list.forEach(e=>{
+          const d = e.fecha ? new Date(e.fecha) : null;
+          const key = d ? `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}` : "Sin fecha";
+          map.set(key, (map.get(key)||0)+1);
+        });
+        const labels = Array.from(map.keys()).sort();
+        return { labels, data: labels.map(k=>map.get(k)) };
+      }
+      function agrupadoPorProducto(list){
+        const map = new Map();
+        list.forEach(e=>{
+          const key = e.tipo || "Otro";
+          map.set(key, (map.get(key)||0)+1);
+        });
+        const labels = Array.from(map.keys());
+        return { labels, data: labels.map(k=>map.get(k)) };
+      }
     });
   </script>
 </body>
-<button class="menu-toggle" id="menuToggle">
-  <i class="fa-solid fa-bars"></i>
-</button>
-<div class="overlay" id="overlay"></div>
-
 </html>

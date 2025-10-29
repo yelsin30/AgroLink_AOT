@@ -1,36 +1,77 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mi Perfil | AgroLink</title>
-
-  <!-- Estilos -->
-  <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="../img/logo.png" type="image/png" />
-
-  <!-- Íconos Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-</head>
+  <link rel="stylesheet" href="../css/style.css" />
+  <script src="../js/toast.js"></script>
 
+  <style>
+    main{padding:1.5rem;}
+    .profile-header{
+      background:linear-gradient(135deg,#2b7a0b,#64dd17);
+      color:#fff;border-radius:14px;padding:1.5rem 1rem;text-align:center;
+      box-shadow:0 4px 16px rgba(0,0,0,.1);margin-bottom:1.5rem;
+    }
+    .profile-header img{
+      width:90px;height:90px;border-radius:50%;object-fit:cover;
+      border:3px solid #fff;margin-bottom:.5rem;
+    }
+    .profile-header button{
+      background:#fff;color:#2b7a0b;border:none;border-radius:8px;
+      padding:.4rem .8rem;font-weight:600;cursor:pointer;
+    }
+    .profile-header button:hover{filter:brightness(.95)}
+    .profile-summary{
+      display:flex;justify-content:center;gap:1.2rem;margin-top:.5rem;
+    }
+    .summary-box{
+      background:#fff3;border-radius:10px;padding:.5rem .9rem;font-weight:600;
+      display:flex;align-items:center;gap:.4rem;
+    }
+    .summary-box i{color:#fff;}
+    .form-card{
+      background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.05);
+      padding:1.3rem 1.4rem;margin-bottom:1.3rem;
+    }
+    .form-card h3{margin-top:0;color:#2b7a0b}
+    .form-group{margin-bottom:.9rem;}
+    label{font-weight:600;color:#2b7a0b;display:block;margin-bottom:.3rem;}
+    input,select,textarea{
+      width:100%;border:1px solid #cce8cc;border-radius:8px;padding:.6rem;
+      background:#f9fff9;font-size:.95rem;
+    }
+    textarea{resize:vertical;min-height:70px;}
+    .btn-save{
+      background:#2b7a0b;color:#fff;border:none;border-radius:10px;
+      padding:.7rem 1.1rem;font-weight:600;cursor:pointer;width:100%;
+    }
+    .btn-save:hover{filter:brightness(.95)}
+    .footer{margin-top:1.5rem;text-align:center;color:#777;font-size:.85rem;}
+    @media(max-width:700px){
+      .profile-summary{flex-direction:column;align-items:center;}
+    }
+  </style>
+</head>
 <body>
   <div class="container">
-    <!-- ====== SIDEBAR ====== -->
+    <!-- ======= SIDEBAR ======= -->
     <aside class="sidebar">
       <div class="logo-section custom-logo">
         <i class="fa-solid fa-tractor"></i>
         <div class="logo-text">
           <span class="brand">AgroLink</span>
-          <span class="role" id="rolUsuario">Usuario</span>
+          <span class="role">Productor</span>
         </div>
       </div>
 
       <nav class="nav-links">
         <a href="dashboard.html"><i class="fa-solid fa-home"></i> Panel de control</a>
-        <a href="solicitudes.html" id="linkSolicitudes" style="display:none;"><i class="fa-solid fa-file-circle-plus"></i> Nueva solicitud</a>
-        <a href="viajes.html" id="linkViajes" style="display:none;"><i class="fa-solid fa-truck"></i> Mis viajes</a>
-        <a href="envios.html" id="linkEnvios" style="display:none;"><i class="fa-solid fa-boxes-packing"></i> Mis envíos</a>
+        <a href="solicitudes.html"><i class="fa-solid fa-plus"></i> Nueva solicitud</a>
+        <a href="envios.html"><i class="fa-solid fa-truck"></i> Mis envíos</a>
         <a href="perfil.html" class="active"><i class="fa-solid fa-user"></i> Perfil</a>
       </nav>
 
@@ -40,105 +81,137 @@
       </div>
     </aside>
 
-    <!-- ====== CONTENIDO PRINCIPAL ====== -->
-    <main class="main-content">
-      <header class="main-header">
-        <h1>Mi Perfil</h1>
-        <p>Actualiza tu información personal para mantener tu cuenta al día.</p>
-      </header>
+    <!-- ======= MAIN ======= -->
+    <main>
+      <!-- Header con foto -->
+      <div class="profile-header">
+        <img id="avatarPreview" src="../img/user-placeholder.png" alt="Foto de perfil" />
+        <h2 id="nombreDisplay">Productor</h2>
+        <p id="regionDisplay">Región no establecida</p>
+        <button id="btnCambiarFoto"><i class="fa-solid fa-camera"></i> Cambiar foto</button>
+        <div class="profile-summary">
+          <div class="summary-box"><i class="fa-solid fa-truck"></i> <span id="enviosCompletados">0 Envíos</span></div>
+          <div class="summary-box"><i class="fa-solid fa-star"></i> <span id="promedioCalif">0.0 ★</span></div>
+        </div>
+      </div>
 
-      <form id="perfilForm" class="perfil-form">
-        <label for="nombre">Nombre completo</label>
-        <input type="text" id="nombre" placeholder="Ej: Juan Pérez" required />
+      <!-- Formulario de perfil -->
+      <form id="perfilForm">
+        <div class="form-card">
+          <h3><i class="fa-solid fa-user"></i> Información personal</h3>
+          <div class="form-group">
+            <label>Nombre completo</label>
+            <input id="nombre" required />
+          </div>
+          <div class="form-group">
+            <label>Correo electrónico</label>
+            <input id="correo" type="email" placeholder="Ej: usuario@correo.com" required />
+          </div>
+          <div class="form-group">
+            <label>Ubicación principal</label>
+            <select id="region">
+              <option value="">Seleccionar región...</option>
+              <option>Lima</option><option>Trujillo</option><option>Arequipa</option>
+              <option>Piura</option><option>Chiclayo</option><option>Cusco</option>
+              <option>Puno</option><option>Huancayo</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Tipo de productos</label>
+            <input id="productos" placeholder="Ej: papa, maíz, palta..." />
+          </div>
+          <div class="form-group">
+            <label>Descripción breve</label>
+            <textarea id="descripcion" placeholder="Cuéntanos brevemente sobre tu producción o finca..."></textarea>
+          </div>
+        </div>
 
-        <label for="correo">Correo electrónico</label>
-        <input type="email" id="correo" placeholder="Ej: usuario@correo.com" required />
+        <div class="form-card">
+          <h3><i class="fa-solid fa-lock"></i> Contraseña</h3>
+          <div class="form-group">
+            <label>Nueva contraseña</label>
+            <input id="password" type="password" placeholder="********" autocomplete="new-password" />
+          </div>
+        </div>
 
-        <label for="password">Contraseña</label>
-        <input type="password" id="password" placeholder="••••••••" required />
-
-        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        <button class="btn-save" type="submit"><i class="fa-solid fa-save"></i> Guardar Cambios</button>
       </form>
+
+      <div class="footer">© 2025 AgroLink. Todos los derechos reservados.</div>
     </main>
   </div>
 
-  <!-- ====== FOOTER ====== -->
-  <footer class="footer">
-    <p>© 2025 AgroLink. Todos los derechos reservados.</p>
-  </footer>
-
-  <!-- ====== SCRIPTS ====== -->
-  <script src="../js/toast.js"></script>
-
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const rol = localStorage.getItem("agrolinkRol");
-      const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")) || {};
+    document.addEventListener("DOMContentLoaded",()=>{
+      const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")||"{}");
+      const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")||"[]");
+      const enviosProductor = solicitudes.filter(s => (s.productor||"").toLowerCase() === (usuario.nombre||"").toLowerCase());
+      const completados = enviosProductor.filter(e=>/Completado/.test(e.estado));
+      const promedio = completados.length
+          ? (completados.reduce((a,e)=>a+(parseFloat(e.calificacion)||0),0)/completados.length).toFixed(1)
+          : "0.0";
 
-      const nombreInput = document.getElementById("nombre");
-      const correoInput = document.getElementById("correo");
-      const passwordInput = document.getElementById("password");
-      const rolTexto = document.getElementById("rolUsuario");
+      // Mostrar resumen
+      document.getElementById("enviosCompletados").textContent = `${completados.length} Envíos`;
+      document.getElementById("promedioCalif").textContent = `${promedio} ★`;
 
-      const linkSolicitudes = document.getElementById("linkSolicitudes");
-      const linkViajes = document.getElementById("linkViajes");
-      const linkEnvios = document.getElementById("linkEnvios");
+      // Mostrar datos guardados
+      document.getElementById("nombre").value = usuario.nombre||"";
+      document.getElementById("correo").value = usuario.correo||"";
+      document.getElementById("region").value = usuario.region||"";
+      document.getElementById("productos").value = usuario.productos||"";
+      document.getElementById("descripcion").value = usuario.descripcion||"";
+      document.getElementById("nombreDisplay").textContent = usuario.nombre||"Productor";
+      document.getElementById("regionDisplay").textContent = usuario.region||"Región no establecida";
+      if(usuario.avatar){ document.getElementById("avatarPreview").src = usuario.avatar; }
 
-      // ===== Validar y mostrar navegación según rol =====
-      if (rol === "productor") {
-        rolTexto.textContent = "Productor";
-        linkSolicitudes.style.display = "flex";
-        linkEnvios.style.display = "flex";
-      } else if (rol === "transportista") {
-        rolTexto.textContent = "Transportista";
-        linkViajes.style.display = "flex";
-      } else {
-        alert("⚠️ Acceso denegado. Inicia sesión nuevamente.");
-        window.location.href = "../login.html";
-        return;
-      }
-
-      // ===== Cargar datos del usuario =====
-      nombreInput.value = usuario.nombre || "";
-      correoInput.value = usuario.correo || "";
-      passwordInput.value = usuario.password || "";
-
-      // ===== Guardar cambios =====
-      document.getElementById("perfilForm").addEventListener("submit", e => {
-        e.preventDefault();
-
-        const nombre = nombreInput.value.trim();
-        const correo = correoInput.value.trim();
-        const password = passwordInput.value.trim();
-
-        if (!nombre || !correo || !password) {
-          showToast("⚠️ Completa todos los campos.", "error");
-          return;
-        }
-
-        const actualizado = { ...usuario, nombre, correo, password };
-        localStorage.setItem("agrolinkUsuario", JSON.stringify(actualizado));
-        showToast("✅ Datos actualizados correctamente.", "success");
-
-        // Sincronizar nombre con solicitudes
-        const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
-        solicitudes.forEach(s => {
-          if (rol === "productor" && s.productor === usuario.nombre) s.productor = nombre;
-          if (rol === "transportista" && s.transportista === usuario.nombre) s.transportista = nombre;
-        });
-        localStorage.setItem("solicitudesAgroLink", JSON.stringify(solicitudes));
+      // Cambiar foto
+      const btnCambiar = document.getElementById("btnCambiarFoto");
+      btnCambiar.addEventListener("click",()=>{
+        const input = document.createElement("input");
+        input.type="file"; input.accept="image/*";
+        input.onchange = e=>{
+          const file = e.target.files[0];
+          if(file){
+            const reader = new FileReader();
+            reader.onload = ev=>{
+              document.getElementById("avatarPreview").src = ev.target.result;
+              usuario.avatar = ev.target.result;
+              localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
+              showToast("📷 Foto actualizada","success");
+            };
+            reader.readAsDataURL(file);
+          }
+        };
+        input.click();
       });
 
-      // ===== Cerrar sesión =====
-      document.getElementById("logout").addEventListener("click", e => {
+      // Guardar cambios
+      document.getElementById("perfilForm").addEventListener("submit",(e)=>{
         e.preventDefault();
-        showToast("👋 Sesión cerrada correctamente", "info");
+        usuario.nombre = document.getElementById("nombre").value.trim();
+        usuario.correo = document.getElementById("correo").value.trim();
+        usuario.region = document.getElementById("region").value;
+        usuario.productos = document.getElementById("productos").value.trim();
+        usuario.descripcion = document.getElementById("descripcion").value.trim();
+        const pass = document.getElementById("password").value.trim();
+        if(pass) usuario.password = pass;
+
+        localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
+        document.getElementById("nombreDisplay").textContent = usuario.nombre;
+        document.getElementById("regionDisplay").textContent = usuario.region||"Región no establecida";
+        showToast("✅ Perfil actualizado correctamente","success");
+      });
+
+      // Logout
+      document.getElementById("logout").addEventListener("click",(e)=>{
+        e.preventDefault();
+        showToast("👋 Sesión cerrada correctamente","info");
         localStorage.removeItem("agrolinkRol");
         localStorage.removeItem("agrolinkUsuario");
-        setTimeout(() => (window.location.href = "../index.html"), 1000);
+        setTimeout(()=>location.href="../index.html",900);
       });
     });
   </script>
 </body>
-
 </html>

@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -80,17 +79,9 @@
       color: #fff;
     }
 
-    .estado.en-curso {
-      background: #2b7a0b;
-    }
-
-    .estado.completado {
-      background: #0077cc;
-    }
-
-    .estado.cancelado {
-      background: #555;
-    }
+    .estado.en-curso { background: #2b7a0b; }
+    .estado.completado { background: #0077cc; }
+    .estado.cancelado { background: #555; }
 
     .progress-bar {
       background: #eee;
@@ -111,7 +102,25 @@
       justify-content: space-between;
       gap: 8px;
       margin-top: 10px;
+      flex-wrap: wrap;
     }
+
+    .btn {
+      flex: 1;
+      padding: 8px 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color .2s ease;
+    }
+
+    .btn-mapa { background: #2b7a0b; color: #fff; }
+    .btn-info { background: #0077cc; color: #fff; }
+    .btn-completado { background: #27ae60; color: #fff; }
+    .btn-mapa:hover { background: #256707; }
+    .btn-info:hover { background: #005fa3; }
+    .btn-completado:hover { background: #1e874b; }
 
     #map {
       height: 400px;
@@ -119,7 +128,6 @@
       margin-top: 1rem;
     }
 
-    /* Modal */
     .modal {
       display: none;
       position: fixed;
@@ -149,10 +157,8 @@
     }
   </style>
 </head>
-
 <body>
   <div class="container">
-    <!-- ====== SIDEBAR ====== -->
     <aside class="sidebar">
       <div class="logo-section custom-logo">
         <i class="fa-solid fa-tractor"></i>
@@ -175,49 +181,30 @@
       </div>
     </aside>
 
-    <!-- ====== CONTENIDO PRINCIPAL ====== -->
     <main class="main-content">
       <header class="main-header">
         <h1>Historial de Viajes</h1>
         <p>Consulta tus viajes completados, en curso y cancelados.</p>
       </header>
 
-      <!-- Panel de estadísticas -->
       <section class="stats">
-        <div class="stat">
-          <h3>🚛 En curso</h3>
-          <p id="statEnCurso">0</p>
-        </div>
-        <div class="stat">
-          <h3>✅ Completados</h3>
-          <p id="statCompletados">0</p>
-        </div>
-        <div class="stat">
-          <h3>💰 Ingresos Totales</h3>
-          <p>S/ <span id="statGanancias">0</span></p>
-        </div>
-        <div class="stat">
-          <h3>⭐ Promedio</h3>
-          <p id="statCalificacion">4.8</p>
-        </div>
+        <div class="stat"><h3>🚛 En curso</h3><p id="statEnCurso">0</p></div>
+        <div class="stat"><h3>✅ Completados</h3><p id="statCompletados">0</p></div>
+        <div class="stat"><h3>💰 Ingresos Totales</h3><p>S/ <span id="statGanancias">0</span></p></div>
+        <div class="stat"><h3>⭐ Promedio</h3><p id="statCalificacion">4.8</p></div>
       </section>
 
-      <!-- Tabs -->
       <div class="tabs">
         <button class="tab active" data-tab="enCurso">En curso</button>
         <button class="tab" data-tab="completado">Completados</button>
         <button class="tab" data-tab="cancelado">Cancelados</button>
       </div>
 
-      <!-- Contenedor de viajes -->
       <section id="listaViajes"></section>
-
-      <!-- Mapa -->
       <div id="map"></div>
     </main>
   </div>
 
-  <!-- Modal Detalles -->
   <div class="modal" id="modalDetalles">
     <div class="modal-content">
       <span class="close">&times;</span>
@@ -230,7 +217,6 @@
     <p>© 2025 AgroLink. Todos los derechos reservados.</p>
   </footer>
 
-  <!-- Scripts -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="../js/toast.js"></script>
   <script>
@@ -240,9 +226,7 @@
       const lista = document.getElementById("listaViajes");
       const map = L.map('map').setView([-9.189967, -75.015152], 6);
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap'
-      }).addTo(map);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
 
       const coords = {
         Lima: [-12.0464, -77.0428],
@@ -255,7 +239,6 @@
 
       const viajes = db.filter(s => s.transportista === usuario.nombre && s.estado !== "Pendiente");
 
-      // === Estadísticas ===
       const enCurso = viajes.filter(v => v.estado === "En curso").length;
       const completados = viajes.filter(v => v.estado === "Completado ✅").length;
       const totalGanado = viajes.reduce((acc, v) => acc + (parseFloat(v.pago) || 0), 0);
@@ -264,14 +247,13 @@
       document.getElementById("statCompletados").textContent = completados;
       document.getElementById("statGanancias").textContent = totalGanado.toFixed(2);
 
-      // === Render ===
       function render(tab = "enCurso") {
         lista.innerHTML = "";
 
         const filtrados = viajes.filter(v =>
           tab === "enCurso" ? v.estado === "En curso" :
-            tab === "completado" ? v.estado === "Completado ✅" :
-              v.estado === "Cancelado ❌"
+          tab === "completado" ? v.estado === "Completado ✅" :
+          v.estado === "Cancelado ❌"
         );
 
         if (filtrados.length === 0) {
@@ -284,16 +266,13 @@
           const destino = coords[v.destino] || [-9.1, -75.1];
           const distancia = (map.distance(origen, destino) / 1000).toFixed(1);
           const duracion = (distancia / 70).toFixed(1);
-
           const estadoClass = v.estado.includes("Completado") ? "completado" :
-            v.estado.includes("Cancelado") ? "cancelado" : "en-curso";
-
+                              v.estado.includes("Cancelado") ? "cancelado" : "en-curso";
           const progress = v.estado.includes("Completado") ? 100 :
-            v.estado.includes("En curso") ? 60 : 0;
+                           v.estado.includes("En curso") ? 60 : 0;
 
           const card = document.createElement("div");
           card.classList.add("card");
-
           card.innerHTML = `
             <div class="viaje-header">
               <h3>🚛 ${v.origen} → ${v.destino}</h3>
@@ -306,16 +285,15 @@
             <div class="btns">
               <button class="btn btn-mapa" data-origen="${v.origen}" data-destino="${v.destino}">Ver ruta</button>
               <button class="btn btn-info" data-detalles='${JSON.stringify(v)}'>Detalles</button>
+              ${v.estado === "En curso" ? `<button class="btn btn-completado" data-id="${v.origen}-${v.destino}">Viaje completado ✅</button>` : ""}
             </div>
           `;
-
           lista.appendChild(card);
         });
       }
 
       render();
 
-      // === Tabs ===
       document.querySelectorAll(".tab").forEach(tab => {
         tab.addEventListener("click", () => {
           document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
@@ -324,26 +302,42 @@
         });
       });
 
-      // === Ver ruta ===
+      lista.addEventListener("click", e => {
+        if (e.target.classList.contains("btn-completado")) {
+          const id = e.target.dataset.id.split("-");
+          const origen = id[0], destino = id[1];
+          const index = db.findIndex(s => s.origen === origen && s.destino === destino && s.estado === "En curso");
+          if (index !== -1) {
+            db[index].estado = "Completado ✅";
+            localStorage.setItem("solicitudesAgroLink", JSON.stringify(db));
+            showToast("✅ Viaje marcado como completado.", "success");
+            setTimeout(() => location.reload(), 800);
+          }
+        }
+      });
+
+      // Ver ruta
       lista.addEventListener("click", e => {
         if (!e.target.classList.contains("btn-mapa")) return;
         const origen = coords[e.target.dataset.origen];
         const destino = coords[e.target.dataset.destino];
         if (!origen || !destino) return;
+        map.eachLayer(l => { if (l instanceof L.Polyline || l instanceof L.Marker) map.removeLayer(l); });
         L.marker(origen).addTo(map).bindPopup("Origen: " + e.target.dataset.origen);
         L.marker(destino).addTo(map).bindPopup("Destino: " + e.target.dataset.destino);
         L.polyline([origen, destino], { color: "#2b7a0b", weight: 4 }).addTo(map);
         map.fitBounds([origen, destino]);
       });
 
-      // === Modal detalles ===
+      // Modal detalles
       const modal = document.getElementById("modalDetalles");
       const detalleContenido = document.getElementById("detalleContenido");
+      document.querySelector(".close").addEventListener("click", () => modal.style.display = "none");
+      modal.addEventListener("click", e => { if (e.target === modal) modal.style.display = "none"; });
 
       lista.addEventListener("click", e => {
         if (!e.target.classList.contains("btn-info")) return;
         const data = JSON.parse(e.target.dataset.detalles);
-
         detalleContenido.innerHTML = `
           <p><strong>Productor:</strong> ${data.productor}</p>
           <p><strong>Producto:</strong> ${data.tipo}</p>
@@ -352,25 +346,16 @@
           <p><strong>Fecha:</strong> ${data.fecha}</p>
           <p><strong>Peso:</strong> ${data.peso} kg</p>
           <p><strong>Pago:</strong> S/ ${data.pago}</p>
-          <button id="btnComprobante" class="btn btn-primary">Descargar comprobante</button>
         `;
         modal.style.display = "flex";
-
-        document.getElementById("btnComprobante").addEventListener("click", () => {
-          showToast("📄 Comprobante descargado correctamente.", "success");
-        });
       });
 
-      document.querySelector(".close").addEventListener("click", () => modal.style.display = "none");
-      modal.addEventListener("click", e => { if (e.target === modal) modal.style.display = "none"; });
-
-      // === Logout ===
       document.getElementById("logout").addEventListener("click", e => {
         e.preventDefault();
         showToast("👋 Sesión cerrada correctamente", "info");
         localStorage.removeItem("agrolinkRol");
         localStorage.removeItem("agrolinkUsuario");
-        setTimeout(() => location.href = "../index.html", 1000);
+        setTimeout(() => (window.location.href = "../index.html"), 1000);
       });
     });
   </script>
