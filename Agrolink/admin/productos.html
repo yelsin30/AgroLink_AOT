@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AgroLink - Gestión de Productos</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root { --primary: #22c55e; --primary-dark: #16a34a; --secondary: #1f2937; --light: #f9fafb; --gray: #6b7280; --red: #ef4444; --border: #e5e7eb; }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
+    body { background:#f3f4f6; display:flex; }
+    .sidebar { width:250px; background:var(--secondary); color:white; height:100vh; position:fixed; box-shadow:2px 0 5px rgba(0,0,0,0.1); }
+    .sidebar-header { padding:1.5rem; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:0.75rem; }
+    .sidebar-header i { color:var(--primary); font-size:1.5rem; }
+    .sidebar-header h1 { font-size:1.2rem; font-weight:600; }
+    .nav-menu { padding:1.5rem 0; }
+    .nav-item { padding:0.75rem 1.5rem; display:flex; align-items:center; gap:0.75rem; color:#d1d5db; text-decoration:none; transition:all 0.2s; }
+    .nav-item:hover, .nav-item.active { background:rgba(255,255,255,0.05); color:white; }
+    .nav-item i { width:20px; text-align:center; }
+    .nav-item.active { border-left:4px solid var(--primary); }
+    .nav-item.logout { margin-top:auto; color:var(--red); border-left:4px solid var(--red); }
+    .nav-item.logout:hover { background:rgba(239,68,68,0.1); color:var(--red); }
+    .main-content { margin-left:250px; width:calc(100%-250px); min-height:100vh; padding:2rem; }
+    .header { background:white; padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 5px rgba(0,0,0,0.1); margin-bottom:2rem; }
+    .header-title { display:flex; align-items:center; gap:0.75rem; color:var(--primary); }
+    .header-title i { font-size:1.5rem; }
+    .header-title h1 { font-size:1.5rem; font-weight:700; }
+    .user-profile { display:flex; align-items:center; gap:0.75rem; background:#f9fafb; padding:0.5rem 1rem; border-radius:2rem; }
+    .avatar { width:32px; height:32px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:0.875rem; }
+    .username { font-weight:600; color:var(--secondary); }
+    .search-filters, .table-container { background:white; border-radius:0.75rem; padding:1.5rem; margin-bottom:2rem; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+    .search-filters h2 { font-size:1.25rem; font-weight:700; color:var(--secondary); margin-bottom:1rem; }
+    .filters-container { display:flex; gap:1rem; flex-wrap:wrap; }
+    .filter-input { flex:1; min-width:200px; }
+    .filter-input input, .filter-input select { width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:0.5rem; font-size:0.875rem; }
+    .filter-button { padding:0.75rem 1.5rem; background:var(--primary); color:white; border:none; border-radius:0.5rem; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:0.5rem; }
+    .action-buttons { display:flex; gap:1rem; margin-bottom:2rem; }
+    .btn { padding:0.75rem 1.5rem; border:none; border-radius:0.5rem; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:0.5rem; }
+    .btn-add { background:var(--primary); color:white; }
+    .btn-delete { background:var(--red); color:white; }
+    .table { width:100%; border-collapse:collapse; }
+    .table th, .table td { padding:0.75rem 1rem; text-align:left; border-bottom:1px solid var(--border); }
+    .table th { background:#f9fafb; font-weight:600; color:var(--secondary); font-size:0.875rem; text-transform:uppercase; }
+    .table tr:last-child td { border-bottom:none; }
+    .table tr:hover { background:#f9fafb; }
+    .status { padding:0.25rem 0.75rem; border-radius:999px; font-size:0.75rem; font-weight:600; display:inline-block; }
+    .status-available { background:#dcfce7; color:#166534; }
+    .status-unavailable { background:#fef2f2; color:#b91c1c; }
+    .actions { display:flex; gap:0.5rem; }
+    .actions button { background:none; border:none; cursor:pointer; font-size:0.875rem; color:var(--gray); }
+    .actions button:hover { color:var(--primary); }
+    .actions button.delete:hover { color:var(--red); }
+    .modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; }
+    .modal-content { background:white; padding:2rem; border-radius:0.75rem; width:100%; max-width:500px; max-height:90vh; overflow-y:auto; box-shadow:0 5px 25px rgba(0,0,0,0.2); }
+    .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
+    .modal-title { font-size:1.25rem; font-weight:700; color:var(--secondary); }
+    .close-modal { background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--gray); }
+    .form-group { margin-bottom:1rem; }
+    .form-group label { display:block; margin-bottom:0.5rem; font-weight:600; color:var(--secondary); }
+    .form-group input, .form-group select { width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:0.5rem; font-size:0.875rem; }
+    .modal-footer { display:flex; justify-content:flex-end; gap:1rem; margin-top:1.5rem; }
+    .btn-cancel { background:#6b7280; color:white; }
+    @media (max-width:768px) {
+      .sidebar { width:70px; overflow-x:hidden; }
+      .sidebar-header h1, .nav-item span { display:none; }
+      .nav-item { justify-content:center; padding:0.75rem; }
+      .nav-item i { font-size:1.25rem; }
+      .main-content { margin-left:70px; width:calc(100%-70px); }
+      .filters-container { flex-direction:column; }
+      .filter-input { min-width:100%; }
+      .action-buttons { flex-direction:column; }
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <i class="fas fa-truck"></i>
+      <h1>AgroLink</h1>
+    </div>
+    <nav class="nav-menu">
+      <a href="admin.html" class="nav-item"><i class="fas fa-home"></i><span>Dashboard</span></a>
+      <a href="envios.html" class="nav-item"><i class="fas fa-truck"></i><span>Envíos</span></a>
+      <a href="transportistas.html" class="nav-item"><i class="fas fa-users"></i><span>Transportistas</span></a>
+      <a href="productos.html" class="nav-item active"><i class="fas fa-box"></i><span>Productos</span></a>
+      <a href="usuarios.html" class="nav-item"><i class="fas fa-user"></i><span>Usuarios</span></a>
+      <a href="reportes.html" class="nav-item"><i class="fas fa-chart-bar"></i><span>Reportes</span></a>
+      <a href="configuracion.html" class="nav-item"><i class="fas fa-cog"></i><span>Configuración</span></a>
+      <a href="../index.html" class="nav-item logout"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="header">
+      <div class="header-title">
+        <i class="fas fa-box"></i>
+        <h1>Gestión de Productos</h1>
+      </div>
+      <div class="user-profile">
+        <div class="avatar">A</div>
+        <span class="username">Admin</span>
+      </div>
+    </header>
+
+    <div class="search-filters">
+      <h2>Filtros de búsqueda</h2>
+      <div class="filters-container">
+        <div class="filter-input">
+          <input type="text" placeholder="Nombre (Ej. Maíz)" id="filterNombre" />
+        </div>
+        <div class="filter-input">
+          <select id="filterCategoria">
+            <option value="">Todas las categorías</option>
+            <option value="Cereales">Cereales</option>
+            <option value="Legumbres">Legumbres</option>
+            <option value="Tubérculos">Tubérculos</option>
+          </select>
+        </div>
+        <button class="filter-button" id="btnBuscar">
+          <i class="fas fa-search"></i> Buscar
+        </button>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-add" id="btnAgregar"><i class="fas fa-plus"></i> Agregar Producto</button>
+      <button class="btn btn-delete" id="btnEliminar"><i class="fas fa-trash"></i> Eliminar seleccionados</button>
+    </div>
+
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Categoría</th>
+            <th>Stock (kg)</th>
+            <th>Precio (S/)</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="productosTableBody"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <div class="modal" id="addModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Agregar Nuevo Producto</h3>
+        <button class="close-modal">&times;</button>
+      </div>
+      <form id="addForm">
+        <div class="form-group">
+          <label for="addNombre">Nombre</label>
+          <input type="text" id="addNombre" placeholder="Ej. Maíz" required />
+        </div>
+        <div class="form-group">
+          <label for="addCategoria">Categoría</label>
+          <select id="addCategoria" required>
+            <option value="Cereales">Cereales</option>
+            <option value="Legumbres">Legumbres</option>
+            <option value="Tubérculos">Tubérculos</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="addStock">Stock (kg)</label>
+          <input type="number" id="addStock" placeholder="Ej. 1000" required />
+        </div>
+        <div class="form-group">
+          <label for="addPrecio">Precio (S/)</label>
+          <input type="number" step="0.01" id="addPrecio" placeholder="Ej. 2.50" required />
+        </div>
+        <div class="form-group">
+          <label for="addEstado">Estado</label>
+          <select id="addEstado" required>
+            <option value="disponible">Disponible</option>
+            <option value="agotado">Agotado</option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-cancel" id="cancelAdd">Cancelar</button>
+          <button type="submit" class="btn btn-add">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Editar Producto</h3>
+        <button class="close-modal">&times;</button>
+      </div>
+      <form id="editForm">
+        <input type="hidden" id="editId" />
+        <div class="form-group">
+          <label for="editNombre">Nombre</label>
+          <input type="text" id="editNombre" required />
+        </div>
+        <div class="form-group">
+          <label for="editCategoria">Categoría</label>
+          <select id="editCategoria" required>
+            <option value="Cereales">Cereales</option>
+            <option value="Legumbres">Legumbres</option>
+            <option value="Tubérculos">Tubérculos</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="editStock">Stock (kg)</label>
+          <input type="number" id="editStock" required />
+        </div>
+        <div class="form-group">
+          <label for="editPrecio">Precio (S/)</label>
+          <input type="number" step="0.01" id="editPrecio" required />
+        </div>
+        <div class="form-group">
+          <label for="editEstado">Estado</label>
+          <select id="editEstado" required>
+            <option value="disponible">Disponible</option>
+            <option value="agotado">Agotado</option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-cancel" id="cancelEdit">Cancelar</button>
+          <button type="submit" class="btn btn-add">Actualizar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function getProductos() {
+      const data = localStorage.getItem('agrolink_productos');
+      return data ? JSON.parse(data) : [];
+    }
+
+    function saveProductos(productos) {
+      localStorage.setItem('agrolink_productos', JSON.stringify(productos));
+    }
+
+    function generateId() {
+      return 'PR-' + Date.now().toString().slice(-6);
+    }
+
+    function renderizarTabla(productosToShow = null) {
+      const tbody = document.getElementById('productosTableBody');
+      tbody.innerHTML = '';
+
+      const productos = productosToShow || getProductos();
+
+      if (productos.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td colspan="7" style="text-align:center;padding:2rem;">No hay productos registrados.</td>`;
+        tbody.appendChild(row);
+        return;
+      }
+
+      productos.forEach(producto => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${producto.id}</td>
+          <td>${producto.nombre}</td>
+          <td>${producto.categoria}</td>
+          <td>${producto.stock}</td>
+          <td>S/ ${producto.precio}</td>
+          <td><span class="status ${producto.estado === 'disponible' ? 'status-available' : 'status-unavailable'}">${producto.estado === 'disponible' ? 'Disponible' : 'Agotado'}</span></td>
+          <td class="actions">
+            <button class="edit-btn" data-id="${producto.id}"><i class="fas fa-edit"></i></button>
+            <button class="delete-btn" data-id="${producto.id}"><i class="fas fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const id = this.getAttribute('data-id');
+          if (confirm('¿Eliminar este producto?')) {
+            let productos = getProductos();
+            productos = productos.filter(p => p.id !== id);
+            saveProductos(productos);
+            renderizarTabla();
+          }
+        });
+      });
+
+      document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const id = this.getAttribute('data-id');
+          const productos = getProductos();
+          const producto = productos.find(p => p.id === id);
+          if (!producto) return;
+          document.getElementById('editId').value = producto.id;
+          document.getElementById('editNombre').value = producto.nombre;
+          document.getElementById('editCategoria').value = producto.categoria;
+          document.getElementById('editStock').value = producto.stock;
+          document.getElementById('editPrecio').value = producto.precio;
+          document.getElementById('editEstado').value = producto.estado;
+          document.getElementById('editModal').style.display = 'flex';
+        });
+      });
+    }
+
+    document.getElementById('btnBuscar').addEventListener('click', function() {
+      const nombre = document.getElementById('filterNombre').value.toLowerCase().trim();
+      const categoria = document.getElementById('filterCategoria').value;
+      const productos = getProductos();
+      const filtered = productos.filter(p => {
+        const matchesNombre = !nombre || p.nombre.toLowerCase().includes(nombre);
+        const matchesCategoria = !categoria || p.categoria === categoria;
+        return matchesNombre && matchesCategoria;
+      });
+      renderizarTabla(filtered);
+    });
+
+    document.getElementById('btnAgregar').addEventListener('click', () => {
+      document.getElementById('addModal').style.display = 'flex';
+    });
+
+    document.querySelectorAll('.close-modal').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.closest('.modal').style.display = 'none';
+      });
+    });
+
+    document.getElementById('cancelAdd').addEventListener('click', () => {
+      document.getElementById('addModal').style.display = 'none';
+      document.getElementById('addForm').reset();
+    });
+
+    document.getElementById('cancelEdit').addEventListener('click', () => {
+      document.getElementById('editModal').style.display = 'none';
+      document.getElementById('editForm').reset();
+    });
+
+    document.getElementById('addForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const producto = {
+        id: generateId(),
+        nombre: document.getElementById('addNombre').value,
+        categoria: document.getElementById('addCategoria').value,
+        stock: document.getElementById('addStock').value,
+        precio: document.getElementById('addPrecio').value,
+        estado: document.getElementById('addEstado').value
+      };
+      let productos = getProductos();
+      productos.push(producto);
+      saveProductos(productos);
+      renderizarTabla();
+      document.getElementById('addModal').style.display = 'none';
+      this.reset();
+      alert('✅ Producto agregado.');
+    });
+
+    document.getElementById('editForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const id = document.getElementById('editId').value;
+      const producto = {
+        id,
+        nombre: document.getElementById('editNombre').value,
+        categoria: document.getElementById('editCategoria').value,
+        stock: document.getElementById('editStock').value,
+        precio: document.getElementById('editPrecio').value,
+        estado: document.getElementById('editEstado').value
+      };
+      let productos = getProductos();
+      const index = productos.findIndex(p => p.id === id);
+      if (index !== -1) {
+        productos[index] = producto;
+        saveProductos(productos);
+        renderizarTabla();
+        document.getElementById('editModal').style.display = 'none';
+        this.reset();
+        alert('✅ Producto actualizado.');
+      }
+    });
+
+    document.getElementById('btnEliminar').addEventListener('click', function() {
+      const productos = getProductos();
+      if (productos.length === 0) {
+        alert('No hay productos para eliminar.');
+        return;
+      }
+      if (confirm(`¿Eliminar todos los ${productos.length} productos?`)) {
+        saveProductos([]);
+        renderizarTabla();
+      }
+    });
+
+    window.addEventListener('load', function() {
+      if (getProductos().length === 0) {
+        saveProductos([
+          { id: 'PR-001', nombre: 'Maíz', categoria: 'Cereales', stock: '1200', precio: '2.50', estado: 'disponible' },
+          { id: 'PR-002', nombre: 'Soja', categoria: 'Legumbres', stock: '800', precio: '3.20', estado: 'disponible' },
+          { id: 'PR-003', nombre: 'Papa', categoria: 'Tubérculos', stock: '0', precio: '1.80', estado: 'agotado' }
+        ]);
+      }
+      renderizarTabla();
+    });
+  </script>
+</body>
+</html>

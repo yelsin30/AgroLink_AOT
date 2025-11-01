@@ -12,38 +12,64 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
   <style>
-    /* ===== Visual cohesivo con AgroLink (header corregido) ===== */
+    /* ===== Overrides visuales sin romper tu CSS global ===== */
+
+    /* Barra lateral: activo en verde sólido */
+    .nav-links a.active{
+      background: var(--verde) !important;
+      color: #fff !important;
+      box-shadow: 0 4px 12px rgba(43,122,11,.18);
+      transform: none;
+    }
+    .nav-links a.active i{ color:#fff !important; }
+
+    /* Hover no debe opacar el estado activo */
+    .nav-links a:hover:not(.active){
+      background-color: var(--gris-claro);
+      color: var(--verde);
+      transform: translateX(4px);
+    }
+
+    /* Ajuste layout: sidebar fija (250px) -> deja espacio al main */
+    .main-content{
+      margin-left: 270px;          /* deja respirar al contenido */
+      padding: 2rem 1.5rem;
+      background: #f7faf8;
+      min-height: 100vh;
+    }
+
+    /* Encabezado “Bienvenido” más pegado y alineado */
     .dashboard-header{
       display:flex;
       justify-content:space-between;
-      align-items:flex-start;   /* sube el bloque de bienvenida */
-      margin-top:-0.4rem;       /* reduce espacio superior */
+      align-items:flex-start;
+      margin-top:-0.4rem;
+      margin-bottom: 1.25rem;
     }
     .hello{
       display:flex;
-      align-items:flex-start;   /* alinea el texto más arriba */
+      align-items:flex-start;
       gap:.6rem;
     }
-    .hello .wave{
-      font-size:1.35rem;
-      margin-top:0.1rem;        /* sutil corrección visual */
-    }
-    .hello .name{font-weight:700}
+    .hello .wave{ font-size:1.35rem; margin-top:.1rem; }
+    .hello .name{ font-weight:700; }
     .avatar{
       width:42px;height:42px;border-radius:999px;display:grid;place-items:center;
       background:#e6f3e6;color:#2b7a0b;font-weight:800;border:2px solid #cfe8cf;
-      margin-top:-0.2rem;       /* lo sube un poco para emparejar */
+      margin-top:-.2rem;
     }
 
+    /* Tarjetas KPI */
     .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin:1rem 0 1.25rem}
     .kpi{
-      background:#f9fff9;border:1px solid #e6f3e6;border-radius:14px;padding:1rem;min-height:92px;
+      background:#ffffff;border:1px solid #e6f3e6;border-radius:14px;padding:1rem;min-height:92px;
       box-shadow:0 2px 10px rgba(0,0,0,.05); position:relative; overflow:hidden;
     }
     .kpi h4{margin:0;color:#2b7a0b;font-weight:800}
     .kpi .val{font-size:1.45rem;font-weight:800;margin-top:.35rem}
-    .kpi i{position:absolute;right:.85rem;top:.8rem;color:#2b7a0b22;font-size:2.1rem}
+    .kpi i{position:absolute;right:.9rem;top:.8rem;color:#2b7a0b22;font-size:2.1rem}
 
+    /* Contenido principal */
     .grid-2{display:grid;grid-template-columns:1.25fr .75fr;gap:1rem;align-items:start}
     .card{background:#fff;border:1px solid #eef6ee;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
     .card header{
@@ -52,16 +78,6 @@
     }
     .card header h3{margin:0;color:#2b7a0b}
     .card .body{padding:1rem}
-
-    /* Mini mapa */
-    #miniMap{height:320px;border-radius:12px}
-
-    /* Gráficos */
-    .charts{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-    .chart-box{background:#fff;border:1px solid #eef6ee;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
-    .chart-box header{padding:.8rem 1rem;border-bottom:1px solid #eef6ee}
-    .chart-box header h4{margin:0;color:#2b7a0b}
-    .chart-box .body{padding:.6rem .8rem 1rem}
 
     /* Acciones rápidas */
     .quick-actions{display:flex;flex-wrap:wrap;gap:.6rem}
@@ -73,6 +89,14 @@
     .btn.gray{background:#f3f3f3;color:#333}
     .btn:hover{filter:brightness(.97)}
 
+    /* Mapa y gráficos */
+    #miniMap{height:320px;border-radius:12px}
+    .charts{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    .chart-box{background:#fff;border:1px solid #eef6ee;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+    .chart-box header{padding:.8rem 1rem;border-bottom:1px solid #eef6ee}
+    .chart-box header h4{margin:0;color:#2b7a0b}
+    .chart-box .body{padding:.6rem .8rem 1rem}
+
     /* Timeline */
     .timeline{display:grid;gap:.7rem}
     .t-item{
@@ -82,17 +106,19 @@
     .t-item i{color:#2b7a0b}
     .t-item .when{color:#666;font-size:.9rem}
 
+    /* Responsive */
     @media (max-width:1100px){
       .kpis{grid-template-columns:repeat(2,1fr)}
       .grid-2{grid-template-columns:1fr}
       .charts{grid-template-columns:1fr}
+      .main-content{margin-left:0;}            /* sidebar se vuelve top en tu CSS responsive */
     }
   </style>
 </head>
 
 <body>
   <div class="container">
-    <!-- ====== SIDEBAR ====== -->
+    <!-- ====== SIDEBAR (con tu logo tractor verde) ====== -->
     <aside class="sidebar">
       <div class="logo-section custom-logo">
         <i class="fa-solid fa-tractor"></i>
@@ -198,7 +224,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="../js/toast.js"></script>
 
-  <!-- JS del dashboard (completo) -->
+  <!-- JS del dashboard (tu lógica intacta) -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       // ====== Seguridad mínima ======
@@ -403,7 +429,7 @@
           const key = e.tipo || "Otro";
           map.set(key, (map.get(key)||0)+1);
         });
-        const labels = Array.from(map.keys());
+        const labels = Array.from(map.keys());z
         return { labels, data: labels.map(k=>map.get(k)) };
       }
     });

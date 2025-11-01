@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AgroLink - Gestión de Usuarios</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root { --primary: #22c55e; --primary-dark: #16a34a; --secondary: #1f2937; --light: #f9fafb; --gray: #6b7280; --red: #ef4444; --border: #e5e7eb; }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
+    body { background:#f3f4f6; display:flex; }
+    .sidebar { width:250px; background:var(--secondary); color:white; height:100vh; position:fixed; box-shadow:2px 0 5px rgba(0,0,0,0.1); }
+    .sidebar-header { padding:1.5rem; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:0.75rem; }
+    .sidebar-header i { color:var(--primary); font-size:1.5rem; }
+    .sidebar-header h1 { font-size:1.2rem; font-weight:600; }
+    .nav-menu { padding:1.5rem 0; }
+    .nav-item { padding:0.75rem 1.5rem; display:flex; align-items:center; gap:0.75rem; color:#d1d5db; text-decoration:none; transition:all 0.2s; }
+    .nav-item:hover, .nav-item.active { background:rgba(255,255,255,0.05); color:white; }
+    .nav-item i { width:20px; text-align:center; }
+    .nav-item.active { border-left:4px solid var(--primary); }
+    .nav-item.logout { margin-top:auto; color:var(--red); border-left:4px solid var(--red); }
+    .nav-item.logout:hover { background:rgba(239,68,68,0.1); color:var(--red); }
+    .main-content { margin-left:250px; width:calc(100%-250px); min-height:100vh; padding:2rem; }
+    .header { background:white; padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 5px rgba(0,0,0,0.1); margin-bottom:2rem; }
+    .header-title { display:flex; align-items:center; gap:0.75rem; color:var(--primary); }
+    .header-title i { font-size:1.5rem; }
+    .header-title h1 { font-size:1.5rem; font-weight:700; }
+    .user-profile { display:flex; align-items:center; gap:0.75rem; background:#f9fafb; padding:0.5rem 1rem; border-radius:2rem; }
+    .avatar { width:32px; height:32px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:0.875rem; }
+    .username { font-weight:600; color:var(--secondary); }
+    .search-filters, .table-container { background:white; border-radius:0.75rem; padding:1.5rem; margin-bottom:2rem; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+    .search-filters h2 { font-size:1.25rem; font-weight:700; color:var(--secondary); margin-bottom:1rem; }
+    .filters-container { display:flex; gap:1rem; flex-wrap:wrap; }
+    .filter-input { flex:1; min-width:200px; }
+    .filter-input input, .filter-input select { width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:0.5rem; font-size:0.875rem; }
+    .filter-button { padding:0.75rem 1.5rem; background:var(--primary); color:white; border:none; border-radius:0.5rem; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:0.5rem; }
+    .action-buttons { display:flex; gap:1rem; margin-bottom:2rem; }
+    .btn { padding:0.75rem 1.5rem; border:none; border-radius:0.5rem; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:0.5rem; }
+    .btn-add { background:var(--primary); color:white; }
+    .btn-delete { background:var(--red); color:white; }
+    .table { width:100%; border-collapse:collapse; }
+    .table th, .table td { padding:0.75rem 1rem; text-align:left; border-bottom:1px solid var(--border); }
+    .table th { background:#f9fafb; font-weight:600; color:var(--secondary); font-size:0.875rem; text-transform:uppercase; }
+    .table tr:last-child td { border-bottom:none; }
+    .table tr:hover { background:#f9fafb; }
+    .role { padding:0.25rem 0.75rem; border-radius:999px; font-size:0.75rem; font-weight:600; }
+    .role-admin { background:#dbeafe; color:#1d4ed8; }
+    .role-productor { background:#dcfce7; color:#166534; }
+    .role-conductor { background:#ffedd5; color:#c2410c; }
+    .actions { display:flex; gap:0.5rem; }
+    .actions button { background:none; border:none; cursor:pointer; font-size:0.875rem; color:var(--gray); }
+    .actions button:hover { color:var(--primary); }
+    .actions button.delete:hover { color:var(--red); }
+    .modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; }
+    .modal-content { background:white; padding:2rem; border-radius:0.75rem; width:100%; max-width:500px; max-height:90vh; overflow-y:auto; box-shadow:0 5px 25px rgba(0,0,0,0.2); }
+    .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
+    .modal-title { font-size:1.25rem; font-weight:700; color:var(--secondary); }
+    .close-modal { background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--gray); }
+    .form-group { margin-bottom:1rem; }
+    .form-group label { display:block; margin-bottom:0.5rem; font-weight:600; color:var(--secondary); }
+    .form-group input, .form-group select { width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:0.5rem; font-size:0.875rem; }
+    .modal-footer { display:flex; justify-content:flex-end; gap:1rem; margin-top:1.5rem; }
+    .btn-cancel { background:#6b7280; color:white; }
+    @media (max-width:768px) {
+      .sidebar { width:70px; overflow-x:hidden; }
+      .sidebar-header h1, .nav-item span { display:none; }
+      .nav-item { justify-content:center; padding:0.75rem; }
+      .nav-item i { font-size:1.25rem; }
+      .main-content { margin-left:70px; width:calc(100%-70px); }
+      .filters-container { flex-direction:column; }
+      .filter-input { min-width:100%; }
+      .action-buttons { flex-direction:column; }
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <i class="fas fa-truck"></i>
+      <h1>AgroLink</h1>
+    </div>
+    <nav class="nav-menu">
+      <a href="admin.html" class="nav-item"><i class="fas fa-home"></i><span>Dashboard</span></a>
+      <a href="envios.html" class="nav-item"><i class="fas fa-truck"></i><span>Envíos</span></a>
+      <a href="transportistas.html" class="nav-item"><i class="fas fa-users"></i><span>Transportistas</span></a>
+      <a href="productos.html" class="nav-item"><i class="fas fa-box"></i><span>Productos</span></a>
+      <a href="usuarios.html" class="nav-item active"><i class="fas fa-user"></i><span>Usuarios</span></a>
+      <a href="reportes.html" class="nav-item"><i class="fas fa-chart-bar"></i><span>Reportes</span></a>
+      <a href="configuracion.html" class="nav-item"><i class="fas fa-cog"></i><span>Configuración</span></a>
+      <a href="../index.html" class="nav-item logout"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="header">
+      <div class="header-title">
+        <i class="fas fa-user"></i>
+        <h1>Gestión de Usuarios</h1>
+      </div>
+      <div class="user-profile">
+        <div class="avatar">A</div>
+        <span class="username">Admin</span>
+      </div>
+    </header>
+
+    <div class="search-filters">
+      <h2>Filtros de búsqueda</h2>
+      <div class="filters-container">
+        <div class="filter-input">
+          <input type="text" placeholder="Nombre (Ej. Juan)" id="filterNombre" />
+        </div>
+        <div class="filter-input">
+          <select id="filterRol">
+            <option value="">Todos los roles</option>
+            <option value="admin">Administrador</option>
+            <option value="productor">Productor</option>
+            <option value="conductor">Conductor</option>
+          </select>
+        </div>
+        <button class="filter-button" id="btnBuscar">
+          <i class="fas fa-search"></i> Buscar
+        </button>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-add" id="btnAgregar"><i class="fas fa-plus"></i> Agregar Usuario</button>
+      <button class="btn btn-delete" id="btnEliminar"><i class="fas fa-trash"></i> Eliminar seleccionados</button>
+    </div>
+
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Rol</th>
+            <th>Último Acceso</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="usuariosTableBody"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <div class="modal" id="addModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Agregar Nuevo Usuario</h3>
+        <button class="close-modal">&times;</button>
+      </div>
+      <form id="addForm">
+        <div class="form-group">
+          <label for="addNombre">Nombre Completo</label>
+          <input type="text" id="addNombre" placeholder="Ej. Juan Pérez" required />
+        </div>
+        <div class="form-group">
+          <label for="addCorreo">Correo Electrónico</label>
+          <input type="email" id="addCorreo" placeholder="Ej. juan@agrolink.com" required />
+        </div>
+        <div class="form-group">
+          <label for="addRol">Rol</label>
+          <select id="addRol" required>
+            <option value="productor">Productor</option>
+            <option value="conductor">Conductor</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="addUltimoAcceso">Último Acceso</label>
+          <input type="text" id="addUltimoAcceso" placeholder="Ej. 22/10/2025" />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-cancel" id="cancelAdd">Cancelar</button>
+          <button type="submit" class="btn btn-add">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Editar Usuario</h3>
+        <button class="close-modal">&times;</button>
+      </div>
+      <form id="editForm">
+        <input type="hidden" id="editId" />
+        <div class="form-group">
+          <label for="editNombre">Nombre Completo</label>
+          <input type="text" id="editNombre" required />
+        </div>
+        <div class="form-group">
+          <label for="editCorreo">Correo Electrónico</label>
+          <input type="email" id="editCorreo" required />
+        </div>
+        <div class="form-group">
+          <label for="editRol">Rol</label>
+          <select id="editRol" required>
+            <option value="productor">Productor</option>
+            <option value="conductor">Conductor</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="editUltimoAcceso">Último Acceso</label>
+          <input type="text" id="editUltimoAcceso" />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-cancel" id="cancelEdit">Cancelar</button>
+          <button type="submit" class="btn btn-add">Actualizar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function getUsuarios() {
+      const data = localStorage.getItem('agrolink_usuarios');
+      return data ? JSON.parse(data) : [];
+    }
+
+    function saveUsuarios(usuarios) {
+      localStorage.setItem('agrolink_usuarios', JSON.stringify(usuarios));
+    }
+
+    function generateId() {
+      return 'USR-' + Date.now().toString().slice(-6);
+    }
+
+    function renderizarTabla(usuariosToShow = null) {
+      const tbody = document.getElementById('usuariosTableBody');
+      tbody.innerHTML = '';
+
+      const usuarios = usuariosToShow || getUsuarios();
+
+      if (usuarios.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td colspan="6" style="text-align:center;padding:2rem;">No hay usuarios registrados.</td>`;
+        tbody.appendChild(row);
+        return;
+      }
+
+      usuarios.forEach(usuario => {
+        const row = document.createElement('tr');
+        const roleClass = usuario.rol === 'admin' ? 'role-admin' : usuario.rol === 'productor' ? 'role-productor' : 'role-conductor';
+        row.innerHTML = `
+          <td>${usuario.id}</td>
+          <td>${usuario.nombre}</td>
+          <td>${usuario.correo}</td>
+          <td><span class="role ${roleClass}">${usuario.rol.charAt(0).toUpperCase() + usuario.rol.slice(1)}</span></td>
+          <td>${usuario.ultimoAcceso || 'N/A'}</td>
+          <td class="actions">
+            <button class="edit-btn" data-id="${usuario.id}"><i class="fas fa-edit"></i></button>
+            <button class="delete-btn" data-id="${usuario.id}"><i class="fas fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const id = this.getAttribute('data-id');
+          if (confirm('¿Eliminar este usuario?')) {
+            let usuarios = getUsuarios();
+            usuarios = usuarios.filter(u => u.id !== id);
+            saveUsuarios(usuarios);
+            renderizarTabla();
+          }
+        });
+      });
+
+      document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const id = this.getAttribute('data-id');
+          const usuarios = getUsuarios();
+          const usuario = usuarios.find(u => u.id === id);
+          if (!usuario) return;
+          document.getElementById('editId').value = usuario.id;
+          document.getElementById('editNombre').value = usuario.nombre;
+          document.getElementById('editCorreo').value = usuario.correo;
+          document.getElementById('editRol').value = usuario.rol;
+          document.getElementById('editUltimoAcceso').value = usuario.ultimoAcceso || '';
+          document.getElementById('editModal').style.display = 'flex';
+        });
+      });
+    }
+
+    document.getElementById('btnBuscar').addEventListener('click', function() {
+      const nombre = document.getElementById('filterNombre').value.toLowerCase().trim();
+      const rol = document.getElementById('filterRol').value;
+      const usuarios = getUsuarios();
+      const filtered = usuarios.filter(u => {
+        const matchesNombre = !nombre || u.nombre.toLowerCase().includes(nombre);
+        const matchesRol = !rol || u.rol === rol;
+        return matchesNombre && matchesRol;
+      });
+      renderizarTabla(filtered);
+    });
+
+    document.getElementById('btnAgregar').addEventListener('click', () => {
+      document.getElementById('addModal').style.display = 'flex';
+    });
+
+    document.querySelectorAll('.close-modal').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.closest('.modal').style.display = 'none';
+      });
+    });
+
+    document.getElementById('cancelAdd').addEventListener('click', () => {
+      document.getElementById('addModal').style.display = 'none';
+      document.getElementById('addForm').reset();
+    });
+
+    document.getElementById('cancelEdit').addEventListener('click', () => {
+      document.getElementById('editModal').style.display = 'none';
+      document.getElementById('editForm').reset();
+    });
+
+    document.getElementById('addForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const usuario = {
+        id: generateId(),
+        nombre: document.getElementById('addNombre').value,
+        correo: document.getElementById('addCorreo').value,
+        rol: document.getElementById('addRol').value,
+        ultimoAcceso: document.getElementById('addUltimoAcceso').value
+      };
+      let usuarios = getUsuarios();
+      usuarios.push(usuario);
+      saveUsuarios(usuarios);
+      renderizarTabla();
+      document.getElementById('addModal').style.display = 'none';
+      this.reset();
+      alert('✅ Usuario agregado.');
+    });
+
+    document.getElementById('editForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const id = document.getElementById('editId').value;
+      const usuario = {
+        id,
+        nombre: document.getElementById('editNombre').value,
+        correo: document.getElementById('editCorreo').value,
+        rol: document.getElementById('editRol').value,
+        ultimoAcceso: document.getElementById('editUltimoAcceso').value
+      };
+      let usuarios = getUsuarios();
+      const index = usuarios.findIndex(u => u.id === id);
+      if (index !== -1) {
+        usuarios[index] = usuario;
+        saveUsuarios(usuarios);
+        renderizarTabla();
+        document.getElementById('editModal').style.display = 'none';
+        this.reset();
+        alert('✅ Usuario actualizado.');
+      }
+    });
+
+    document.getElementById('btnEliminar').addEventListener('click', function() {
+      const usuarios = getUsuarios();
+      if (usuarios.length === 0) {
+        alert('No hay usuarios para eliminar.');
+        return;
+      }
+      if (confirm(`¿Eliminar todos los ${usuarios.length} usuarios?`)) {
+        saveUsuarios([]);
+        renderizarTabla();
+      }
+    });
+
+    window.addEventListener('load', function() {
+      if (getUsuarios().length === 0) {
+        saveUsuarios([
+          { id: 'USR-001', nombre: 'Juan Pérez', correo: 'juan@agrolink.com', rol: 'productor', ultimoAcceso: '22/10/2025' },
+          { id: 'USR-002', nombre: 'María Luna', correo: 'maria@agrolink.com', rol: 'conductor', ultimoAcceso: '21/10/2025' },
+          { id: 'USR-003', nombre: 'Carlos García', correo: 'carlos@agrolink.com', rol: 'productor', ultimoAcceso: '20/10/2025' }
+        ]);
+      }
+      renderizarTabla();
+    });
+  </script>
+</body>
+</html>
