@@ -1,184 +1,332 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mi Perfil | AgroLink</title>
   <link rel="icon" href="../img/logo.png" type="image/png" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <link rel="stylesheet" href="../css/style.css" />
-  <script src="../js/toast.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 
   <style>
-    main{padding:1.5rem;}
-    .profile-header{
-      background:linear-gradient(135deg,#2b7a0b,#64dd17);
-      color:#fff;border-radius:14px;padding:1.5rem 1rem;text-align:center;
-      box-shadow:0 4px 16px rgba(0,0,0,.1);margin-bottom:1.5rem;
+    body {
+      background-color: #f7f9f7;
+      font-family: "Poppins", sans-serif;
+      color: #16291b;
+      margin: 0;
+      display: flex;
     }
-    .profile-header img{
-      width:90px;height:90px;border-radius:50%;object-fit:cover;
-      border:3px solid #fff;margin-bottom:.5rem;
+
+    /* === SIDEBAR IGUAL AL DASHBOARD === */
+    .sidebar {
+      width: 74px;
+      background: #fff;
+      box-shadow: 2px 0 6px rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.2rem 0;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 100;
     }
-    .profile-header button{
-      background:#fff;color:#2b7a0b;border:none;border-radius:8px;
-      padding:.4rem .8rem;font-weight:600;cursor:pointer;
+
+    .sidebar .logo {
+      color: #16291b;
+      font-size: 1.9rem;
+      margin-bottom: 2rem;
     }
-    .profile-header button:hover{filter:brightness(.95)}
-    .profile-summary{
-      display:flex;justify-content:center;gap:1.2rem;margin-top:.5rem;
+
+    .nav-icons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      flex-grow: 1;
+      justify-content: center;
     }
-    .summary-box{
-      background:#fff3;border-radius:10px;padding:.5rem .9rem;font-weight:600;
-      display:flex;align-items:center;gap:.4rem;
+
+    .nav-icons button {
+      width: 46px;
+      height: 46px;
+      border: none;
+      border-radius: 12px;
+      background: none;
+      color: #4b5563;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .3s;
+      cursor: pointer;
     }
-    .summary-box i{color:#fff;}
-    .form-card{
-      background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.05);
-      padding:1.3rem 1.4rem;margin-bottom:1.3rem;
+
+    .nav-icons button:hover {
+      color: #16291b;
+      background: #f3f6f4;
     }
-    .form-card h3{margin-top:0;color:#2b7a0b}
-    .form-group{margin-bottom:.9rem;}
-    label{font-weight:600;color:#2b7a0b;display:block;margin-bottom:.3rem;}
-    input,select,textarea{
-      width:100%;border:1px solid #cce8cc;border-radius:8px;padding:.6rem;
-      background:#f9fff9;font-size:.95rem;
+
+    .nav-icons button.active {
+      background-color: #00b074;
+      color: #fff;
+      box-shadow: 0 0 12px rgba(0, 176, 116, 0.4);
     }
-    textarea{resize:vertical;min-height:70px;}
-    .btn-save{
-      background:#2b7a0b;color:#fff;border:none;border-radius:10px;
-      padding:.7rem 1.1rem;font-weight:600;cursor:pointer;width:100%;
+
+    .logout-btn {
+      margin-top: auto;
+      color: #d13c3c;
+      background: none;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .2rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: .3s;
     }
-    .btn-save:hover{filter:brightness(.95)}
-    .footer{margin-top:1.5rem;text-align:center;color:#777;font-size:.85rem;}
-    @media(max-width:700px){
-      .profile-summary{flex-direction:column;align-items:center;}
+
+    .logout-btn:hover {
+      color: #a82424;
+    }
+
+    /* === MAIN CENTRADO === */
+    main {
+      flex: 1;
+      margin-left: 90px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .profile-container {
+      max-width: 850px;
+      width: 100%;
+    }
+
+    .profile-header {
+      background: #16291b;
+      color: #fff;
+      border-radius: 18px;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .profile-header img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      object-fit: cover;
+      margin-bottom: .8rem;
+    }
+
+    .profile-header button {
+      background: #fff;
+      color: #16291b;
+      border: none;
+      border-radius: 10px;
+      padding: .45rem .9rem;
+      font-weight: 600;
+      transition: .2s;
+    }
+
+    .profile-header button:hover {
+      background: #00b074;
+      color: #fff;
+    }
+
+    .summary-box {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      padding: .4rem .8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      font-weight: 600;
+      margin: .3rem;
+    }
+
+    .card {
+      border: none;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      background: #fff;
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      font-weight: 600;
+      color: #16291b;
+      margin-bottom: .25rem;
+    }
+
+    input,
+    select,
+    textarea {
+      border: 1px solid #cce8cc;
+      border-radius: 10px;
+      padding: .6rem .8rem;
+      width: 100%;
+      background: #fff;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .btn-save {
+      background-color: #16291b;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: .7rem 1.2rem;
+      width: 100%;
+      font-weight: 600;
+      transition: .3s;
+    }
+
+    .btn-save:hover {
+      background-color: #00b074;
+    }
+
+    footer {
+      text-align: center;
+      color: #666;
+      font-size: .9rem;
+      margin-top: 1.5rem;
     }
   </style>
 </head>
+
 <body>
-  <div class="container">
-    <!-- ======= SIDEBAR ======= -->
-    <aside class="sidebar">
-      <div class="logo-section custom-logo">
-        <i class="fa-solid fa-tractor"></i>
-        <div class="logo-text">
-          <span class="brand">AgroLink</span>
-          <span class="role">Productor</span>
-        </div>
-      </div>
+  <!-- Sidebar moderna -->
+  <aside class="sidebar">
+    <i class="fa-solid fa-tractor logo"></i>
+    <div class="nav-icons">
+      <button title="Inicio" onclick="location.href='dashboard.html'"><i class="fa-solid fa-house"></i></button>
+      <button title="Envíos" onclick="location.href='envios.html'"><i class="fa-solid fa-truck"></i></button>
+      <button title="Solicitudes" onclick="location.href='solicitudes.html'"><i
+          class="fa-solid fa-file-circle-plus"></i></button>
+      <button class="active" title="Perfil" onclick="location.href='perfil.html'"><i
+          class="fa-solid fa-user"></i></button>
+    </div>
 
-      <nav class="nav-links">
-        <a href="dashboard.html"><i class="fa-solid fa-home"></i> Panel de control</a>
-        <a href="solicitudes.html"><i class="fa-solid fa-plus"></i> Nueva solicitud</a>
-        <a href="envios.html"><i class="fa-solid fa-truck"></i> Mis envíos</a>
-        <a href="perfil.html" class="active"><i class="fa-solid fa-user"></i> Perfil</a>
-      </nav>
+    <button class="logout-btn" id="logout">
+      <i class="fa-solid fa-right-from-bracket"></i>
+      <span>Salir</span>
+    </button>
+  </aside>
 
-      <div class="help-section">
-        <a href="#"><i class="fa-regular fa-circle-question"></i> Ayuda</a>
-        <a href="#" id="logout"><i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión</a>
-      </div>
-    </aside>
-
-    <!-- ======= MAIN ======= -->
-    <main>
-      <!-- Header con foto -->
+  <!-- Contenido centrado -->
+  <main>
+    <div class="profile-container">
       <div class="profile-header">
         <img id="avatarPreview" src="../img/user-placeholder.png" alt="Foto de perfil" />
         <h2 id="nombreDisplay">Productor</h2>
         <p id="regionDisplay">Región no establecida</p>
         <button id="btnCambiarFoto"><i class="fa-solid fa-camera"></i> Cambiar foto</button>
-        <div class="profile-summary">
+        <div class="mt-3 d-flex justify-content-center flex-wrap">
           <div class="summary-box"><i class="fa-solid fa-truck"></i> <span id="enviosCompletados">0 Envíos</span></div>
           <div class="summary-box"><i class="fa-solid fa-star"></i> <span id="promedioCalif">0.0 ★</span></div>
         </div>
       </div>
 
-      <!-- Formulario de perfil -->
       <form id="perfilForm">
-        <div class="form-card">
-          <h3><i class="fa-solid fa-user"></i> Información personal</h3>
-          <div class="form-group">
-            <label>Nombre completo</label>
-            <input id="nombre" required />
-          </div>
-          <div class="form-group">
-            <label>Correo electrónico</label>
-            <input id="correo" type="email" placeholder="Ej: usuario@correo.com" required />
-          </div>
-          <div class="form-group">
-            <label>Ubicación principal</label>
-            <select id="region">
-              <option value="">Seleccionar región...</option>
-              <option>Lima</option><option>Trujillo</option><option>Arequipa</option>
-              <option>Piura</option><option>Chiclayo</option><option>Cusco</option>
-              <option>Puno</option><option>Huancayo</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Tipo de productos</label>
-            <input id="productos" placeholder="Ej: papa, maíz, palta..." />
-          </div>
-          <div class="form-group">
-            <label>Descripción breve</label>
-            <textarea id="descripcion" placeholder="Cuéntanos brevemente sobre tu producción o finca..."></textarea>
+        <div class="card p-4">
+          <h4 class="mb-3"><i class="fa-solid fa-user"></i> Información personal</h4>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label>Nombre completo</label>
+              <input id="nombre" required />
+            </div>
+            <div class="col-md-6">
+              <label>Correo electrónico</label>
+              <input id="correo" type="email" placeholder="Ej: usuario@correo.com" required />
+            </div>
+            <div class="col-md-6">
+              <label>Ubicación principal</label>
+              <select id="region">
+                <option value="">Seleccionar región...</option>
+                <option>Lima</option>
+                <option>Trujillo</option>
+                <option>Arequipa</option>
+                <option>Piura</option>
+                <option>Chiclayo</option>
+                <option>Cusco</option>
+                <option>Puno</option>
+                <option>Huancayo</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label>Tipo de productos</label>
+              <input id="productos" placeholder="Ej: papa, maíz, palta..." />
+            </div>
+            <div class="col-12">
+              <label>Descripción breve</label>
+              <textarea id="descripcion" placeholder="Cuéntanos brevemente sobre tu producción o finca..."></textarea>
+            </div>
           </div>
         </div>
 
-        <div class="form-card">
-          <h3><i class="fa-solid fa-lock"></i> Contraseña</h3>
-          <div class="form-group">
-            <label>Nueva contraseña</label>
-            <input id="password" type="password" placeholder="********" autocomplete="new-password" />
-          </div>
+        <div class="card p-4">
+          <h4 class="mb-3"><i class="fa-solid fa-lock"></i> Contraseña</h4>
+          <label>Nueva contraseña</label>
+          <input id="password" type="password" placeholder="********" autocomplete="new-password" />
         </div>
 
-        <button class="btn-save" type="submit"><i class="fa-solid fa-save"></i> Guardar Cambios</button>
+        <button class="btn-save mt-3" type="submit"><i class="fa-solid fa-save"></i> Guardar Cambios</button>
       </form>
 
-      <div class="footer">© 2025 AgroLink. Todos los derechos reservados.</div>
-    </main>
-  </div>
+      <footer>© 2025 AgroLink. Todos los derechos reservados.</footer>
+    </div>
+  </main>
 
+  <script src="../js/toast.js"></script>
   <script>
-    document.addEventListener("DOMContentLoaded",()=>{
-      const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")||"{}");
-      const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")||"[]");
-      const enviosProductor = solicitudes.filter(s => (s.productor||"").toLowerCase() === (usuario.nombre||"").toLowerCase());
-      const completados = enviosProductor.filter(e=>/Completado/.test(e.estado));
+    document.addEventListener("DOMContentLoaded", () => {
+      let usuario = JSON.parse(localStorage.getItem("agrolinkUsuario") || "{}");
+      const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink") || "[]");
+      const enviosProductor = solicitudes.filter(s => (s.productor || "").toLowerCase() === (usuario.nombre || "").toLowerCase());
+      const completados = enviosProductor.filter(e => /Completado/.test(e.estado));
       const promedio = completados.length
-          ? (completados.reduce((a,e)=>a+(parseFloat(e.calificacion)||0),0)/completados.length).toFixed(1)
-          : "0.0";
+        ? (completados.reduce((a, e) => a + (parseFloat(e.calificacion) || 0), 0) / completados.length).toFixed(1)
+        : "0.0";
 
-      // Mostrar resumen
+      // Mostrar KPIs
       document.getElementById("enviosCompletados").textContent = `${completados.length} Envíos`;
       document.getElementById("promedioCalif").textContent = `${promedio} ★`;
 
-      // Mostrar datos guardados
-      document.getElementById("nombre").value = usuario.nombre||"";
-      document.getElementById("correo").value = usuario.correo||"";
-      document.getElementById("region").value = usuario.region||"";
-      document.getElementById("productos").value = usuario.productos||"";
-      document.getElementById("descripcion").value = usuario.descripcion||"";
-      document.getElementById("nombreDisplay").textContent = usuario.nombre||"Productor";
-      document.getElementById("regionDisplay").textContent = usuario.region||"Región no establecida";
-      if(usuario.avatar){ document.getElementById("avatarPreview").src = usuario.avatar; }
+      // Mostrar datos
+      document.getElementById("nombre").value = usuario.nombre || "";
+      document.getElementById("correo").value = usuario.email || usuario.correo || "";
+      document.getElementById("region").value = usuario.region || "";
+      document.getElementById("productos").value = usuario.productos || "";
+      document.getElementById("descripcion").value = usuario.descripcion || "";
+      document.getElementById("nombreDisplay").textContent = usuario.nombre || "Productor";
+      document.getElementById("regionDisplay").textContent = usuario.region || "Región no establecida";
+      if (usuario.avatar) document.getElementById("avatarPreview").src = usuario.avatar;
 
-      // Cambiar foto
-      const btnCambiar = document.getElementById("btnCambiarFoto");
-      btnCambiar.addEventListener("click",()=>{
+      // === CAMBIAR FOTO ===
+      document.getElementById("btnCambiarFoto").addEventListener("click", () => {
         const input = document.createElement("input");
-        input.type="file"; input.accept="image/*";
-        input.onchange = e=>{
+        input.type = "file";
+        input.accept = "image/*";
+        input.onchange = e => {
           const file = e.target.files[0];
-          if(file){
+          if (file) {
             const reader = new FileReader();
-            reader.onload = ev=>{
-              document.getElementById("avatarPreview").src = ev.target.result;
+            reader.onload = ev => {
               usuario.avatar = ev.target.result;
-              localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
-              showToast("📷 Foto actualizada","success");
+              document.getElementById("avatarPreview").src = ev.target.result;
+              guardarUsuario(usuario);
+              showToast("📷 Foto actualizada correctamente", "success");
             };
             reader.readAsDataURL(file);
           }
@@ -186,32 +334,51 @@
         input.click();
       });
 
-      // Guardar cambios
-      document.getElementById("perfilForm").addEventListener("submit",(e)=>{
+      // === GUARDAR PERFIL ===
+      document.getElementById("perfilForm").addEventListener("submit", (e) => {
         e.preventDefault();
         usuario.nombre = document.getElementById("nombre").value.trim();
-        usuario.correo = document.getElementById("correo").value.trim();
+        usuario.email = document.getElementById("correo").value.trim();
         usuario.region = document.getElementById("region").value;
         usuario.productos = document.getElementById("productos").value.trim();
         usuario.descripcion = document.getElementById("descripcion").value.trim();
         const pass = document.getElementById("password").value.trim();
-        if(pass) usuario.password = pass;
+        if (pass) usuario.password = pass;
 
-        localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
+        guardarUsuario(usuario);
+
         document.getElementById("nombreDisplay").textContent = usuario.nombre;
-        document.getElementById("regionDisplay").textContent = usuario.region||"Región no establecida";
-        showToast("✅ Perfil actualizado correctamente","success");
+        document.getElementById("regionDisplay").textContent = usuario.region || "Región no establecida";
+        showToast("✅ Perfil actualizado correctamente", "success");
       });
 
-      // Logout
-      document.getElementById("logout").addEventListener("click",(e)=>{
+      // === FUNCIÓN: Guardar cambios globalmente ===
+      function guardarUsuario(usuarioActualizado) {
+        // Actualiza el usuario activo
+        localStorage.setItem("agrolinkUsuario", JSON.stringify(usuarioActualizado));
+
+        // Sincroniza dentro del arreglo global
+        const usuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios") || "[]");
+        const index = usuarios.findIndex(u => u.email === usuarioActualizado.email);
+        if (index !== -1) {
+          usuarios[index] = usuarioActualizado;
+        } else {
+          usuarios.push(usuarioActualizado); // Si no existía, lo agrega
+        }
+        localStorage.setItem("agrolinkUsuarios", JSON.stringify(usuarios));
+      }
+
+      // === CERRAR SESIÓN ===
+      document.getElementById("logout").addEventListener("click", (e) => {
         e.preventDefault();
-        showToast("👋 Sesión cerrada correctamente","info");
-        localStorage.removeItem("agrolinkRol");
-        localStorage.removeItem("agrolinkUsuario");
-        setTimeout(()=>location.href="../index.html",900);
+        usuario.sesionActiva = false;
+        guardarUsuario(usuario);
+        showToast("👋 Sesión cerrada correctamente", "info");
+        setTimeout(() => { window.location.href = "../index.html"; }, 900);
       });
     });
   </script>
+
 </body>
+
 </html>

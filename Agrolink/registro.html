@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -105,8 +104,17 @@
         }
       });
 
+      // Función para convertir imagen a Base64
+      const fileToBase64 = (file) => new Promise((resolve, reject) => {
+        if (!file) return resolve("");
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result);
+        reader.onerror = e => reject(e);
+        reader.readAsDataURL(file);
+      });
+
       // Validación del formulario
-      form.addEventListener("submit", e => {
+      form.addEventListener("submit", async e => {
         e.preventDefault();
 
         const rol = rolSelect.value.trim();
@@ -115,20 +123,11 @@
         const password = document.getElementById("password").value.trim();
 
         if (!rol || !nombre || !email || !password) {
-          alert("⚠️ Por favor, completa todos los campos antes de continuar.");
+          alert("⚠️ Por favor, completa todos los campos obligatorios.");
           return;
         }
 
-        // Crea el objeto de usuario
-        const nuevoUsuario = { rol, nombre, email, password };
-
-        if (rol === "transportista") {
-          nuevoUsuario.placa = document.getElementById("placa").value.trim();
-          nuevoUsuario.capacidad = document.getElementById("capacidad").value.trim();
-          nuevoUsuario.licencia = document.getElementById("licencia").value.trim();
-          nuevoUsuario.cuentaBancaria = document.getElementById("cuentaBancaria").value.trim();
-        }
-
+        // Obtener usuarios existentes
         const usuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios")) || [];
 
         if (usuarios.some(u => u.email === email)) {
@@ -137,6 +136,29 @@
           return;
         }
 
+        // Crear objeto base del usuario
+        const nuevoUsuario = {
+          rol,
+          nombre,
+          email,
+          password,
+          sesionActiva: true, // ✅ marca sesión activa
+          fechaRegistro: new Date().toLocaleString("es-PE")
+        };
+
+        // Si es transportista, añadir campos adicionales
+        if (rol === "transportista") {
+          nuevoUsuario.placa = document.getElementById("placa").value.trim();
+          nuevoUsuario.capacidad = document.getElementById("capacidad").value.trim();
+          nuevoUsuario.licencia = document.getElementById("licencia").value.trim();
+          nuevoUsuario.cuentaBancaria = document.getElementById("cuentaBancaria").value.trim();
+          nuevoUsuario.fotoPerfil = await fileToBase64(document.getElementById("fotoPerfil").files[0]);
+          nuevoUsuario.vehiculoImg = await fileToBase64(document.getElementById("vehiculoImg").files[0]);
+          nuevoUsuario.soat = await fileToBase64(document.getElementById("soat").files[0]);
+          nuevoUsuario.revision = await fileToBase64(document.getElementById("revision").files[0]);
+        }
+
+        // Guardar en localStorage
         usuarios.push(nuevoUsuario);
         localStorage.setItem("agrolinkUsuarios", JSON.stringify(usuarios));
         localStorage.setItem("agrolinkUsuario", JSON.stringify(nuevoUsuario));
@@ -153,5 +175,4 @@
     });
   </script>
 </body>
-
 </html>

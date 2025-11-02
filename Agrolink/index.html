@@ -1,85 +1,90 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AgroLink | Transporte de Carga Agrícola</title>
-  <meta name="description"
-    content="AgroLink conecta productores rurales con transportistas confiables para optimizar el transporte de carga agrícola.">
-
-  <!-- Estilos -->
-  <link rel="stylesheet" href="css/style.css" />
-  <link rel="icon" href="img/logo.png" type="image/png" />
-
-  <!-- Font Awesome -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar Sesión | AgroLink</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="img/logo.png" type="image/png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
+<body class="auth-body">
 
-<body>
-
-  <!-- ====== HEADER ====== -->
-  <header class="header">
-    <div class="logo">
-      <i class="fa-solid fa-tractor" style="color:#2b7a0b; font-size:1.8rem;"></i>
-      <h1>AgroLink</h1>
-    </div>
-
-    <!-- Toggle menú responsive -->
-    <input type="checkbox" id="menu-toggle" />
-    <label for="menu-toggle" class="menu-icon">&#9776;</label>
-
-    <nav class="nav">
-      <ul>
-        <li><a href="index.html" class="active">Inicio</a></li>
-        <li><a href="servicios.html">Servicios</a></li>
-        <li><a href="contacto.html">Contacto</a></li>
-      </ul>
-      <div class="buttons">
-        <a href="login.html" class="btn btn-outline">Iniciar Sesión</a>
-        <a href="registro.html" class="btn btn-primary">Registrarse</a>
-      </div>
-    </nav>
+  <header class="auth-header">
+    <a href="index.html" class="logo-auth">
+      <i class="fa-solid fa-tractor" style="color:#2b7a0b; font-size:1.8rem; margin-right:8px;"></i>
+      <span style="font-weight:700; font-size:1.3rem; color:#2b7a0b;">AgroLink</span>
+    </a>
   </header>
 
-  <!-- ====== HERO ====== -->
-  <main class="hero">
-    <div class="hero-content">
-      <h2>Conectamos productores rurales con transportistas confiables</h2>
-      <p>Optimiza tus envíos agrícolas con nuestra plataforma segura y eficiente de transporte de carga.</p>
-      <a href="servicios.html" class="btn btn-primary">Ver Servicios</a>
+  <main class="auth-container">
+    <div class="auth-card">
+      <h2>Bienvenido a AgroLink</h2>
+      <p>Inicia sesión para continuar gestionando tus envíos agrícolas.</p>
+
+      <form id="loginForm" class="auth-form">
+        <label for="email">Correo electrónico</label>
+        <input type="email" id="email" placeholder="usuario@correo.com" required>
+
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" placeholder="********" required>
+
+        <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+
+        <p class="switch-text">¿No tienes una cuenta?
+          <a href="registro.html">Regístrate aquí</a>
+        </p>
+      </form>
+
+      <div id="mensajeError" class="mensaje-exito" style="display:none; background-color:#ffeaea; color:#a00000;">
+        ⚠️ Credenciales incorrectas. Intenta nuevamente.
+      </div>
     </div>
   </main>
 
-
-  <!-- ====== SECCIÓN DESTACADOS ====== -->
-  <section class="features">
-    <h2>¿Por qué elegir AgroLink?</h2>
-
-    <div class="features-container">
-      <div class="feature-card">
-        <h3>🚜 Eficiencia</h3>
-        <p>Reduce tiempos y costos con rutas optimizadas para tus entregas agrícolas.</p>
-      </div>
-      <div class="feature-card">
-        <h3>📦 Confiabilidad</h3>
-        <p>Trabajamos con transportistas verificados para garantizar un servicio seguro.</p>
-      </div>
-      <div class="feature-card">
-        <h3>🌍 Sostenibilidad</h3>
-        <p>Fomentamos un transporte responsable con el medio ambiente y las comunidades rurales.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ====== FOOTER ====== -->
   <footer class="footer">
     <p>© 2025 AgroLink. Todos los derechos reservados.</p>
   </footer>
 
-  <!-- ====== SCRIPTS ====== -->
-  <script src="js/storage.js"></script>
-  <script src="js/script.js"></script>
-</body>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("loginForm");
+      const mensajeError = document.getElementById("mensajeError");
 
+      form.addEventListener("submit", e => {
+        e.preventDefault();
+
+        const email = document.getElementById("email").value.trim().toLowerCase();
+        const password = document.getElementById("password").value.trim();
+
+        let usuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios")) || [];
+
+        // Buscar usuario por correo y contraseña
+        const usuarioIndex = usuarios.findIndex(u => u.email === email && u.password === password);
+        if (usuarioIndex === -1) {
+          mensajeError.textContent = "⚠️ Credenciales incorrectas o usuario no registrado.";
+          mensajeError.style.display = "block";
+          setTimeout(() => mensajeError.style.display = "none", 2500);
+          return;
+        }
+
+        // Marcar sesión activa sin borrar datos
+        usuarios[usuarioIndex].sesionActiva = true;
+        localStorage.setItem("agrolinkUsuarios", JSON.stringify(usuarios));
+
+        // Guardar una copia temporal del usuario activo
+        const usuarioActivo = usuarios[usuarioIndex];
+        localStorage.setItem("agrolinkUsuario", JSON.stringify(usuarioActivo));
+        localStorage.setItem("agrolinkRol", usuarioActivo.rol);
+
+        // Redirección según rol
+        if (usuarioActivo.rol === "productor") {
+          window.location.href = "productor/dashboard.html";
+        } else {
+          window.location.href = "transportista/dashboard.html";
+        }
+      });
+    });
+  </script>
+</body>
 </html>

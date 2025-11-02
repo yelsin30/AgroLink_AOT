@@ -1,250 +1,828 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mis Envíos | AgroLink</title>
 
-  <link rel="stylesheet" href="../css/style.css"/>
-  <link rel="icon" href="../img/logo.png" type="image/png"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="../img/logo.png" type="image/png" />
 
   <style>
-    /* ======= Layout base (coherente con AgroLink) ======= */
-    .page-actions{
-      display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;margin:1rem 0 1.25rem;
+    :root {
+      --verde: #16291b;
+      --fondo: #f7f9f7;
+      --verde-accent: #03b075;
     }
-    .search{
-      flex:1;min-width:240px;background:#fff;border:1px solid #e6f3e6;
-      border-radius:10px;display:flex;align-items:center;gap:.5rem;padding:.55rem .8rem;
-      box-shadow:0 1px 4px rgba(0,0,0,.04);
-    }
-    .search input{border:none;outline:0;width:100%;}
-    .chip{
-      background:#f3fff3;border:1px solid #d7efd7;color:#2b7a0b;font-weight:600;
-      padding:.45rem .7rem;border-radius:999px;cursor:pointer;transition:.15s;
-    }
-    .chip.active,.chip:hover{background:#2b7a0b;color:#fff;border-color:#2b7a0b}
-    .btn{
-      background:#2b7a0b;color:#fff;border:none;border-radius:10px;
-      padding:.55rem .9rem;font-weight:600;cursor:pointer;
-    }
-    .btn.outline{background:#fff;color:#2b7a0b;border:1px solid #2b7a0b}
-    .btn.gray{background:#f3f3f3;color:#333}
-    .btn.warn{background:#c62828}
-    .btn.success{background:#2e7d32}
-    .btn:hover{filter:brightness(.97)}
-    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin:.5rem 0 1.25rem}
-    .kpi{background:#f9fff9;border:1px solid #e6f3e6;border-radius:12px;padding:.9rem 1rem}
-    .kpi h4{margin:0;color:#2b7a0b}
-    .kpi p{margin:.25rem 0 0;font-size:1.15rem;font-weight:700}
 
-    /* ======= Cards ======= */
-    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
-    .card{
-      background:#fff;border-radius:12px;border:1px solid #eef6ee;
-      box-shadow:0 2px 10px rgba(0,0,0,.05);padding:1rem 1.1rem;
+    body {
+      background: var(--fondo);
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
-    .muted{color:#555}
-    .pill{
-      padding:.25rem .55rem;border-radius:8px;color:#fff;font-weight:700;font-size:.8rem;
+
+    /* ===== SIDEBAR COMPACTO (igual dashboard) ===== */
+    .agro-sidebar {
+      width: 74px;
+      background: #fff;
+      position: fixed;
+      inset: 0 auto 0 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 0;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, .03);
+      z-index: 100;
     }
-    .pill.en-curso{background:#2b7a0b}
-    .pill.completado{background:#0077cc}
-    .pill.cancelado{background:#666}
-    .card-rows{display:grid;grid-template-columns:1.1fr 1fr 1fr 1fr .8fr;gap:.5rem;align-items:center}
-    .card-actions{display:flex;gap:.5rem;justify-content:flex-end}
 
-    /* ======= Tabla ======= */
-    table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden}
-    th,td{padding:.75rem;border-bottom:1px solid #eef6ee;text-align:left}
-    thead th{background:#f6fff6;color:#2b7a0b}
-    tbody tr:hover{background:#fafefa}
-
-    /* ======= Slide-over (panel lateral) ======= */
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;z-index:1000}
-    .slideover{
-      position:fixed;top:0;right:0;height:100%;width:min(420px,100%);background:#fff;
-      transform:translateX(100%);transition:.25s ease;z-index:1001;display:flex;flex-direction:column;
-      box-shadow:-8px 0 24px rgba(0,0,0,.1)
+    .agro-logo {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
     }
-    .slideover.open{transform:translateX(0)}
-    .overlay.show{display:block}
-    .slideover header{
-      padding:1rem 1rem .5rem;border-bottom:1px solid #eef6ee;display:flex;align-items:center;gap:.5rem;
+
+    .agro-logo i {
+      font-size: 1.9rem;
+      color: var(--verde);
     }
-    .slideover main{padding:1rem 1rem 1.2rem;overflow:auto}
-    .kv{display:grid;grid-template-columns:.55fr 1fr;gap:.4rem .8rem;margin:.6rem 0}
-    .stars{color:gold}
-    .progress-wrap{margin:.5rem 0}
-    .progress-bar{height:8px;background:#eee;border-radius:6px;overflow:hidden}
-    .progress{height:8px;background:#2b7a0b;width:0}
 
-    /* ======= Mapa en panel aparte ======= */
-    .map-panel{position:fixed;inset:0;display:none;z-index:1100}
-    .map-panel .sheet{position:absolute;inset:auto 0 0 0;height:70%;background:#fff;border-top-left-radius:16px;border-top-right-radius:16px;box-shadow:0 -10px 24px rgba(0,0,0,.15);display:flex;flex-direction:column}
-    .map-toolbar{display:flex;justify-content:space-between;align-items:center;padding:.75rem 1rem;border-bottom:1px solid #eef6ee}
-    #mapGeneral{flex:1}
+    .agro-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      align-items: center;
+    }
 
-    @media (max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)} .card-rows{grid-template-columns:1fr 1fr}}
-    @media (max-width:720px){.grid{grid-template-columns:1fr}}
+    .agro-menu button {
+      border: none;
+      background: transparent;
+      width: 46px;
+      height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      color: #4a5568;
+      font-size: 1.25rem;
+      transition: .2s;
+      cursor: pointer;
+    }
+
+    .agro-menu button:hover {
+      background: rgba(22, 41, 27, .07);
+      color: var(--verde);
+    }
+
+    .agro-menu button.active {
+      background: var(--verde-accent);
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(3, 176, 117, .25);
+    }
+
+    .agro-logout {
+      color: #d62828;
+      font-size: .9rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .3rem;
+      cursor: pointer;
+    }
+
+    /* ===== MAIN ===== */
+    main {
+      margin-left: 90px;
+      padding: 1.5rem 1.7rem 2.6rem;
+      min-height: 100vh;
+    }
+
+    .top-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.2rem;
+    }
+
+    .hello-wrap {
+      display: flex;
+      gap: .6rem;
+      align-items: flex-start;
+    }
+
+    .hello-wrap .name {
+      font-weight: 700;
+      color: var(--verde);
+    }
+
+    .user-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      background: #e3f1e6;
+      color: var(--verde);
+      font-weight: 700;
+      display: grid;
+      place-items: center;
+      border: 2px solid rgba(22, 41, 27, .25);
+    }
+
+    /* ===== KPIs ===== */
+    .kpi-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 1rem 1.1rem .9rem;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, .03);
+      position: relative;
+      min-height: 110px;
+      border: 1px solid rgba(22, 41, 27, .04);
+    }
+
+    .kpi-card h6 {
+      font-size: .8rem;
+      font-weight: 700;
+      color: var(--verde);
+    }
+
+    .kpi-value {
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+
+    .kpi-icon {
+      position: absolute;
+      top: .8rem;
+      right: 1rem;
+      font-size: 2rem;
+      color: rgba(22, 41, 27, .08);
+    }
+
+    /* ===== BOARD DOS COLUMNAS ===== */
+    .board {
+      display: grid;
+      grid-template-columns: minmax(0, 2.2fr) minmax(280px, .9fr);
+      gap: 1rem;
+      margin-top: 1.1rem;
+    }
+
+    .panel {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, .03);
+      border: 1px solid rgba(22, 41, 27, .03);
+      min-height: 200px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.1rem .6rem;
+    }
+
+    .panel-title {
+      display: flex;
+      gap: .5rem;
+      align-items: center;
+      color: var(--verde);
+      font-weight: 700;
+    }
+
+    .panel-body {
+      padding: .5rem 1.1rem 1.1rem;
+    }
+
+    /* ===== ACCIONES/CHIPS/BUSCAR ===== */
+    .page-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .6rem;
+      align-items: center;
+      margin-bottom: .85rem;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 220px;
+      background: #fff;
+      border: 1px solid rgba(22, 41, 27, .05);
+      border-radius: 10px;
+      display: flex;
+      gap: .5rem;
+      align-items: center;
+      padding: .4rem .7rem;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, .02);
+    }
+
+    .search-box input {
+      border: none;
+      outline: none;
+      width: 100%;
+      font-size: .85rem;
+      background: transparent;
+    }
+
+    .chip {
+      background: #f3fff3;
+      border: 1px solid #d7efd7;
+      color: #2b7a0b;
+      font-weight: 600;
+      padding: .35rem .7rem;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: .15s;
+      font-size: .8rem;
+    }
+
+    .chip.active,
+    .chip:hover {
+      background: var(--verde-accent);
+      border-color: var(--verde-accent);
+      color: #fff;
+    }
+
+    .agro-btn {
+      display: inline-flex;
+      gap: .35rem;
+      align-items: center;
+      border: none;
+      border-radius: 10px;
+      padding: .4rem .75rem;
+      font-weight: 600;
+      font-size: .8rem;
+      cursor: pointer;
+      transition: .15s;
+    }
+
+    .agro-btn.primary {
+      background: var(--verde-accent);
+      color: #fff;
+    }
+
+    .agro-btn.secondary {
+      background: #fff;
+      border: 1px solid rgba(22, 41, 27, .12);
+      color: var(--verde);
+    }
+
+    .agro-btn.gray {
+      background: #f1f3f1;
+      color: #16291b;
+    }
+
+    .agro-btn:hover {
+      filter: brightness(.985);
+    }
+
+    /* ===== GRID TARJETAS ===== */
+    .envios-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: .85rem;
+    }
+
+    .envio-card {
+      background: #fff;
+      border: 1px solid rgba(22, 41, 27, .03);
+      border-radius: 14px;
+      padding: .75rem .8rem .65rem;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, .025);
+    }
+
+    .envio-top {
+      display: flex;
+      justify-content: space-between;
+      gap: .5rem;
+      margin-bottom: .4rem;
+    }
+
+    .envio-title {
+      font-weight: 700;
+      color: var(--verde);
+      font-size: .9rem;
+    }
+
+    .badge-state {
+      padding: .25rem .55rem;
+      border-radius: 999px;
+      font-size: .7rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .state-curso {
+      background: #ffc107;
+      color: #5c4500;
+    }
+
+    .state-comp {
+      background: #03b075;
+    }
+
+    .state-canc {
+      background: #6c757d;
+    }
+
+    .envio-meta {
+      display: flex;
+      flex-direction: column;
+      gap: .25rem;
+      font-size: .78rem;
+      color: #555;
+    }
+
+    .envio-actions {
+      display: flex;
+      gap: .4rem;
+      justify-content: flex-end;
+      margin-top: .55rem;
+    }
+
+    /* ===== TABLA ===== */
+    #tablaWrap table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      font-size: .83rem;
+    }
+
+    #tablaWrap th,
+    #tablaWrap td {
+      padding: .65rem .6rem;
+      border-bottom: 1px solid rgba(22, 41, 27, .03);
+    }
+
+    #tablaWrap thead th {
+      background: #f6fff6;
+      color: var(--verde);
+      font-weight: 700;
+      font-size: .78rem;
+    }
+
+    #tablaWrap tbody tr:hover {
+      background: #f9fbf9;
+    }
+
+    /* ===== PANEL DERECHO (como dashboard) ===== */
+    .mini-card {
+      background: #f9fbf9;
+      border: 1px solid rgba(22, 41, 27, .03);
+      border-radius: 14px;
+      padding: .75rem .7rem;
+      display: flex;
+      gap: .5rem;
+      align-items: flex-start;
+      margin-bottom: .5rem;
+    }
+
+    .mini-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: rgba(3, 176, 117, .12);
+      color: #03b075;
+    }
+
+    /* ===== SLIDE-OVER ===== */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .35);
+      display: none;
+      z-index: 1600;
+    }
+
+    .overlay.show {
+      display: block;
+    }
+
+    .slideover {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: min(420px, 100%);
+      height: 100%;
+      background: #fff;
+      transform: translateX(100%);
+      transition: .25s ease;
+      z-index: 1700;
+      display: flex;
+      flex-direction: column;
+      box-shadow: -8px 0 24px rgba(0, 0, 0, .1);
+    }
+
+    .slideover.open {
+      transform: translateX(0);
+    }
+
+    .slideover header {
+      padding: 1rem 1rem .6rem;
+      border-bottom: 1px solid rgba(22, 41, 27, .05);
+      display: flex;
+      gap: .5rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .slideover main {
+      padding: 1rem 1rem 1.1rem;
+      overflow-y: auto;
+    }
+
+    .kv {
+      display: grid;
+      grid-template-columns: .52fr 1fr;
+      gap: .35rem .5rem;
+      font-size: .82rem;
+      margin-bottom: .7rem;
+    }
+
+    .kv .muted {
+      color: #777;
+    }
+
+    .progress-wrap {
+      margin-top: .4rem;
+    }
+
+    .progress-bar {
+      height: 7px;
+      background: #eee;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .progress {
+      height: 7px;
+      background: #03b075;
+      width: 0;
+    }
+
+    #mapPanel {
+      height: 220px;
+      border-radius: 12px;
+      border: 1px solid rgba(22, 41, 27, .05);
+      margin-top: .6rem;
+      display: none;
+    }
+
+    /* ===== MAPA GENERAL (bottom-sheet) ===== */
+    .map-panel {
+      position: fixed;
+      inset: 0;
+      display: none;
+      z-index: 1800;
+    }
+
+    .map-panel .sheet {
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 70%;
+      background: #fff;
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+      box-shadow: 0 -10px 24px rgba(0, 0, 0, .15);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .map-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: .7rem 1rem;
+      border-bottom: 1px solid rgba(22, 41, 27, .04);
+    }
+
+    #mapGeneral {
+      flex: 1;
+    }
+
+    footer {
+      margin-left: 90px;
+      padding: 1rem 1.7rem 1.5rem;
+      font-size: .8rem;
+      color: #666;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 992px) {
+      .board {
+        grid-template-columns: 1fr;
+      }
+
+      main {
+        margin-left: 80px;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .agro-sidebar {
+        flex-direction: row;
+        width: 100%;
+        height: 62px;
+        inset: auto 0 0 0;
+      }
+
+      main,
+      footer {
+        margin-left: 0;
+        margin-bottom: 70px;
+      }
+
+      .page-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
   </style>
 </head>
+
 <body>
-  <div class="container">
-    <!-- ======= SIDEBAR ======= -->
-    <aside class="sidebar">
-      <div class="logo-section custom-logo">
-        <i class="fa-solid fa-tractor"></i>
-        <div class="logo-text">
-          <span class="brand">AgroLink</span>
-          <span class="role">Productor</span>
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="agro-sidebar">
+    <div class="agro-logo">
+      <i class="fa-solid fa-tractor"></i>
+    </div>
+
+    <div class="agro-menu">
+      <button title="Inicio" onclick="location.href='dashboard.html'"><i class="fa-solid fa-house"></i></button>
+      <button class="active" title="Envíos" onclick="location.href='envios.html'"><i
+          class="fa-solid fa-truck"></i></button>
+      <button title="Solicitudes" onclick="location.href='solicitudes.html'"><i
+          class="fa-solid fa-file-circle-plus"></i></button>
+      <button title="Perfil" onclick="location.href='perfil.html'"><i class="fa-solid fa-user"></i></button>
+    </div>
+
+    <div class="agro-logout" id="btnLogout">
+      <i class="fa-solid fa-right-from-bracket"></i>
+      <span>Salir</span>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main>
+    <!-- Header igual que dashboard -->
+    <div class="top-header">
+      <div class="hello-wrap">
+        <span>🚚</span>
+        <div>
+          <div>Mis envíos, <span id="helloName" class="name">Productor</span></div>
+          <small id="helloSub" class="text-muted">Aquí puedes ver el estado de tus solicitudes de transporte.</small>
+        </div>
+      </div>
+      <div id="avatar" class="user-avatar">AG</div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="row g-3 mb-3">
+      <div class="col-md-3 col-6">
+        <div class="kpi-card">
+          <i class="fa-solid fa-truck-moving kpi-icon"></i>
+          <h6>En curso</h6>
+          <div class="kpi-value" id="kpiEnCurso">0</div>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="kpi-card">
+          <i class="fa-solid fa-circle-check kpi-icon"></i>
+          <h6>Completados</h6>
+          <div class="kpi-value" id="kpiCompletados">0</div>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="kpi-card">
+          <i class="fa-solid fa-ban kpi-icon"></i>
+          <h6>Cancelados</h6>
+          <div class="kpi-value" id="kpiCancelados">0</div>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="kpi-card">
+          <i class="fa-solid fa-money-bill-wave kpi-icon"></i>
+          <h6>Pago total</h6>
+          <div class="kpi-value">S/ <span id="kpiPago">0.00</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== BOARD ===== -->
+    <div class="board">
+      <!-- IZQUIERDA: listado -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <i class="fa-solid fa-truck"></i> Mis envíos registrados
+          </div>
+          <div class="d-flex gap-2">
+            <button id="toggleVista" class="agro-btn gray"><i class="fa-solid fa-table-cells"></i> Vista tabla</button>
+            <button id="btnExport" class="agro-btn secondary"><i class="fa-solid fa-file-arrow-down"></i>
+              Exportar</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <!-- acciones -->
+          <div class="page-actions">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass" style="color:#2b7a0b"></i>
+              <input id="q" type="text" placeholder="Buscar por ID, producto o ruta..." />
+            </div>
+            <button class="chip active" data-estado="Todos">Todos</button>
+            <button class="chip" data-estado="En curso">En curso</button>
+            <button class="chip" data-estado="Completado ✅">Completados</button>
+            <button class="chip" data-estado="Cancelado ❌">Cancelados</button>
+          </div>
+
+          <!-- GRID -->
+          <section id="grid" class="envios-grid"></section>
+
+          <!-- TABLA -->
+          <section id="tablaWrap" style="display:none; margin-top: .6rem;">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Producto</th>
+                  <th>Origen</th>
+                  <th>Destino</th>
+                  <th>Transportista</th>
+                  <th>Fecha</th>
+                  <th>Estado</th>
+                  <th>Pago</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </section>
         </div>
       </div>
 
-      <nav class="nav-links">
-        <a href="dashboard.html"><i class="fa-solid fa-home"></i> Panel de control</a>
-        <a href="solicitudes.html"><i class="fa-solid fa-plus"></i> Nueva solicitud</a>
-        <a href="envios.html" class="active"><i class="fa-solid fa-truck"></i> Mis envíos</a>
-        <a href="perfil.html"><i class="fa-solid fa-user"></i> Perfil</a>
-      </nav>
-
-      <div class="help-section">
-        <a href="#"><i class="fa-regular fa-circle-question"></i> Ayuda</a>
-        <a href="#" id="logout"><i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión</a>
-      </div>
-    </aside>
-
-    <!-- ======= MAIN ======= -->
-    <main class="main-content">
-      <header class="main-header">
-        <h1>Mis Envíos</h1>
-        <p>Aquí puedes ver el estado de tus solicitudes de transporte agrícola.</p>
-      </header>
-
-      <!-- KPIs -->
-      <section class="kpis">
-        <div class="kpi"><h4>En curso</h4><p id="kpiEnCurso">0</p></div>
-        <div class="kpi"><h4>Completados</h4><p id="kpiCompletados">0</p></div>
-        <div class="kpi"><h4>Cancelados</h4><p id="kpiCancelados">0</p></div>
-        <div class="kpi"><h4>Pago total (S/)</h4><p id="kpiPago">0.00</p></div>
-      </section>
-
-      <!-- Actions -->
-      <div class="page-actions">
-        <div class="search">
-          <i class="fa-solid fa-magnifying-glass" style="color:#2b7a0b"></i>
-          <input id="q" placeholder="Buscar por ID o producto...">
+      <!-- DERECHA: resumen rápido -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <i class="fa-solid fa-bolt"></i> Resumen rápido
+          </div>
+          <button id="btnMapaGeneral" class="agro-btn primary"><i class="fa-solid fa-map"></i> Mapa</button>
         </div>
-
-        <button class="chip active" data-estado="Todos">Todos</button>
-        <button class="chip" data-estado="En curso">En curso</button>
-        <button class="chip" data-estado="Completado ✅">Completados</button>
-        <button class="chip" data-estado="Cancelado ❌">Cancelados</button>
-
-        <button id="toggleVista" class="btn gray"><i class="fa-solid fa-table-cells"></i> Vista tabla</button>
-        <button id="btnMapaGeneral" class="btn outline"><i class="fa-solid fa-map"></i> Mapa general</button>
-        <button id="btnExport" class="btn"><i class="fa-solid fa-file-arrow-down"></i> Exportar CSV</button>
+        <div class="panel-body">
+          <div class="mini-card">
+            <div class="mini-icon"><i class="fa-solid fa-truck"></i></div>
+            <div>
+              <strong id="cntEnCurso">0</strong> envío(s) en curso
+              <div class="text-muted small">Moviendo carga ahora</div>
+            </div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-icon" style="background:rgba(255,193,7,.15);color:#946200;"><i
+                class="fa-solid fa-clock"></i></div>
+            <div>
+              <strong id="cntPendientes">0</strong> pendiente(s)
+              <div class="text-muted small">Aún por asignar transportista</div>
+            </div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-icon" style="background:rgba(0,123,255,.12);color:#0056b3;"><i
+                class="fa-solid fa-circle-check"></i></div>
+            <div>
+              <strong id="cntCompletados">0</strong> completado(s)
+              <div class="text-muted small">Últimos 30 días</div>
+            </div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-icon" style="background:rgba(214,40,40,.09);color:#d62828">
+              <i class="fa-solid fa-right-from-bracket"></i>
+            </div>
+            <div>
+              <a href="../index.html" id="logoutLink" class="text-danger text-decoration-none">Cerrar sesión</a>
+              <div class="text-muted small">Terminar sesión segura</div>
+            </div>
+          </div>
+        </div>
       </div>
+    </div>
 
-      <!-- CONTENEDORES -->
-      <section id="grid" class="grid"></section>
+  </main>
 
-      <section id="tablaWrap" style="display:none">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th><th>Producto</th><th>Origen</th><th>Destino</th>
-              <th>Transportista</th><th>Fecha</th><th>Estado</th><th>Pago</th><th></th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
-      </section>
-    </main>
-  </div>
+  <footer>
+    © 2025 AgroLink. Todos los derechos reservados.
+  </footer>
 
-  <!-- ======= SLIDE-OVER DETALLES ======= -->
+  <!-- ====== SLIDE-OVER DETALLE ====== -->
   <div id="overlay" class="overlay"></div>
   <aside id="slideover" class="slideover" aria-hidden="true">
     <header>
-      <button id="closeSlide" class="btn gray"><i class="fa-solid fa-xmark"></i></button>
-      <h3 style="margin:0;color:#2b7a0b">Detalle de solicitud</h3>
+      <h5 class="mb-0" style="color:var(--verde);"><i class="fa-solid fa-truck"></i> Detalle de envío</h5>
+      <button id="closeSlide" class="agro-btn gray"><i class="fa-solid fa-xmark"></i></button>
     </header>
     <main>
-      <div id="detailHead" class="muted" style="margin-bottom:.5rem"></div>
+      <div id="detailHead" class="text-muted small mb-2"></div>
 
       <div class="kv">
-        <div class="muted">Producto</div><div id="dProducto"></div>
-        <div class="muted">Transportista</div><div id="dTransp"></div>
-        <div class="muted">Teléfono</div><div id="dTelefono"></div>
-        <div class="muted">Origen</div><div id="dOrigen"></div>
-        <div class="muted">Destino</div><div id="dDestino"></div>
-        <div class="muted">Fecha</div><div id="dFecha"></div>
-        <div class="muted">Peso</div><div id="dPeso"></div>
-        <div class="muted">Pago</div><div id="dPago"></div>
-        <div class="muted">Estado</div><div id="dEstado"></div>
+        <div class="muted">Producto</div>
+        <div id="dProducto"></div>
+        <div class="muted">Transportista</div>
+        <div id="dTransp"></div>
+        <div class="muted">Teléfono</div>
+        <div id="dTelefono"></div>
+        <div class="muted">Origen</div>
+        <div id="dOrigen"></div>
+        <div class="muted">Destino</div>
+        <div id="dDestino"></div>
+        <div class="muted">Fecha</div>
+        <div id="dFecha"></div>
+        <div class="muted">Peso</div>
+        <div id="dPeso"></div>
+        <div class="muted">Pago</div>
+        <div id="dPago"></div>
+        <div class="muted">Estado</div>
+        <div id="dEstado"></div>
       </div>
 
       <div class="progress-wrap">
-        <small class="muted">Progreso</small>
-        <div class="progress-bar"><div id="dProgress" class="progress"></div></div>
+        <small class="text-muted">Progreso</small>
+        <div class="progress-bar">
+          <div id="dProgress" class="progress"></div>
+        </div>
       </div>
 
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin:.6rem 0 1rem">
-        <a id="btnContactar" class="btn outline" target="_blank"><i class="fa-solid fa-phone"></i> Contactar</a>
-        <button id="btnRuta" class="btn outline"><i class="fa-solid fa-route"></i> Ver ruta (panel)</button>
-        <button id="btnDuplicar" class="btn gray"><i class="fa-solid fa-copy"></i> Duplicar</button>
-        <button id="btnCancelar" class="btn warn"><i class="fa-solid fa-ban"></i> Cancelar</button>
+      <div class="d-flex gap-2 flex-wrap mt-3 mb-2">
+        <a id="btnContactar" class="agro-btn secondary" target="_blank"><i class="fa-solid fa-phone"></i> Contactar</a>
+        <button id="btnRuta" class="agro-btn secondary"><i class="fa-solid fa-route"></i> Ver ruta</button>
+        <button id="btnDuplicar" class="agro-btn gray"><i class="fa-solid fa-copy"></i> Duplicar</button>
+        <button id="btnCancelar" class="agro-btn" style="background:#d62828;color:#fff;"><i class="fa-solid fa-ban"></i>
+          Cancelar</button>
       </div>
 
-      <div id="mapPanel" style="height:260px;border-radius:12px;border:1px solid #eef6ee;display:none"></div>
+      <div id="mapPanel"></div>
 
       <div id="calificarWrap" style="margin-top:1rem;display:none">
-        <small class="muted">Calificación al transportista</small><br/>
-        <span id="rateStars" class="stars" style="font-size:1.3rem;cursor:pointer">☆☆☆☆☆</span>
+        <small class="text-muted">Calificación al transportista</small><br />
+        <span id="rateStars" style="font-size:1.3rem;cursor:pointer;color:gold">☆☆☆☆☆</span>
       </div>
     </main>
   </aside>
 
-  <!-- ======= PANEL APARTE MAPA GENERAL ======= -->
+  <!-- ====== MAPA GENERAL ====== -->
   <div id="mapSheet" class="map-panel">
     <div class="sheet">
       <div class="map-toolbar">
-        <strong style="color:#2b7a0b"><i class="fa-solid fa-map"></i> Mapa general de envíos</strong>
-        <button id="closeMapSheet" class="btn gray">Cerrar</button>
+        <strong style="color:var(--verde)"><i class="fa-solid fa-map"></i> Mapa general de envíos</strong>
+        <button id="closeMapSheet" class="agro-btn gray">Cerrar</button>
       </div>
       <div id="mapGeneral"></div>
     </div>
   </div>
 
-  <footer class="footer">
-    <p>© 2025 AgroLink. Todos los derechos reservados.</p>
-  </footer>
-
+  <!-- SCRIPTS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="../js/toast.js"></script>
+  <!-- Si tienes tu toast.js lo dejas. Si no, esto evita error -->
+  <script>
+    if (typeof showToast === "undefined") {
+      window.showToast = (msg) => alert(msg);
+    }
+  </script>
+
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      // ==== Datos base ====
+      // ===== Seguridad mínima =====
       const rol = localStorage.getItem("agrolinkRol");
-      const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")||"{}");
-      if (rol!=="productor") {
-        alert("⚠️ Acceso denegado. Inicia sesión como Productor.");
-        location.href="../login.html"; return;
+      const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario") || "{}");
+      if (rol !== "productor") {
+        // si quieres lo rediriges
+        // location.href = "../login.html";
       }
-      const all = JSON.parse(localStorage.getItem("solicitudesAgroLink")||"[]");
-      // solo envíos del productor actual
-      let envios = all.filter(s => (s.productor||"").toLowerCase() === (usuario.nombre||"").toLowerCase());
 
-      // ==== Estado UI ====
-      let vista = "grid";              // grid | table
-      let filtroEstado = "Todos";      // chip seleccionada
-      let query = "";                  // texto búsqueda
-      let seleccion = null;            // envío seleccionado en slide-over
+      const nombreUser = usuario.nombre || "Productor";
+      document.getElementById("helloName").textContent = nombreUser;
+      document.getElementById("avatar").textContent = (nombreUser[0] || "A").toUpperCase();
 
-      // ==== elementos ====
+      // ===== Datos =====
+      const all = JSON.parse(localStorage.getItem("solicitudesAgroLink") || "[]");
+      let envios = all.filter(s => (s.productor || "").toLowerCase() === nombreUser.toLowerCase());
+
+      // ===== Estado UI =====
+      let vista = "grid";
+      let filtroEstado = "Todos";
+      let query = "";
+      let seleccion = null;
+
+      // ===== Elementos =====
       const grid = document.getElementById("grid");
       const tbody = document.getElementById("tbody");
       const tablaWrap = document.getElementById("tablaWrap");
@@ -252,136 +830,174 @@
       const chips = document.querySelectorAll(".chip");
       const q = document.getElementById("q");
 
-      // KPIs
-      function setKPIs(list){
-        const enCurso = list.filter(e=>e.estado==="En curso").length;
-        const comp = list.filter(e=>e.estado==="Completado ✅").length;
-        const canc = list.filter(e=>e.estado==="Cancelado ❌").length;
-        const pago = list.reduce((a,e)=>a+(parseFloat(e.pago)||0),0);
+      // KPIs extra para panel derecho
+      const cntEnCurso = document.getElementById("cntEnCurso");
+      const cntPendientes = document.getElementById("cntPendientes");
+      const cntCompletados = document.getElementById("cntCompletados");
+
+      function setKPIs(list) {
+        const enCurso = list.filter(e => /en\s*curso/i.test(e.estado || "")).length;
+        const comp = list.filter(e => /completado/i.test(e.estado || "")).length;
+        const canc = list.filter(e => /cancelado|rechazad/i.test(e.estado || "")).length; // ✅ detecta "Cancelado" o "Rechazada"
+        const pend = list.filter(e => /pendiente/i.test(e.estado || "")).length;
+        const pago = list.reduce((a, e) => a + (parseFloat(e.pago) || 0), 0);
+
         document.getElementById("kpiEnCurso").textContent = enCurso;
         document.getElementById("kpiCompletados").textContent = comp;
         document.getElementById("kpiCancelados").textContent = canc;
         document.getElementById("kpiPago").textContent = pago.toFixed(2);
+
+        document.getElementById("cntEnCurso").textContent = enCurso;
+        document.getElementById("cntPendientes").textContent = pend;
+        document.getElementById("cntCompletados").textContent = comp;
+
+        document.getElementById("helloSub").textContent =
+          (new Date().getHours() < 12 ? "Buenos días. " : "Buen día. ") +
+          `Tienes ${enCurso} envío(s) en curso y ${pend} pendiente(s).`;
       }
 
-      // Filtros aplicados
-      function filtrar(){
+
+
+      // ===== Filtros =====
+      function filtrar() {
         let out = envios.slice();
-        if (filtroEstado!=="Todos") out = out.filter(e=>e.estado===filtroEstado);
-        if (query.trim()){
+        if (filtroEstado !== "Todos") {
+          const estadoBuscado = filtroEstado.toLowerCase();
+          out = out.filter(e => {
+            const estado = (e.estado || "").toLowerCase();
+            if (estadoBuscado === "cancelado") {
+              return estado.includes("cancelado") || estado.includes("rechazad"); // ✅ reconoce "Rechazada"
+            }
+            return estado.includes(estadoBuscado);
+          });
+        }
+
+
+
+        if (query.trim()) {
           const ql = query.trim().toLowerCase();
           out = out.filter(e =>
-            (String(e.id||"").toLowerCase().includes(ql)) ||
-            (String(e.tipo||"").toLowerCase().includes(ql))
+            String(e.id || "").toLowerCase().includes(ql) ||
+            String(e.tipo || "").toLowerCase().includes(ql) ||
+            String(e.origen || "").toLowerCase().includes(ql) ||
+            String(e.destino || "").toLowerCase().includes(ql)
           );
         }
         setKPIs(out);
         return out;
       }
 
-      // Render tarjetas
-      function renderGrid(list){
+      // ===== RENDER GRID =====
+      function renderGrid(list) {
         grid.innerHTML = "";
-        if (list.length===0){ grid.innerHTML = "<p>No hay envíos.</p>"; return;}
-        list.forEach(e=>{
-          const pillClass = e.estado.includes("En curso")?"en-curso":e.estado.includes("Completado")?"completado":"cancelado";
+        if (!list.length) {
+          grid.innerHTML = `<p class="text-muted mb-0">No hay envíos para mostrar.</p>`;
+          return;
+        }
+        list.forEach(e => {
+          const st = e.estado || "—";
+          const badge =
+            /Completado/.test(st) ? 'state-comp' :
+              /En curso/.test(st) ? 'state-curso' :
+                /Cancelado/.test(st) ? 'state-canc' : 'state-canc';
+
           const card = document.createElement("div");
-          card.className = "card";
+          card.className = "envio-card";
           card.innerHTML = `
-            <div class="card-rows">
+            <div class="envio-top">
               <div>
-                <h3 style="margin:.1rem 0;color:#2b7a0b">${e.tipo||"-"}</h3>
-                <div class="muted">ID: ${e.id||"-"}</div>
+                <div class="envio-title">${e.tipo || "Solicitud"}</div>
+                <small class="text-muted">ID: ${e.id || "—"}</small>
               </div>
-              <div class="muted"><strong>Origen:</strong> ${e.origen||"-"}</div>
-              <div class="muted"><strong>Destino:</strong> ${e.destino||"-"}</div>
-              <div class="muted"><strong>Fecha:</strong> ${e.fecha||"-"}</div>
-              <div style="display:flex;justify-content:flex-end"><span class="pill ${pillClass}">${e.estado||"-"}</span></div>
+              <span class="badge-state ${badge}">${e.estado || "—"}</span>
             </div>
-            <div class="card-actions" style="margin-top:.7rem">
-              <button class="btn outline btn-det" data-id="${e.id||""}"><i class="fa-solid fa-eye"></i> Ver detalles</button>
-              <button class="btn gray btn-dup" data-id="${e.id||""}"><i class="fa-solid fa-copy"></i> Duplicar</button>
+            <div class="envio-meta">
+              <div><i class="fa-solid fa-location-dot text-success"></i> ${e.origen || "—"} → ${e.destino || "—"}</div>
+              <div><i class="fa-regular fa-calendar"></i> ${e.fecha || "Sin fecha"}</div>
+              <div><i class="fa-solid fa-user-truck"></i> ${e.transportista || "No asignado"}</div>
+            </div>
+            <div class="envio-actions">
+              <button class="agro-btn secondary btn-det" data-id="${e.id || ""}"><i class="fa-solid fa-eye"></i></button>
+              <button class="agro-btn gray btn-dup" data-id="${e.id || ""}"><i class="fa-solid fa-copy"></i></button>
             </div>
           `;
           grid.appendChild(card);
         });
       }
 
-      // Render tabla
-      function renderTable(list){
+      // ===== RENDER TABLA =====
+      function renderTable(list) {
         tbody.innerHTML = "";
-        if (list.length===0){ tbody.innerHTML = `<tr><td colspan="9">No hay envíos.</td></tr>`; return;}
-        list.forEach(e=>{
-          const pillClass = e.estado.includes("En curso")?"en-curso":e.estado.includes("Completado")?"completado":"cancelado";
+        if (!list.length) {
+          tbody.innerHTML = `<tr><td colspan="9" class="text-muted">No hay envíos.</td></tr>`;
+          return;
+        }
+        list.forEach(e => {
+          const st = e.estado || "—";
+          const badge =
+            /Completado/.test(st) ? 'state-comp' :
+              /En curso/.test(st) ? 'state-curso' :
+                /Cancelado/.test(st) ? 'state-canc' : 'state-canc';
+
           const tr = document.createElement("tr");
           tr.innerHTML = `
-            <td>${e.id||"-"}</td>
-            <td>${e.tipo||"-"}</td>
-            <td>${e.origen||"-"}</td>
-            <td>${e.destino||"-"}</td>
-            <td>${e.transportista||"—"}</td>
-            <td>${e.fecha||"—"}</td>
-            <td><span class="pill ${pillClass}">${e.estado||"-"}</span></td>
-            <td>S/ ${e.pago||0}</td>
-            <td style="text-align:right">
-              <button class="btn outline btn-det" data-id="${e.id||""}">Ver detalles</button>
+            <td>${e.id || "—"}</td>
+            <td>${e.tipo || "—"}</td>
+            <td>${e.origen || "—"}</td>
+            <td>${e.destino || "—"}</td>
+            <td>${e.transportista || "—"}</td>
+            <td>${e.fecha || "—"}</td>
+            <td><span class="badge-state ${badge}">${st}</span></td>
+            <td>S/ ${e.pago || 0}</td>
+            <td class="text-end">
+              <button class="agro-btn secondary btn-det" data-id="${e.id || ""}"><i class="fa-solid fa-eye"></i></button>
             </td>
           `;
           tbody.appendChild(tr);
         });
       }
 
-      function render(){
+      function render() {
         const list = filtrar();
-        if (vista==="grid"){
+        if (vista === "grid") {
           grid.style.display = "";
           tablaWrap.style.display = "none";
           renderGrid(list);
-        }else{
+        } else {
           grid.style.display = "none";
           tablaWrap.style.display = "";
           renderTable(list);
         }
       }
 
-      // Eventos filtros
-      chips.forEach(ch=>{
-        ch.addEventListener("click", ()=>{
-          chips.forEach(x=>x.classList.remove("active"));
+      // ===== Eventos filtros =====
+      chips.forEach(ch => {
+        ch.addEventListener("click", () => {
+          chips.forEach(x => x.classList.remove("active"));
           ch.classList.add("active");
           filtroEstado = ch.dataset.estado;
           render();
-        })
+        });
       });
-      q.addEventListener("input", (e)=>{ query = e.target.value; render(); });
 
-      // Toggle vista
-      toggleVista.addEventListener("click", ()=>{
-        vista = (vista==="grid")?"table":"grid";
-        toggleVista.innerHTML = vista==="grid" ? `<i class="fa-solid fa-table-cells"></i> Vista tabla`
-                                               : `<i class="fa-solid fa-grip"></i> Vista tarjetas`;
+      q.addEventListener("input", (e) => {
+        query = e.target.value;
         render();
       });
 
-      // ====== Slide-over ======
+      // ===== Toggle vista =====
+      toggleVista.addEventListener("click", () => {
+        vista = (vista === "grid") ? "table" : "grid";
+        toggleVista.innerHTML = vista === "grid"
+          ? `<i class="fa-solid fa-table-cells"></i> Vista tabla`
+          : `<i class="fa-solid fa-grip"></i> Vista tarjetas`;
+        render();
+      });
+
+      // ====== Slide-over ====== 
       const overlay = document.getElementById("overlay");
       const slide = document.getElementById("slideover");
       const closeSlide = document.getElementById("closeSlide");
-
-      function openSlide(){
-        overlay.classList.add("show");
-        slide.classList.add("open");
-      }
-      function closeSlideFn(){
-        slide.classList.remove("open");
-        overlay.classList.remove("show");
-        // ocultar mapa interno si estaba visible
-        if (mapPanel) { mapPanel.style.display="none"; if (_mapPanel) { _mapPanel.remove(); _mapPanel=null; } }
-      }
-      closeSlide.addEventListener("click", closeSlideFn);
-      overlay.addEventListener("click", closeSlideFn);
-
-      // Datos a UI del slide
       const dProducto = document.getElementById("dProducto");
       const dTransp = document.getElementById("dTransp");
       const dTelefono = document.getElementById("dTelefono");
@@ -402,161 +1018,225 @@
       const mapPanel = document.getElementById("mapPanel");
       let _mapPanel = null;
 
+      function openSlide() {
+        overlay.classList.add("show");
+        slide.classList.add("open");
+      }
+      function closeSlideFn() {
+        overlay.classList.remove("show");
+        slide.classList.remove("open");
+        if (mapPanel) {
+          mapPanel.style.display = "none";
+          if (_mapPanel) {
+            _mapPanel.remove();
+            _mapPanel = null;
+          }
+        }
+      }
+      closeSlide.addEventListener("click", closeSlideFn);
+      overlay.addEventListener("click", closeSlideFn);
+
       const coords = {
-        Lima:[-12.0464,-77.0428], Trujillo:[-8.1117,-79.0288], Arequipa:[-16.409,-71.5375],
-        Piura:[-5.1945,-80.6328], Chiclayo:[-6.7714,-79.8409], Cusco:[-13.5319,-71.9675],
-        Puno:[-15.8402,-70.0219], Huancayo:[-12.0651,-75.2049]
+        Lima: [-12.0464, -77.0428], Trujillo: [-8.1117, -79.0288], Arequipa: [-16.409, -71.5375],
+        Piura: [-5.1945, -80.6328], Chiclayo: [-6.7714, -79.8409], Cusco: [-13.5319, -71.9675],
+        Puno: [-15.8402, -70.0219], Huancayo: [-12.0651, -75.2049]
       };
 
-      function progressPct(estado){
-        if (/Completado/.test(estado)) return 100;
-        if (/En curso/.test(estado)) return 60;
-        if (/Cancelado/.test(estado)) return 0;
-        return 20;
+      function progressPct(estado) {
+        if (/Completado/.test(estado || "")) return 100;
+        if (/En curso/.test(estado || "")) return 60;
+        if (/Pendiente/.test(estado || "")) return 25;
+        return 10;
       }
 
-      // Delegación para abrir detalles / duplicar
-      document.addEventListener("click", (e)=>{
+      // Delegación para botones
+      document.addEventListener("click", (e) => {
         const det = e.target.closest(".btn-det");
         const dup = e.target.closest(".btn-dup");
-        if (det){
+
+        if (det) {
           const id = det.dataset.id;
-          seleccion = envios.find(x=>String(x.id||"")===String(id));
+          seleccion = envios.find(x => String(x.id || "") === String(id));
           if (!seleccion) return;
 
-          detailHead.textContent = `ID: ${seleccion.id||"—"}`;
-          dProducto.textContent = seleccion.tipo||"—";
-          dTransp.textContent = seleccion.transportista||"—";
-          dTelefono.textContent = seleccion.telefono||"—";
-          dOrigen.textContent = seleccion.origen||"—";
-          dDestino.textContent = seleccion.destino||"—";
-          dFecha.textContent = seleccion.fecha||"—";
-          dPeso.textContent = (seleccion.peso||0)+" kg";
-          dPago.textContent = "S/ " + (seleccion.pago||0);
-          dEstado.textContent = seleccion.estado||"—";
-          dProgress.style.width = progressPct(seleccion.estado)+"%";
+          detailHead.textContent = `ID: ${seleccion.id || "—"}`;
+          dProducto.textContent = seleccion.tipo || "—";
+          dTransp.textContent = seleccion.transportista || "—";
+          dTelefono.textContent = seleccion.telefono || "—";
+          dOrigen.textContent = seleccion.origen || "—";
+          dDestino.textContent = seleccion.destino || "—";
+          dFecha.textContent = seleccion.fecha || "—";
+          dPeso.textContent = (seleccion.peso || 0) + " kg";
+          dPago.textContent = "S/ " + (seleccion.pago || 0);
+          dEstado.textContent = seleccion.estado || "—";
+          dProgress.style.width = progressPct(seleccion.estado) + "%";
 
-          btnContactar.href = seleccion.telefono ? `https://wa.me/51${(seleccion.telefono+"").replace(/\D/g,"")}` : "#";
-          calificarWrap.style.display = /Completado/.test(seleccion.estado) ? "block" : "none";
-          // pintar estrellas si ya existe
-          const current = Math.round(parseFloat(seleccion.calificacion)||0);
-          paintStars(current);
+          btnContactar.href = seleccion.telefono ? `https://wa.me/51${(seleccion.telefono + "").replace(/\D/g, "")}` : "#";
+          calificarWrap.style.display = /Completado/.test(seleccion.estado || "") ? "block" : "none";
+          paintStars(Math.round(parseFloat(seleccion.calificacion) || 0));
 
           openSlide();
         }
-        if (dup){
+
+        if (dup) {
           const id = dup.dataset.id;
-          const env = envios.find(x=>String(x.id||"")===String(id));
+          const env = envios.find(x => String(x.id || "") === String(id));
           if (!env) return;
-          const copy = {...env, id: Date.now(), estado:"Pendiente"};
+          const copy = { ...env, id: Date.now(), estado: "Pendiente" };
           all.push(copy);
           localStorage.setItem("solicitudesAgroLink", JSON.stringify(all));
-          envios = all.filter(s => (s.productor||"").toLowerCase()===(usuario.nombre||"").toLowerCase());
-          showToast("📄 Solicitud duplicada.", "success");
+          envios = all.filter(s => (s.productor || "").toLowerCase() === nombreUser.toLowerCase());
+          showToast("📄 Solicitud duplicada.");
           render();
         }
       });
 
-      // Ver ruta dentro del slide
-      btnRuta.addEventListener("click", ()=>{
+      // Ver ruta
+      btnRuta.addEventListener("click", () => {
         if (!seleccion) return;
         const A = coords[seleccion.origen], B = coords[seleccion.destino];
-        if (!A || !B){ showToast("No hay coordenadas para esa ruta.", "info"); return; }
-        mapPanel.style.display="block";
-        if (_mapPanel){ _mapPanel.remove(); _mapPanel=null; }
+        if (!A || !B) {
+          showToast("No hay coordenadas para esa ruta.");
+          return;
+        }
+        mapPanel.style.display = "block";
+        if (_mapPanel) {
+          _mapPanel.remove();
+          _mapPanel = null;
+        }
         _mapPanel = L.map('mapPanel').setView(A, 6);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:"&copy; OpenStreetMap"}).addTo(_mapPanel);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: "&copy; OpenStreetMap"
+        }).addTo(_mapPanel);
         L.marker(A).addTo(_mapPanel).bindPopup(seleccion.origen);
         L.marker(B).addTo(_mapPanel).bindPopup(seleccion.destino);
-        L.polyline([A,B], {color:"#2b7a0b", weight:4}).addTo(_mapPanel);
-        _mapPanel.fitBounds([A,B]);
+        L.polyline([A, B], { color: "#03b075", weight: 4 }).addTo(_mapPanel);
+        _mapPanel.fitBounds([A, B]);
       });
 
       // Cancelar
-      btnCancelar.addEventListener("click", ()=>{
+      btnCancelar.addEventListener("click", () => {
         if (!seleccion) return;
-        if (!confirm("¿Cancelar esta solicitud?")) return;
-        const idx = all.findIndex(x=>String(x.id||"")===String(seleccion.id||""));
-        if (idx>-1){ all[idx].estado = "Cancelado ❌"; }
-        localStorage.setItem("solicitudesAgroLink", JSON.stringify(all));
-        envios = all.filter(s => (s.productor||"").toLowerCase()===(usuario.nombre||"").toLowerCase());
-        showToast("❌ Envío cancelado.", "info");
-        render();
-        closeSlideFn();
+        if (!confirm("¿Cancelar este envío?")) return;
+        const idx = all.findIndex(x => String(x.id || "") === String(seleccion.id || ""));
+        if (idx > -1) {
+          all[idx].estado = "Cancelado"; // Estado sin emoji para que los KPIs lo detecten bien
+          localStorage.setItem("solicitudesAgroLink", JSON.stringify(all));
+          envios = all.filter(s => (s.productor || "").toLowerCase() === nombreUser.toLowerCase());
+          showToast("❌ Envío cancelado.");
+          render();
+          closeSlideFn();
+        }
+
       });
 
-      // Calificación por estrellas
-      function paintStars(n){
-        rateStars.textContent = "★★★★★".slice(0,n) + "☆☆☆☆☆".slice(0,5-n);
+      // Stars
+      function paintStars(n) {
+        rateStars.textContent = "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(0, 5 - n);
       }
-      rateStars.addEventListener("mousemove",(e)=>{
+      rateStars.addEventListener("click", (e) => {
         if (!seleccion) return;
         const rect = rateStars.getBoundingClientRect();
-        const pct = (e.clientX-rect.left)/rect.width;
-        const n = Math.min(5,Math.max(1, Math.ceil(pct*5)));
+        const pct = (e.clientX - rect.left) / rect.width;
+        const n = Math.min(5, Math.max(1, Math.ceil(pct * 5)));
         paintStars(n);
-      });
-      rateStars.addEventListener("click",(e)=>{
-        if (!seleccion) return;
-        const rect = rateStars.getBoundingClientRect();
-        const pct = (e.clientX-rect.left)/rect.width;
-        const n = Math.min(5,Math.max(1, Math.ceil(pct*5)));
-        const idx = all.findIndex(x=>String(x.id||"")===String(seleccion.id||""));
-        if (idx>-1){ all[idx].calificacion = n; }
-        localStorage.setItem("solicitudesAgroLink", JSON.stringify(all));
-        showToast("⭐ Calificación guardada.", "success");
+        const idx = all.findIndex(x => String(x.id || "") === String(seleccion.id || ""));
+        if (idx > -1) {
+          all[idx].calificacion = n;
+          localStorage.setItem("solicitudesAgroLink", JSON.stringify(all));
+          showToast("⭐ Calificación guardada.");
+        }
       });
 
-      // ====== Mapa general (panel aparte) ======
+      // ====== Mapa general ======
       const mapSheet = document.getElementById("mapSheet");
       const closeMapSheet = document.getElementById("closeMapSheet");
       let mapGeneral = null;
 
-      document.getElementById("btnMapaGeneral").addEventListener("click", ()=>{
-        mapSheet.style.display="block";
-        setTimeout(()=>{ // init una vez visible
-          if (mapGeneral) { mapGeneral.invalidateSize(); return; }
-          mapGeneral = L.map('mapGeneral').setView([-9.189967,-75.015152],6);
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:"&copy; OpenStreetMap"}).addTo(mapGeneral);
+      document.getElementById("btnMapaGeneral").addEventListener("click", () => {
+        mapSheet.style.display = "block";
+        setTimeout(() => {
+          if (!mapGeneral) {
+            mapGeneral = L.map('mapGeneral').setView([-9.189967, -75.015152], 6);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              attribution: "&copy; OpenStreetMap"
+            }).addTo(mapGeneral);
+          } else {
+            mapGeneral.invalidateSize();
+          }
           const list = filtrar();
-          list.forEach(e=>{
+          list.forEach(e => {
             const A = coords[e.origen], B = coords[e.destino];
-            if (!A||!B) return;
-            L.marker(A).addTo(mapGeneral).bindPopup(`<b>${e.tipo}</b><br>Origen: ${e.origen}`);
+            if (!A || !B) return;
+            L.marker(A).addTo(mapGeneral).bindPopup(`<b>${e.tipo}</b><br>${e.origen}`);
             L.marker(B).addTo(mapGeneral).bindPopup(`Destino: ${e.destino}`);
-            L.polyline([A,B],{color:"#2b7a0b",weight:3,opacity:.8}).addTo(mapGeneral);
+            L.polyline([A, B], { color: "#03b075", weight: 3, opacity: .85 }).addTo(mapGeneral);
           });
-        },50);
+        }, 30);
       });
-      closeMapSheet.addEventListener("click", ()=>{ mapSheet.style.display="none"; });
 
-      // ====== Exportar CSV ======
-      document.getElementById("btnExport").addEventListener("click", ()=>{
+      closeMapSheet.addEventListener("click", () => {
+        mapSheet.style.display = "none";
+      });
+
+      // ===== Exportar CSV =====
+      document.getElementById("btnExport").addEventListener("click", () => {
         const list = filtrar();
-        if (!list.length){ showToast("No hay datos para exportar.","info"); return; }
-        const cols = ["id","tipo","origen","destino","fecha","peso","pago","estado","transportista","telefono","calificacion"];
+        if (!list.length) {
+          showToast("No hay datos para exportar.");
+          return;
+        }
+        const cols = ["id", "tipo", "origen", "destino", "fecha", "peso", "pago", "estado", "transportista", "telefono", "calificacion"];
         const header = cols.join(",");
-        const rows = list.map(r=>cols.map(k=>JSON.stringify(r[k]??"")).join(","));
-        const csv = [header,...rows].join("\n");
-        const blob = new Blob([csv],{type:"text/csv;charset=utf-8;"});
+        const rows = list.map(r => cols.map(k => JSON.stringify(r[k] ?? "")).join(","));
+        const csv = [header, ...rows].join("\n");
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
         a.download = "mis_envios.csv";
         a.click();
       });
 
-      // ====== Logout ======
-      document.getElementById("logout").addEventListener("click",(e)=>{
-        e.preventDefault();
-        showToast("👋 Sesión cerrada correctamente","info");
+      // ===== Logout =====
+      document.getElementById("btnLogout").addEventListener("click", () => {
         localStorage.removeItem("agrolinkRol");
         localStorage.removeItem("agrolinkUsuario");
-        setTimeout(()=>location.href="../index.html",900);
+        location.href = "../index.html";
+      });
+      document.getElementById("logoutLink").addEventListener("click", (e) => {
+        e.preventDefault();
+        localStorage.removeItem("agrolinkRol");
+        localStorage.removeItem("agrolinkUsuario");
+        location.href = "../index.html";
       });
 
       // Primera render
       render();
     });
   </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const path = window.location.pathname;
+      const buttons = document.querySelectorAll(".agro-menu button");
+
+      buttons.forEach(btn => {
+        const title = btn.getAttribute("title").toLowerCase();
+        if (
+          (path.includes("dashboard") && title.includes("panel")) ||
+          (path.includes("envios") && title.includes("envíos")) ||
+          (path.includes("productos") && title.includes("productos")) ||
+          (path.includes("reportes") && title.includes("reportes")) ||
+          (path.includes("calendario") && title.includes("calendario")) ||
+          (path.includes("alertas") && title.includes("alertas"))
+        ) {
+          btn.classList.add("active");
+        } else {
+          btn.classList.remove("active");
+        }
+      });
+    });
+  </script>
+
 </body>
+
 </html>
