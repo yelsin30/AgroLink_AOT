@@ -414,6 +414,8 @@
       const modal = document.getElementById("modalMapa");
       const cerrarMapa = document.getElementById("cerrarMapa");
       const mapInfo = document.getElementById("mapInfo");
+      // Comienzo a modificar aquí
+      let distanciaRealKm = null; // 🔹 se actualizará con la distancia del mapa
 
       let map = null;
       let routingControl = null;
@@ -485,7 +487,6 @@
         map = L.map("map").setView(o, 6);
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 
-
         // Agregar control de ruta
         routingControl = L.Routing.control({
           waypoints: [L.latLng(o), L.latLng(d)],
@@ -493,17 +494,31 @@
           addWaypoints: false,
           draggableWaypoints: false,
           showAlternatives: false,
-          fitSelectedRoutes: true
+          fitSelectedRoutes: true,
         })
           .on("routesfound", e => {
             const route = e.routes[0];
-            const distanciaKm = (route.summary.totalDistance / 1000).toFixed(1);
-            const duracionH = (route.summary.totalTime / 3600).toFixed(1);
+
+            // 🔹 Captura distancia real y duración
+            distanciaRealKm = route.summary.totalDistance / 1000;
+            const duracionH = route.summary.totalTime / 3600;
+
+            // 🔹 Muestra en el modal
             mapInfo.innerHTML = `
-            <strong>Distancia:</strong> ${distanciaKm} km &nbsp; | &nbsp;
-            <strong>Duración estimada:</strong> ${duracionH} h
-          `;
-            // Centrar y ajustar el mapa correctamente
+        <strong>Distancia:</strong> ${distanciaRealKm.toFixed(1)} km &nbsp; | &nbsp;
+        <strong>Duración estimada:</strong> ${duracionH.toFixed(1)} h
+      `;
+
+            // 🔹 Actualiza resumen
+            const costoReal = ((distanciaRealKm / 6) * 17 + (distanciaRealKm > 200 ? 50 : 20) + (distanciaRealKm / 70) * 30) * 1.4;
+            resumenBox.style.display = "block";
+            resumenTexto.innerHTML = `
+        <strong>Distancia:</strong> ${distanciaRealKm.toFixed(1)} km<br>
+        <strong>Duración:</strong> ${duracionH.toFixed(1)} h<br>
+        <strong>Costo sugerido:</strong> <span style="color:#00b074;font-weight:600;">S/ ${costoReal.toFixed(2)}</span>
+      `;
+
+            // 🔹 Ajustar mapa
             map.fitBounds(L.latLngBounds(o, d));
             setTimeout(() => map.invalidateSize(), 400);
           })
@@ -528,7 +543,6 @@
           }
         }
       };
-      /// === BOTÓN DE CERRAR SESIÓN (VERSIÓN SEGURA) ===
       // === BOTÓN DE CERRAR SESIÓN (VERSIÓN CORRECTA Y SEGURA) ===
       const btnLogout = document.getElementById("logout");
       if (btnLogout) {
@@ -542,7 +556,7 @@
 
       // === GUARDAR SOLICITUD ===
       const form = document.getElementById("solicitudForm");
-      form.addEventListener("submit", (e) => {
+      form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
         const tipoCarga = document.getElementById("tipoCarga").value;
@@ -554,9 +568,28 @@
 
         const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")) || { nombre: "Productor desconocido" };
 
-        // Crear el objeto solicitud
+        // === Generar ID único ===
+        const generarID = () => {
+          const num = Math.floor(100000 + Math.random() * 900000);
+          return `AGL-${new Date().getFullYear()}-${num}`;
+        };
+
+        // === Calcular costo estimado ("pago") ===
+        let pagoEstimado = 0;
+        try {
+          const o = await obtenerCoords(origen);
+          const d = await obtenerCoords(destino);
+          if (o && d) {
+            const dist = L.latLng(o).distanceTo(L.latLng(d)) / 1000;
+            pagoEstimado = ((dist / 6) * 17 + (dist > 200 ? 50 : 20) + (dist / 70) * 30) * 1.4;
+          }
+        } catch (err) {
+          console.warn("No se pudo calcular el costo automáticamente:", err);
+        }
+
+        // === Crear la solicitud ===
         const nuevaSolicitud = {
-          id: Date.now(),
+          id: generarID(),
           productor: usuario.nombre,
           tipo: tipoCarga,
           origen,
@@ -564,26 +597,32 @@
           fecha,
           peso,
           contactoAlt,
+          pago: parseFloat((distanciaRealKm
+            ? ((distanciaRealKm / 6) * 17 + (distanciaRealKm > 200 ? 50 : 20) + (distanciaRealKm / 70) * 30) * 1.4
+            : pagoEstimado
+          ).toFixed(2)), // usa distancia real si está disponible
+
+          pagoFinal: null, // se completará cuando se marque como completado
           estado: "Pendiente",
           fechaRegistro: new Date().toLocaleString("es-PE"),
         };
 
-        // Guardar en localStorage
+        // === Guardar sin borrar datos anteriores ===
         const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
         solicitudes.push(nuevaSolicitud);
         localStorage.setItem("solicitudesAgroLink", JSON.stringify(solicitudes));
 
-        // Actualizar KPIs
+        // === Actualizar KPIs ===
         actualizarKPIs();
 
-        // Resetear formulario
+        // === Resetear formulario y resumen ===
         form.reset();
         resumenBox.style.display = "none";
 
-        alert("✅ Solicitud registrada correctamente.");
+        alert(`✅ Solicitud registrada correctamente.
+      🆔 ID: ${nuevaSolicitud.id}
+      💰 Costo estimado: S/ ${pagoEstimado.toFixed(2)}`);
       });
-
-
     });
   </script>
 </body>

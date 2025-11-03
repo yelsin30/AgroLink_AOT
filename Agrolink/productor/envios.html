@@ -642,8 +642,8 @@
             </div>
             <button class="chip active" data-estado="Todos">Todos</button>
             <button class="chip" data-estado="En curso">En curso</button>
-            <button class="chip" data-estado="Completado ✅">Completados</button>
-            <button class="chip" data-estado="Cancelado ❌">Cancelados</button>
+            <button class="chip" data-estado="Completado">Completados</button>
+            <button class="chip" data-estado="Cancelado">Cancelados</button>
           </div>
 
           <!-- GRID -->
@@ -705,15 +705,37 @@
           </div>
           <div class="mini-card">
             <div class="mini-icon" style="background:rgba(214,40,40,.09);color:#d62828">
-              <i class="fa-solid fa-right-from-bracket"></i>
+              <i class="fa-solid fa-trash-can"></i>
             </div>
             <div>
-              <a href="../index.html" id="logoutLink" class="text-danger text-decoration-none">Cerrar sesión</a>
-              <div class="text-muted small">Terminar sesión segura</div>
+              <a href="#" id="btnBorrarEnvios" class="text-danger text-decoration-none">Borrar envíos</a>
+              <div class="text-muted small">Selecciona y elimina los que desees</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <!-- Modal para borrar envíos -->
+      <div class="modal fade" id="modalBorrarEnvios" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content border-0 rounded-4">
+            <div class="modal-header bg-danger text-white rounded-top-4">
+              <h5 class="modal-title"><i class="fa-solid fa-trash-can"></i> Eliminar envíos</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="listaEnviosEliminar">
+              <p class="text-muted">No hay envíos registrados actualmente.</p>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button id="confirmarEliminacion" class="btn btn-danger">
+                <i class="fa-solid fa-trash"></i> Eliminar seleccionados
+              </button>
             </div>
           </div>
         </div>
       </div>
+
     </div>
 
   </main>
@@ -835,12 +857,23 @@
       const cntPendientes = document.getElementById("cntPendientes");
       const cntCompletados = document.getElementById("cntCompletados");
 
+      // KPIs Pagos
       function setKPIs(list) {
         const enCurso = list.filter(e => /en\s*curso/i.test(e.estado || "")).length;
         const comp = list.filter(e => /completado/i.test(e.estado || "")).length;
-        const canc = list.filter(e => /cancelado|rechazad/i.test(e.estado || "")).length; // ✅ detecta "Cancelado" o "Rechazada"
+        const canc = list.filter(e => /cancelado|rechazad/i.test(e.estado || "")).length;
         const pend = list.filter(e => /pendiente/i.test(e.estado || "")).length;
-        const pago = list.reduce((a, e) => a + (parseFloat(e.pago) || 0), 0);
+
+        // ✅ Solo sumar pagos de envíos completados
+        const pago = list
+          .filter(e => /completado/i.test(e.estado || "")) // solo completados
+          .reduce((a, e) => {
+            const valor =
+              parseFloat(e.pagoFinal) || // si se marcó como completado con pagoFinal
+              parseFloat(e.pago) ||      // o el pago estimado
+              0;
+            return a + valor;
+          }, 0);
 
         document.getElementById("kpiEnCurso").textContent = enCurso;
         document.getElementById("kpiCompletados").textContent = comp;
@@ -871,7 +904,6 @@
             return estado.includes(estadoBuscado);
           });
         }
-
 
 
         if (query.trim()) {
@@ -1203,12 +1235,63 @@
         localStorage.removeItem("agrolinkUsuario");
         location.href = "../index.html";
       });
-      document.getElementById("logoutLink").addEventListener("click", (e) => {
-        e.preventDefault();
-        localStorage.removeItem("agrolinkRol");
-        localStorage.removeItem("agrolinkUsuario");
-        location.href = "../index.html";
-      });
+      // === Borrar envíos desde el panel de resumen rápido ===
+      const btnBorrarEnvios = document.getElementById("btnBorrarEnvios");
+      if (btnBorrarEnvios) {
+        const modalBorrar = new bootstrap.Modal(document.getElementById("modalBorrarEnvios"));
+        const listaEnviosEliminar = document.getElementById("listaEnviosEliminar");
+        const confirmarEliminacion = document.getElementById("confirmarEliminacion");
+
+        btnBorrarEnvios.addEventListener("click", () => {
+          const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
+
+          if (solicitudes.length === 0) {
+            listaEnviosEliminar.innerHTML = `<p class="text-muted">No hay envíos registrados actualmente.</p>`;
+          } else {
+            listaEnviosEliminar.innerHTML = `
+        <p>Selecciona los envíos que deseas eliminar:</p>
+        <div class="list-group" style="max-height:300px;overflow-y:auto;">
+          ${solicitudes.map(e => `
+            <label class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <input type="checkbox" class="form-check-input me-2" value="${e.id || e.ID}">
+                <strong>${e.tipo || "Sin tipo"}</strong> — ${e.origen || "?"} → ${e.destino || "?"}
+                <div class="small text-muted">${e.fecha || ""} • ${e.estado || "Pendiente"}</div>
+              </div>
+              <span class="badge bg-light text-dark">ID: ${e.id || e.ID}</span>
+            </label>
+          `).join("")}
+        </div>
+      `;
+          }
+
+          modalBorrar.show();
+        });
+
+        confirmarEliminacion.addEventListener("click", () => {
+          const seleccionados = Array.from(listaEnviosEliminar.querySelectorAll("input[type='checkbox']:checked"))
+            .map(chk => chk.value);
+
+          if (seleccionados.length === 0) {
+            alert("⚠️ No seleccionaste ningún envío.");
+            return;
+          }
+
+          let solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
+
+          // 🔧 Acepta tanto 'id' como 'ID'
+          solicitudes = solicitudes.filter(e => {
+            const idActual = e.id || e.ID; // compatibilidad
+            return !seleccionados.includes(String(idActual));
+          });
+
+          localStorage.setItem("solicitudesAgroLink", JSON.stringify(solicitudes));
+
+          alert(`🗑️ Se eliminaron ${seleccionados.length} envío(s).`);
+          modalBorrar.hide();
+          location.reload(); // refresca KPIs y listado
+        });
+      }
 
       // Primera render
       render();

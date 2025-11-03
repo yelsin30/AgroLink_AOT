@@ -316,8 +316,9 @@
     <div class="row g-3 mb-3">
       <div class="col-md-3 col-6">
         <div class="kpi-card"><i class="fa-solid fa-money-bill-trend-up kpi-icon"></i>
-          <h6>Ganancias estimadas</h6>
-          <div class="kpi-value">S/ 0.00</div>
+          <h6>Cobertura nacional</h6>
+          <div class="kpi-value">0 regiones</div>
+          <i class="fa-solid fa-map-location-dot kpi-icon"></i>
         </div>
       </div>
       <div class="col-md-3 col-6">
@@ -382,6 +383,26 @@
   </main>
 
   <footer>© 2025 AgroLink. Todos los derechos reservados.</footer>
+  <!-- Modal para borrar envíos -->
+  <div class="modal fade" id="modalBorrarEnvios" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 rounded-4">
+        <div class="modal-header bg-danger text-white rounded-top-4">
+          <h5 class="modal-title"><i class="fa-solid fa-trash-can"></i> Eliminar envíos</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="listaEnviosEliminar">
+          <p class="text-muted">No hay envíos registrados actualmente.</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button id="confirmarEliminacion" class="btn btn-danger">
+            <i class="fa-solid fa-trash"></i> Eliminar seleccionados
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal detalle envío -->
   <div class="modal fade" id="modalEnvio" tabindex="-1" aria-hidden="true">
@@ -421,17 +442,25 @@
       const pendientes = envios.filter(e => /pendiente/i.test(e.estado || "")).length;
       const completados = envios.filter(e => /completado/i.test(e.estado || "")).length;
 
-      // 4. KPIs de arriba
+      // === 4. KPIs de arriba ===
       const totalEnvios = envios.length;
-      const totalGanancias = envios.reduce((acc, e) => acc + (parseFloat(e.pago || e.costo) || 0), 0);
+
+      // ✅ Cobertura nacional (regiones únicas alcanzadas)
+      const regiones = new Set(
+        envios
+          .filter(e => /completado/i.test(e.estado || "")) // solo completados
+          .map(e => (e.destino || "").trim().toLowerCase())
+      );
+      const cobertura = regiones.size;
+
       const totalPeso = envios.reduce((acc, e) => acc + (parseFloat(e.peso) || 0), 0);
       const califProm =
         envios.reduce((a, e) => a + (parseFloat(e.calificacion) || 0), 0) /
         (envios.filter(e => e.calificacion).length || 1);
 
-      // 👇 ojo: aquí asumo que tienes EXACTAMENTE 4 kpi-card como en tu HTML
+      // 👇 Ahora asignamos cada KPI según su posición en el HTML
       const kpis = document.querySelectorAll(".kpi-card");
-      if (kpis[0]) kpis[0].querySelector(".kpi-value").textContent = "S/ " + totalGanancias.toFixed(2);
+      if (kpis[0]) kpis[0].querySelector(".kpi-value").textContent = `${cobertura} regiones`;
       if (kpis[1]) kpis[1].querySelector(".kpi-value").textContent = totalEnvios;
       if (kpis[2]) kpis[2].querySelector(".kpi-value").textContent = (totalPeso / 1000).toFixed(1) + " t";
       if (kpis[3]) kpis[3].querySelector(".kpi-value").textContent =
@@ -443,15 +472,22 @@
         helloSub.textContent = `Tienes ${enCurso} envío(s) en curso y ${pendientes} pendiente(s).`;
       }
 
-      // 6. 👉 AQUÍ arreglamos tu “Resumen rápido”
+      // 6. 👉 “Resumen rápido” con botón para borrar envíos
       const resumen = document.getElementById("resumenRapido");
       if (resumen) {
         resumen.innerHTML = `
-      <p><i class="fa-solid fa-truck text-success"></i> ${enCurso} envío(s) en curso</p>
-      <p><i class="fa-solid fa-clock text-warning"></i> ${pendientes} pendiente(s)</p>
-      <p><i class="fa-solid fa-circle-check text-primary"></i> ${completados} completado(s)</p>
-    `;
+    <p><i class="fa-solid fa-truck text-success"></i> ${enCurso} envío(s) en curso<br><small class="text-muted">Moviendo carga ahora</small></p>
+    <p><i class="fa-solid fa-clock text-warning"></i> ${pendientes} pendiente(s)<br><small class="text-muted">Aún por asignar transportista</small></p>
+    <p><i class="fa-solid fa-circle-check text-primary"></i> ${completados} completado(s)<br><small class="text-muted">Últimos 30 días</small></p>
+
+    <hr>
+    <p class="text-danger fw-semibold mt-2" style="cursor:pointer" id="btnBorrarEnvios">
+      <i class="fa-solid fa-trash-can"></i> Borrar envíos
+    </p>
+    <small class="text-muted">Selecciona y elimina los que desees</small>
+  `;
       }
+
 
       // 7. Actividad reciente (panel grande)
       const actividad = document.querySelector(".panel-body.text-muted");
@@ -512,6 +548,58 @@
           window.location.href = "../index.html";
         });
       }
+      // 11. Borrar envíos desde el panel de resumen rápido
+      const btnBorrarEnvios = document.getElementById("btnBorrarEnvios");
+      if (btnBorrarEnvios) {
+        const modalBorrar = new bootstrap.Modal(document.getElementById("modalBorrarEnvios"));
+        const listaEnviosEliminar = document.getElementById("listaEnviosEliminar");
+        const confirmarEliminacion = document.getElementById("confirmarEliminacion");
+
+        btnBorrarEnvios.addEventListener("click", () => {
+          const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
+
+          if (solicitudes.length === 0) {
+            listaEnviosEliminar.innerHTML = `<p class="text-muted">No hay envíos registrados actualmente.</p>`;
+          } else {
+            listaEnviosEliminar.innerHTML = `
+        <p>Selecciona los envíos que deseas eliminar:</p>
+        <div class="list-group" style="max-height:300px;overflow-y:auto;">
+          ${solicitudes.map(e => `
+            <label class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <input type="checkbox" class="form-check-input me-2" value="${e.id}">
+                <strong>${e.tipo || "Sin tipo"}</strong> — ${e.origen || "?"} → ${e.destino || "?"}
+                <div class="small text-muted">${e.fecha || ""} • ${e.estado || "Pendiente"}</div>
+              </div>
+              <span class="badge bg-light text-dark">ID: ${e.id}</span>
+            </label>
+          `).join("")}
+        </div>
+      `;
+          }
+
+          modalBorrar.show();
+        });
+
+        confirmarEliminacion.addEventListener("click", () => {
+          const seleccionados = Array.from(listaEnviosEliminar.querySelectorAll("input[type='checkbox']:checked"))
+            .map(chk => chk.value);
+
+          if (seleccionados.length === 0) {
+            alert("⚠️ No seleccionaste ningún envío.");
+            return;
+          }
+
+          let solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
+          solicitudes = solicitudes.filter(e => !seleccionados.includes(e.id));
+          localStorage.setItem("solicitudesAgroLink", JSON.stringify(solicitudes));
+
+          alert(`🗑️ Se eliminaron ${seleccionados.length} envío(s).`);
+          modalBorrar.hide();
+          location.reload();
+        });
+      }
+
     });
   </script>
 
