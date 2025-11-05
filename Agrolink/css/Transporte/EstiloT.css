@@ -1,0 +1,278 @@
+/* ===================================================
+   AGROLINK - ESTILO TRANSPORTISTA (EstiloT.css)
+   =================================================== */
+
+/* === BASE GENERAL === */
+body {
+  background-color: #f7f9f7;
+  font-family: "Poppins", sans-serif;
+  color: #16291b;
+  margin: 0;
+  display: flex;
+}
+
+/* === SIDEBAR === */
+.sidebar {
+  width: 74px;
+  background: #fff;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.2rem 0;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+}
+
+.sidebar .logo {
+  color: #16291b;
+  font-size: 1.9rem;
+  margin-bottom: 2rem;
+}
+
+/* === ICONOS DE NAVEGACIÓN (ESTILO COMO EN LA CAPTURA) === */
+.nav-icons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  flex-grow: 1;
+  justify-content: center;
+}
+
+.nav-icons button {
+  width: 46px;
+  height: 46px;
+  border: none;
+  border-radius: 16px;
+  background: transparent;
+  color: #0f2615;              /* iconos siempre verde oscuro */
+  font-size: 1.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.25s, box-shadow 0.25s, transform 0.15s;
+}
+
+/* efecto hover ligero, sin cambiar el color del icono */
+.nav-icons button:hover {
+  background: #f3f6f4;
+}
+
+/* ESTADO ACTIVO: pastilla verde con glow */
+.nav-icons button.active {
+  background: linear-gradient(145deg, #00c97b, #00b26b);
+  color: #0f2615; /* icono sigue verde oscuro, como en tu captura */
+  box-shadow: 0 10px 25px rgba(0, 176, 116, 0.45);
+}
+
+/* BOTÓN SALIR */
+.logout-btn {
+  margin-top: auto;
+  color: #d13c3c;
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.logout-btn:hover {
+  color: #a82424;
+}
+
+/* === CONTENIDO PRINCIPAL === */
+main {
+  flex: 1;
+  margin-left: 90px;     /* espacio para la sidebar */
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #f7f9f7;
+}
+
+.content-container {
+  width: 100%;
+  max-width: 1100px;
+}
+
+/* === ENCABEZADO === */
+header h1 {
+  font-weight: 700;
+  color: #16291b;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+header p {
+  color: #555;
+  margin-bottom: 1.5rem;
+}
+
+/* === TARJETAS KPI === */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 1rem 1.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stat-icon {
+  background: #e9f5ec;
+  color: #00b074;
+  border-radius: 12px;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.stat-text {
+  text-align: right;
+}
+
+.stat-text h4 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #16291b;
+}
+
+.stat-text span {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* === PANEL GENERAL (MAPA, ETC.) === */
+.panel {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.panel h5 {
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #16291b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* === MAPA DE RUTAS === */
+#map {
+  height: 400px;
+  width: 100%;
+  border-radius: 14px;
+  margin-top: 1rem;
+}
+
+#mapInfo {
+  background: #f4fff4;
+  border-radius: 10px;
+  padding: 0.6rem;
+  margin-top: 0.8rem;
+  border: 1px solid #d8efd8;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+/* === PERFIL RÁPIDO (COLUMNA DERECHA) === */
+.perfil-box {
+  background: linear-gradient(to bottom, #f9fff9, #f3fff3);
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  text-align: center;
+  color: #16291b;
+}
+
+.perfil-box img {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 3px solid #00b074;
+  margin-bottom: 0.6rem;
+}
+
+.estado-switch {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.next-trip-box {
+  background: #f4fff4;
+  border: 1px solid #d8efd8;
+  border-radius: 12px;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+/* === LAYOUT GRID IZQUIERDA / DERECHA === */
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 2fr 0.9fr;
+  gap: 2rem;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.right-panel {
+  width: 100%;
+  max-width: 340px;
+  position: sticky;
+  top: 1rem;
+  align-self: flex-start;
+}
+
+/* === FOOTER === */
+footer {
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 2rem;
+}
+
+/* === RESPONSIVO === */
+@media (max-width: 992px) {
+  .dashboard-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .right-panel {
+    position: static;
+    max-width: none;
+  }
+}

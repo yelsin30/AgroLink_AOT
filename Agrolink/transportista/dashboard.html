@@ -1,456 +1,240 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Panel del Transportista | AgroLink</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Transportista | AgroLink</title>
 
-  <!-- Estilos -->
-  <link rel="stylesheet" href="../css/style.css" />
-  <link rel="icon" href="../img/logo.png" type="image/png" />
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 
-  <!-- Íconos -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css">
 
-  <!-- Librería para gráfico -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  <!-- Librería para mapa -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <style>
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: 3fr 1fr;
-      gap: 1.5rem;
-    }
-
-    @media (max-width: 1000px) {
-      .dashboard-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .panel-card {
-      background: #fff;
-      padding: 1.5rem;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-      margin-bottom: 1.5rem;
-    }
-
-    .panel-card h2 {
-      color: #2b7a0b;
-      margin-bottom: 1rem;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1rem;
-    }
-
-    .stat-box {
-      background: linear-gradient(to right, #f5fff5, #f2fff2);
-      border: 1px solid #d8efd8;
-      border-radius: 10px;
-      padding: 1rem;
-      text-align: center;
-    }
-
-    .stat-box i {
-      font-size: 1.6rem;
-      color: #2b7a0b;
-    }
-
-    .stat-box h3 {
-      margin: 0.5rem 0 0;
-      font-size: 1.2rem;
-      color: #333;
-    }
-
-    #map {
-      height: 250px;
-      border-radius: 12px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 0.5rem;
-    }
-
-    th,
-    td {
-      padding: 8px;
-      text-align: left;
-      border-bottom: 1px solid #eee;
-    }
-
-    th {
-      color: #2b7a0b;
-    }
-
-    .perfil-rapido {
-      background: linear-gradient(to right, #f7fff7, #f2fff2);
-      border: 1px solid #d4efd4;
-      border-radius: 12px;
-      text-align: center;
-      padding: 1rem;
-    }
-
-    .perfil-rapido img {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      border: 3px solid #2b7a0b;
-      object-fit: cover;
-      margin-bottom: 0.5rem;
-    }
-
-    .estado-switch {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 1rem;
-      gap: 8px;
-    }
-
-    .estado-switch input {
-      transform: scale(1.3);
-      cursor: pointer;
-    }
-
-    .estado-label {
-      color: #333;
-      font-weight: 600;
-    }
-
-    .btn-verde {
-      background-color: #2b7a0b;
-      color: #fff;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    .btn-verde:hover {
-      background-color: #256707;
-    }
-  </style>
+  <!-- Estilo personalizado -->
+  <link rel="stylesheet" href="../css/Transporte/EstiloT.css">
 </head>
-
 <body>
-  <div class="container">
-    <!-- ====== SIDEBAR ====== -->
-    <aside class="sidebar">
-      <div class="logo-section custom-logo">
-        <i class="fa-solid fa-tractor"></i>
-        <div class="logo-text">
-          <span class="brand">AgroLink</span>
-          <span class="role">Transportista</span>
-        </div>
-      </div>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <i class="fa-solid fa-tractor logo"></i>
+    <div class="nav-icons">
+      <button class="active" title="Inicio"><i class="fa-solid fa-house"></i></button>
+      <button title="Solicitudes" onclick="location.href='solicitudes.html'"><i class="fa-solid fa-list"></i></button>
+      <button title="Viajes" onclick="location.href='viajes.html'"><i class="fa-solid fa-truck"></i></button>
+      <button title="Perfil" onclick="location.href='perfil.html'"><i class="fa-solid fa-user"></i></button>
+    </div>
+    <button class="logout-btn" id="logout">
+      <i class="fa-solid fa-right-from-bracket"></i>
+      <span>Salir</span>
+    </button>
+  </aside>
 
-      <nav class="nav-links">
-        <a href="dashboard.html" class="active"><i class="fa-solid fa-home"></i> Panel de control</a>
-        <a href="solicitudes.html"><i class="fa-solid fa-list"></i> Solicitudes disponibles</a>
-        <a href="viajes.html"><i class="fa-solid fa-truck"></i> Mis viajes</a>
-        <a href="perfil.html"><i class="fa-solid fa-user"></i> Perfil</a>
-      </nav>
-
-      <div class="help-section">
-        <a href="#"><i class="fa-regular fa-circle-question"></i> Ayuda</a>
-        <a href="#" id="logout"><i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión</a>
-      </div>
-    </aside>
-
-    <!-- ====== CONTENIDO PRINCIPAL ====== -->
-    <main class="main-content">
-      <header class="main-header">
-        <h1>Panel de control</h1>
+  <!-- Contenido principal -->
+  <main>
+    <div class="content-container">
+      <header class="mb-4">
+        <h1><i class="fa-solid fa-gauge-high"></i> Panel de Control</h1>
         <p>Bienvenido, <span id="nombreUsuario">Transportista 👷‍♂️</span></p>
       </header>
 
-      <div class="dashboard-grid">
-        <!-- ====== COLUMNA PRINCIPAL ====== -->
-        <div>
-          <!-- (1) PANEL DE RENDIMIENTO -->
-          <section class="panel-card">
-            <h2><i class="fa-solid fa-chart-line"></i> Rendimiento del mes</h2>
-            <div class="stats">
-              <div class="stat-box">
-                <i class="fa-solid fa-road"></i>
-                <h3><span id="viajesCompletados">0</span> viajes</h3>
-                <p>Completados este mes</p>
-              </div>
-              <div class="stat-box">
-                <i class="fa-solid fa-clock"></i>
-                <h3><span id="horasConduccion">0</span> h</h3>
-                <p>Horas de conducción</p>
-              </div>
-              <div class="stat-box">
-                <i class="fa-solid fa-sack-dollar"></i>
-                <h3>S/ <span id="ganancia">0</span></h3>
-                <p>Ganancia estimada</p>
-              </div>
-              <div class="stat-box">
-                <i class="fa-solid fa-star"></i>
-                <h3><span id="calificacion">4.8</span>/5</h3>
-                <p>Calificación promedio</p>
-              </div>
+      <!-- Layout de dos columnas -->
+      <div class="dashboard-layout">
+        <!-- IZQUIERDA -->
+        <div class="left-panel">
+          <div class="stats-row">
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fa-solid fa-road"></i></div>
+              <div class="stat-text"><h4 id="viajesActivos">0</h4><span>Rutas activas</span></div>
             </div>
-            <canvas id="graficoViajes" style="margin-top:1rem; height: 180px;"></canvas>
-          </section>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
+              <div class="stat-text"><h4 id="viajesPendientes">0</h4><span>Pendientes</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+              <div class="stat-text"><h4 id="viajesCompletados">0</h4><span>Completados</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fa-solid fa-money-bill-trend-up"></i></div>
+              <div class="stat-text"><h4>S/ <span id="ganancia">0</span></h4><span>Ganancia total</span></div>
+            </div>
+          </div>
 
-          <!-- (2) MAPA INTERACTIVO -->
-          <section class="panel-card">
-            <h2><i class="fa-solid fa-map-location-dot"></i> Mapa de rutas activas</h2>
-            <div id="map" style="height: 300px; border-radius: 12px;"></div>
-            <p id="mapInfo" style="text-align:center; margin-top:8px; color:#555;">Cargando rutas...</p>
-          </section>
-
-
-          <!-- (6) RESUMEN DE PEDIDOS -->
-          <section class="panel-card">
-            <h2><i class="fa-solid fa-boxes-stacked"></i> Pedidos recientes</h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Productor</th>
-                  <th>Destino</th>
-                  <th>Estado</th>
-                </tr>
-              </thead>
-              <tbody id="tablaPedidos">
-                <tr>
-                  <td colspan="4">Sin pedidos recientes.</td>
-                </tr>
-              </tbody>
-            </table>
-          </section>
-
-          <!-- (7) HISTORIAL DE INGRESOS -->
-          <section class="panel-card">
-            <h2><i class="fa-solid fa-money-bill-wave"></i> Historial de ingresos</h2>
-            <canvas id="graficoIngresos" height="180"></canvas>
-          </section>
+          <!-- Mapa -->
+          <div class="panel">
+            <h5><i class="fa-solid fa-map-location-dot"></i> Rutas Activas</h5>
+            <div id="map"></div>
+            <p id="mapInfo" class="text-center mt-2 text-muted small">Cargando rutas...</p>
+          </div>
         </div>
 
-        <!-- ====== COLUMNA DERECHA ====== -->
-        <div>
-          <!-- (9) PERFIL RÁPIDO -->
-          <div class="perfil-rapido">
-            <img id="fotoPerfil" src="../img/default-user.png" alt="Foto de perfil">
-            <h3 id="nombrePerfil">Transportista</h3>
+        <!-- DERECHA -->
+        <div class="right-panel">
+          <div class="perfil-box">
+            <img src="../img/default-user.png" id="fotoPerfil" alt="Foto de perfil">
+            <h5 id="nombrePerfil">Transportista</h5>
             <p><i class="fa-solid fa-id-badge"></i> <span id="placaPerfil">ABC-123</span></p>
 
-            <!-- (8) ESTADO EN TIEMPO REAL -->
-            <div class="estado-switch">
-              <label class="estado-label" for="disponibleSwitch">Disponible</label>
-              <input type="checkbox" id="disponibleSwitch">
+            <!-- Estado -->
+            <div class="estado-switch mt-3">
+              <label class="form-check-label fw-semibold" for="estadoDisponible">
+                <i class="fa-solid fa-signal"></i> Estado:
+              </label>
+              <div class="form-check form-switch ms-2">
+                <input class="form-check-input" type="checkbox" id="estadoDisponible">
+              </div>
+            </div>
+            <p id="estadoTexto" class="text-muted small mb-3">Desconectado</p>
+
+            <!-- Calificación -->
+            <div class="rating-box mb-3">
+              <i class="fa-solid fa-star text-warning"></i>
+              <i class="fa-solid fa-star text-warning"></i>
+              <i class="fa-solid fa-star text-warning"></i>
+              <i class="fa-solid fa-star text-warning"></i>
+              <i class="fa-solid fa-star-half-stroke text-warning"></i>
+              <span class="ms-1 fw-semibold" id="calificacion">4.8 / 5</span>
+            </div>
+
+            <!-- Próximo viaje -->
+            <div class="next-trip-box p-3">
+              <h6><i class="fa-solid fa-truck-fast"></i> Próximo viaje</h6>
+              <p id="proximoViaje" class="text-muted small">No hay viajes asignados.</p>
+              <button id="btnIniciarRuta" class="btn btn-success btn-sm w-100 mt-2" disabled>
+                <i class="fa-solid fa-route"></i> Iniciar ruta
+              </button>
             </div>
           </div>
         </div>
       </div>
-    </main>
-  </div>
 
-  <footer class="footer">
-    <p>© 2025 AgroLink. Todos los derechos reservados.</p>
-  </footer>
+      <footer class="text-center mt-3 text-muted small">
+        © 2025 AgroLink. Todos los derechos reservados.
+      </footer>
+    </div>
+  </main>
 
-  <script src="../js/toast.js"></script>
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
       const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")) || {};
-      const rol = localStorage.getItem("agrolinkRol");
       const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
 
-      if (rol !== "transportista") {
-        alert("⚠️ Acceso denegado. Inicia sesión como Transportista.");
-        window.location.href = "../login.html";
-        return;
-      }
-
-      // --- PERFIL RÁPIDO ---
-      document.getElementById("nombreUsuario").textContent = (usuario.nombre || "Transportista") + " 👷‍♂️";
+      // Perfil
+      document.getElementById("nombreUsuario").textContent = usuario.nombre || "Transportista 👷‍♂️";
       document.getElementById("nombrePerfil").textContent = usuario.nombre || "Transportista";
-      document.getElementById("placaPerfil").textContent = usuario.placa || "No registrado";
+      document.getElementById("placaPerfil").textContent = usuario.placa || "No registrada";
       if (usuario.fotoPerfil) document.getElementById("fotoPerfil").src = usuario.fotoPerfil;
 
-      // --- ESTADO EN TIEMPO REAL ---
-      const switchDisponible = document.getElementById("disponibleSwitch");
-      const estado = localStorage.getItem("estadoDisponible") === "true";
-      switchDisponible.checked = estado;
+      // KPIs
+      const activos = solicitudes.filter(s => /en\s*curso/i.test(s.estado || ""));
+      const pendientes = solicitudes.filter(s => /pendiente/i.test(s.estado || ""));
+      const completados = solicitudes.filter(s => /completado/i.test(s.estado || ""));
+      document.getElementById("viajesActivos").textContent = activos.length;
+      document.getElementById("viajesPendientes").textContent = pendientes.length;
+      document.getElementById("viajesCompletados").textContent = completados.length;
+      document.getElementById("ganancia").textContent =
+        completados.reduce((a, s) => a + (parseFloat(s.pagoFinal || s.pago) || 0), 0).toFixed(2);
 
-      switchDisponible.addEventListener("change", () => {
-        localStorage.setItem("estadoDisponible", switchDisponible.checked);
-        showToast(switchDisponible.checked ? "🟢 Estás disponible para nuevos viajes." : "🔴 Modo ocupado activado.", "info");
-      });
-
-      // --- DATOS DE RENDIMIENTO ---
-      const viajesCompletados = 12;
-      const horas = 48;
-      const ganancia = 1580;
-      const calificacion = 4.8;
-
-      document.getElementById("viajesCompletados").textContent = viajesCompletados;
-      document.getElementById("horasConduccion").textContent = horas;
-      document.getElementById("ganancia").textContent = ganancia;
-      document.getElementById("calificacion").textContent = calificacion;
-
-      // --- GRÁFICO DE VIAJES ---
-      new Chart(document.getElementById("graficoViajes"), {
-        type: "bar",
-        data: {
-          labels: ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"],
-          datasets: [{
-            label: "Viajes completados",
-            data: [2, 1, 3, 2, 2, 1, 1],
-            backgroundColor: "#2b7a0b"
-          }]
-        },
-        options: { responsive: true, plugins: { legend: { display: false } } }
-      });
-
-      // --- GRÁFICO DE INGRESOS ---
-      new Chart(document.getElementById("graficoIngresos"), {
-        type: "line",
-        data: {
-          labels: ["Semana 1", "Semana 2", "Semana 3", "Semana 4"],
-          datasets: [{
-            label: "Ingresos (S/)",
-            data: [400, 350, 420, 410],
-            borderColor: "#2b7a0b",
-            fill: false,
-            tension: 0.3
-          }]
-        },
-        options: { responsive: true, plugins: { legend: { display: false } } }
-      });
-
-      // --- MAPA CON RUTAS Y ANIMACIÓN ---
+      // Mapa
       const map = L.map("map").setView([-9.19, -75.015], 6);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-      }).addTo(map);
-
-      // Diccionario básico de ciudades -> coordenadas
-      const coordenadas = {
-        "Lima": [-12.0464, -77.0428],
-        "Trujillo": [-8.111, -79.028],
-        "Chiclayo": [-6.772, -79.84],
-        "Piura": [-5.1945, -80.6328],
-        "Arequipa": [-16.3989, -71.535],
-        "Cusco": [-13.532, -71.967],
-        "Ica": [-14.0678, -75.7286],
-        "Tacna": [-18.0066, -70.2463],
-        "Puno": [-15.84, -70.0199],
-        "Huancayo": [-12.0651, -75.2049]
-      };
-
-      const viajesActivos = (JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [])
-        .filter(v => v.estado === "En curso");
-
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
       const mapInfo = document.getElementById("mapInfo");
 
-      if (viajesActivos.length === 0) {
+      // Estado disponible
+      const estadoSwitch = document.getElementById("estadoDisponible");
+      const estadoTexto = document.getElementById("estadoTexto");
+      const estadoGuardado = localStorage.getItem("estadoDisponible");
+      if (estadoGuardado === "true") {
+        estadoSwitch.checked = true;
+        estadoTexto.textContent = "🟢 Disponible";
+      } else {
+        estadoTexto.textContent = "🔴 Ocupado";
+      }
+      estadoSwitch.addEventListener("change", () => {
+        const disp = estadoSwitch.checked;
+        localStorage.setItem("estadoDisponible", disp);
+        estadoTexto.textContent = disp ? "🟢 Disponible" : "🔴 Ocupado";
+      });
+
+      // Calificación
+      document.getElementById("calificacion").textContent = "4.8 / 5";
+
+      // Próximo viaje
+      const proximo = solicitudes.find(s => /pendiente/i.test(s.estado || ""));
+      const viajeBox = document.getElementById("proximoViaje");
+      const btnRuta = document.getElementById("btnIniciarRuta");
+
+      if (proximo) {
+        viajeBox.innerHTML = `
+          <strong>Origen:</strong> ${proximo.origen}<br>
+          <strong>Destino:</strong> ${proximo.destino}<br>
+          <strong>Fecha:</strong> ${proximo.fecha}
+        `;
+        btnRuta.disabled = false;
+
+        btnRuta.addEventListener("click", async () => {
+          const o = await obtenerCoords(proximo.origen);
+          const d = await obtenerCoords(proximo.destino);
+          if (o && d) {
+            L.Routing.control({
+              waypoints: [L.latLng(o), L.latLng(d)],
+              lineOptions: { styles: [{ color: "#00b074", weight: 5 }] },
+              showAlternatives: false,
+              addWaypoints: false,
+              createMarker: (i, wp) => L.marker(wp.latLng).bindPopup(
+                i === 0 ? `🚚 <b>Origen:</b> ${proximo.origen}` : `<b>Destino:</b> ${proximo.destino}`
+              )
+            }).addTo(map);
+          }
+        });
+      } else {
+        viajeBox.textContent = "No hay viajes asignados.";
+        btnRuta.disabled = true;
+      }
+
+      // Mostrar rutas activas
+      if (activos.length === 0) {
         mapInfo.textContent = "No hay rutas activas en este momento.";
       } else {
-        mapInfo.textContent = `Mostrando ${viajesActivos.length} ruta(s) activa(s).`;
-
-        viajesActivos.forEach((v, index) => {
-          const origen = coordenadas[v.origen];
-          const destino = coordenadas[v.destino];
-
-          if (!origen || !destino) return;
-
-          // Dibujar ruta
-          const ruta = L.polyline([origen, destino], { color: "#2b7a0b", weight: 4 }).addTo(map);
-          map.fitBounds(ruta.getBounds());
-
-          // Marcadores
-          L.marker(origen).addTo(map).bindPopup(`<b>Origen:</b> ${v.origen}`);
-          L.marker(destino, {
-            icon: L.icon({
-              iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
-              iconSize: [30, 30]
-            })
-          }).addTo(map).bindPopup(`<b>Destino:</b> ${v.destino}`);
-
-          // Crear ícono de camión
-          const camionIcon = L.icon({
-            iconUrl: "https://cdn-icons-png.flaticon.com/512/743/743922.png",
-            iconSize: [38, 38],
-            iconAnchor: [19, 19]
-          });
-          const camion = L.marker(origen, { icon: camionIcon }).addTo(map);
-
-          // Animar movimiento
-          const steps = 200; // cuántos pasos recorrerá
-          let i = 0;
-          const latDiff = (destino[0] - origen[0]) / steps;
-          const lngDiff = (destino[1] - origen[1]) / steps;
-
-          function moverCamion() {
-            if (i <= steps) {
-              const newLat = origen[0] + latDiff * i;
-              const newLng = origen[1] + lngDiff * i;
-              camion.setLatLng([newLat, newLng]);
-              i++;
-              requestAnimationFrame(moverCamion); // más fluido que setInterval
-            } else {
-              camion.bindPopup(`<b>Llegó a destino:</b> ${v.destino}`).openPopup();
-            }
+        mapInfo.textContent = `Mostrando ${activos.length} ruta(s) activa(s)...`;
+        for (const s of activos) {
+          const o = await obtenerCoords(s.origen);
+          const d = await obtenerCoords(s.destino);
+          if (o && d) {
+            L.Routing.control({
+              waypoints: [L.latLng(o), L.latLng(d)],
+              lineOptions: { styles: [{ color: "#00b074", weight: 5 }] },
+              addWaypoints: false,
+              draggableWaypoints: false,
+              showAlternatives: false,
+              fitSelectedRoutes: true
+            }).addTo(map);
           }
-
-          // Retraso entre animaciones si hay varios viajes
-          setTimeout(() => moverCamion(), index * 4000);
-        });
+        }
       }
 
-      // --- PEDIDOS RECIENTES ---
-      const pedidos = [
-        { fecha: "25/10", productor: "AgroAndes", destino: "Trujillo", estado: "En curso" },
-        { fecha: "22/10", productor: "Campos del Norte", destino: "Chiclayo", estado: "Completado" }
-      ];
-      const tbody = document.getElementById("tablaPedidos");
-      tbody.innerHTML = pedidos.map(p =>
-        `<tr>
-          <td>${p.fecha}</td>
-          <td>${p.productor}</td>
-          <td>${p.destino}</td>
-          <td>${p.estado}</td>
-        </tr>`
-      ).join("");
-    });
-    // === CERRAR SESIÓN ===
-    document.addEventListener("DOMContentLoaded", () => {
-      const logoutBtn = document.getElementById("logout");
-
-      if (logoutBtn) {
-        logoutBtn.addEventListener("click", (e) => {
-          e.preventDefault();
-          showToast("👋 Sesión cerrada correctamente", "info");
-
-          // Eliminar datos guardados
-          localStorage.removeItem("agrolinkRol");
-          localStorage.removeItem("agrolinkUsuario");
-
-          // Redirigir con un pequeño retraso
-          setTimeout(() => {
-            window.location.href = "../index.html";
-          }, 1000);
-        });
-      }
+      // Cerrar sesión
+      document.getElementById("logout").addEventListener("click", () => {
+        alert("👋 Sesión cerrada correctamente. ¡Hasta pronto, transportista!");
+        localStorage.removeItem("agrolinkUsuario");
+        localStorage.removeItem("agrolinkRol");
+        window.location.href = "../index.html";
+      });
     });
 
+    async function obtenerCoords(ciudad) {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(ciudad + ", Perú")}`);
+      const data = await res.json();
+      return data[0] ? [parseFloat(data[0].lat), parseFloat(data[0].lon)] : null;
+    }
   </script>
 </body>
-
 </html>
