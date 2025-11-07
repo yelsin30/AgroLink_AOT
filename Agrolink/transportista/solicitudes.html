@@ -1,172 +1,60 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Solicitudes disponibles | AgroLink</title>
-  <link rel="stylesheet" href="../css/style.css">
+
+  <!-- ÍCONO -->
   <link rel="icon" href="../img/logo.png" type="image/png">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- CSS PRINCIPAL -->
+  <link rel="stylesheet" href="../css/Transporte/EstiloSoli.css">
+
+  <!-- LIBRERÍAS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+
   <style>
-    .solicitudes-list {
-      display: grid;
-      gap: 1rem;
+    #detalleTelefono {
+      line-height: 1.5;
+      margin-left: 5px;
     }
-
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 1.2rem;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-      transition: all .2s ease;
+    #detalleTelefono strong {
+      color: #00b074;
     }
-
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 14px rgba(0,0,0,0.12);
-    }
-
-    .card h3 {
-      color: #2b7a0b;
-      margin-bottom: .5rem;
-    }
-
-    .card p {
-      font-size: .95rem;
-      color: #333;
-      margin: .2rem 0;
-    }
-
-    .btn-ver {
-      background-color: #2b7a0b;
-      color: #fff;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color .2s;
-    }
-
-    .btn-ver:hover {
-      background-color: #256707;
-    }
-
-    /* ===== PANEL DESLIZABLE ===== */
-    .panel-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.5);
-      display: none;
-      z-index: 50;
-      backdrop-filter: blur(2px);
-    }
-
-    .panel {
-      position: fixed;
-      top: 0;
-      right: -100%;
-      width: 420px;
-      height: 100%;
-      background: #fff;
-      box-shadow: -4px 0 15px rgba(0,0,0,0.2);
-      border-radius: 12px 0 0 12px;
-      transition: right .4s ease;
-      z-index: 100;
+    .tel-header {
       display: flex;
-      flex-direction: column;
-      overflow-y: auto;
-      padding: 1.5rem;
-    }
-
-    .panel.show {
-      right: 0;
-    }
-
-    .panel-header h2 {
-      color: #2b7a0b;
-      margin-bottom: .4rem;
-    }
-
-    .panel-content p {
-      margin: .3rem 0;
-      color: #333;
-      font-size: .95rem;
-    }
-
-    .panel-buttons {
-      display: flex;
-      gap: .6rem;
-      margin-top: 1rem;
-    }
-
-    .btn {
-      flex: 1;
-      border: none;
-      padding: 10px 14px;
-      border-radius: 8px;
+      align-items: center;
+      gap: 6px;
       font-weight: 600;
-      cursor: pointer;
-      transition: all .2s;
+      color: #16291b;
     }
-
-    .btn-accept {
-      background-color: #2b7a0b;
-      color: white;
-    }
-
-    .btn-accept:hover {
-      background-color: #256707;
-    }
-
-    .btn-decline {
-      background-color: #c0392b;
-      color: white;
-    }
-
-    .btn-decline:hover {
-      background-color: #a93226;
-    }
-
-    .btn-close {
-      background-color: #e0e0e0;
-      color: #333;
-    }
-
-    .btn-close:hover {
-      background-color: #ccc;
-    }
-
-    #map {
-      height: 220px;
-      width: 100%;
-      border-radius: 10px;
-      margin-top: 1rem;
+    .tel-header i {
+      color: #00b074;
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <!-- ===== SIDEBAR ===== -->
     <aside class="sidebar">
-      <div class="logo-section custom-logo">
+      <div class="logo-section">
         <i class="fa-solid fa-tractor"></i>
-        <div class="logo-text">
-          <span class="brand">AgroLink</span>
-          <span class="role">Transportista</span>
-        </div>
       </div>
 
       <nav class="nav-links">
-        <a href="dashboard.html"><i class="fa-solid fa-home"></i> Panel de control</a>
-        <a href="solicitudes.html" class="active"><i class="fa-solid fa-list"></i> Solicitudes disponibles</a>
-        <a href="viajes.html"><i class="fa-solid fa-truck"></i> Mis viajes</a>
-        <a href="perfil.html"><i class="fa-solid fa-user"></i> Perfil</a>
+        <a href="dashboard.html"><i class="fa-solid fa-home"></i></a>
+        <a href="solicitudes.html" class="active"><i class="fa-solid fa-list"></i></a>
+        <a href="viajes.html"><i class="fa-solid fa-truck"></i></a>
+        <a href="perfil.html"><i class="fa-solid fa-user"></i></a>
       </nav>
 
       <div class="help-section">
-        <a href="#"><i class="fa-regular fa-circle-question"></i> Ayuda</a>
-        <a href="#" id="logout"><i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión</a>
+        <a href="#"><i class="fa-regular fa-circle-question"></i></a>
+        <a href="#" id="logout"><i class="fa-solid fa-right-from-bracket"></i><span>Salir</span></a>
       </div>
     </aside>
 
@@ -195,7 +83,9 @@
       <p id="detalleProductor" style="color:#555; font-weight:500;"></p>
     </div>
     <div class="panel-content">
-      <p><strong>Teléfono:</strong> <span id="detalleTelefono"></span></p>
+      <div class="tel-header"><i class="fa-solid fa-phone"></i> Teléfonos</div>
+      <p id="detalleTelefono"></p>
+
       <p><strong>Calificación:</strong> ⭐ <span id="detalleCalificacion"></span></p>
       <p><strong>Origen:</strong> <span id="detalleOrigen"></span></p>
       <p><strong>Destino:</strong> <span id="detalleDestino"></span></p>
@@ -213,10 +103,12 @@
 
   <!-- ===== LIBRERÍAS ===== -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
   <script src="../js/toast.js"></script>
 
+  <!-- ===== LÓGICA ===== -->
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
       const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")) || {};
       const db = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
       const contenedor = document.getElementById("listaSolicitudes");
@@ -226,25 +118,17 @@
       const btnAceptar = document.getElementById("btnAceptar");
       const btnRechazar = document.getElementById("btnRechazar");
       let map = null;
+      let routing = null;
       let solicitudActual = null;
 
-      const cityCoords = {
-        Lima: [-12.0464, -77.0428],
-        Trujillo: [-8.1117, -79.0288],
-        Arequipa: [-16.409, -71.5375],
-        Piura: [-5.1945, -80.6328],
-        Chiclayo: [-6.7714, -79.8409],
-        Cusco: [-13.5319, -71.9675],
-        Puno: [-15.8402, -70.0219],
-        Huancayo: [-12.0651, -75.2049],
-      };
-
+      // 🔹 Filtrar solo solicitudes pendientes
       const disponibles = db.filter(s => s.estado === "Pendiente");
       if (disponibles.length === 0) {
         contenedor.innerHTML = "<p>No hay solicitudes disponibles por ahora.</p>";
         return;
       }
 
+      // 🔹 Mostrar tarjetas de solicitudes
       contenedor.innerHTML = "";
       disponibles.forEach(s => {
         const card = document.createElement("div");
@@ -260,15 +144,25 @@
         contenedor.appendChild(card);
       });
 
-      function abrirPanel(s) {
+      // 🔹 Abrir panel con detalles
+      async function abrirPanel(s) {
         solicitudActual = s;
         panel.classList.add("show");
         overlay.style.display = "block";
-        document.body.style.overflow = "hidden"; // Bloquear scroll
+        document.body.style.overflow = "hidden";
 
-        document.getElementById("detalleTipo").textContent = s.tipo;
-        document.getElementById("detalleProductor").textContent = s.productor;
-        document.getElementById("detalleTelefono").textContent = s.telefono || "No registrado";
+        // --- Información general ---
+        document.getElementById("detalleTipo").textContent = s.tipo || "Sin tipo";
+        document.getElementById("detalleProductor").textContent = s.productor || "Desconocido";
+
+        // --- Mostrar teléfonos juntos ---
+        const telefonoPrincipal = s.telefonoPrincipal || s.telefono || "No registrado";
+        const telefonoAlternativo = s.telefonoAlternativo || s.contactoAlt || "No registrado";
+        document.getElementById("detalleTelefono").innerHTML = `
+          <strong>Principal:</strong> ${telefonoPrincipal}<br>
+          <strong>Alternativo:</strong> ${telefonoAlternativo}
+        `;
+
         document.getElementById("detalleCalificacion").textContent = s.calificacion || "4.8";
         document.getElementById("detalleOrigen").textContent = s.origen;
         document.getElementById("detalleDestino").textContent = s.destino;
@@ -276,32 +170,64 @@
         document.getElementById("detallePago").textContent = s.pago || "0";
         document.getElementById("detalleFecha").textContent = s.fecha;
 
-        if (map) map.remove();
-        map = L.map("map").setView([-9.189967, -75.015152], 6);
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+        // --- Mapa con ruta ---
+        if (map) {
+          map.remove();
+          map = null;
+        }
+        map = L.map("map").setView([-9.19, -75.015], 6);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: "&copy; OpenStreetMap contributors"
+        }).addTo(map);
 
-        const origen = cityCoords[s.origen] || [-9, -75];
-        const destino = cityCoords[s.destino] || [-9.2, -75.1];
-        L.marker(origen).addTo(map).bindPopup(`<b>${s.origen}</b>`).openPopup();
-        L.marker(destino).addTo(map).bindPopup(`<b>${s.destino}</b>`);
-        L.polyline([origen, destino], { color: "#2b7a0b", weight: 4 }).addTo(map);
-        map.fitBounds([origen, destino]);
+        const origen = await obtenerCoords(s.origen);
+        const destino = await obtenerCoords(s.destino);
+
+        if (origen && destino) {
+          routing = L.Routing.control({
+            waypoints: [L.latLng(origen), L.latLng(destino)],
+            lineOptions: { styles: [{ color: "#00b074", weight: 5 }] },
+            showAlternatives: false,
+            addWaypoints: false,
+            draggableWaypoints: false,
+            fitSelectedRoutes: true,
+            createMarker: (i, wp) =>
+              L.marker(wp.latLng).bindPopup(
+                i === 0 ? `🚜 <b>Origen:</b> ${s.origen}` : `<b>Destino:</b> ${s.destino}`
+              )
+          }).addTo(map);
+        }
       }
 
+      // 🔹 Buscar coordenadas con OpenStreetMap
+      async function obtenerCoords(ciudad) {
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(ciudad + ", Perú")}`);
+          const data = await res.json();
+          return data[0] ? [parseFloat(data[0].lat), parseFloat(data[0].lon)] : null;
+        } catch (err) {
+          console.error("Error obteniendo coordenadas:", err);
+          return null;
+        }
+      }
+
+      // 🔹 Cerrar panel
       btnCerrar.addEventListener("click", () => {
         panel.classList.remove("show");
-        document.body.style.overflow = "auto"; // Reactivar scroll
-        setTimeout(() => overlay.style.display = "none", 400);
+        document.body.style.overflow = "auto";
+        setTimeout(() => (overlay.style.display = "none"), 400);
       });
 
+      // 🔹 Aceptar solicitud
       btnAceptar.addEventListener("click", () => {
         solicitudActual.estado = "En curso";
-        solicitudActual.transportista = usuario.nombre;
+        solicitudActual.transportista = usuario.nombre || "Transportista";
         localStorage.setItem("solicitudesAgroLink", JSON.stringify(db));
         showToast("✅ Has aceptado la solicitud.", "success");
         cerrarYActualizar();
       });
 
+      // 🔹 Rechazar solicitud
       btnRechazar.addEventListener("click", () => {
         solicitudActual.estado = "Rechazada";
         localStorage.setItem("solicitudesAgroLink", JSON.stringify(db));
@@ -309,13 +235,15 @@
         cerrarYActualizar();
       });
 
+      // 🔹 Función para cerrar y recargar
       function cerrarYActualizar() {
         panel.classList.remove("show");
-        document.body.style.overflow = "auto"; // Reactivar scroll
+        document.body.style.overflow = "auto";
         setTimeout(() => overlay.style.display = "none", 400);
         setTimeout(() => location.reload(), 600);
       }
 
+      // 🔹 Logout
       document.getElementById("logout").addEventListener("click", e => {
         e.preventDefault();
         showToast("👋 Sesión cerrada correctamente", "info");

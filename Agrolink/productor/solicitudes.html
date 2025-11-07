@@ -596,16 +596,24 @@
           destino,
           fecha,
           peso,
-          contactoAlt,
+
+          // 🔹 Nuevo sistema de teléfonos (guarda ambos si existen)
+          telefonoPrincipal: usuario.telefono || "No registrado",
+          telefonoAlternativo: contactoAlt || null,
+
+          // 🔹 Propiedad combinada para compatibilidad con transportistas actuales
+          telefono: usuario.telefono || contactoAlt || "No registrado",
+
           pago: parseFloat((distanciaRealKm
             ? ((distanciaRealKm / 6) * 17 + (distanciaRealKm > 200 ? 50 : 20) + (distanciaRealKm / 70) * 30) * 1.4
             : pagoEstimado
-          ).toFixed(2)), // usa distancia real si está disponible
+          ).toFixed(2)),
 
-          pagoFinal: null, // se completará cuando se marque como completado
+          pagoFinal: null,
           estado: "Pendiente",
           fechaRegistro: new Date().toLocaleString("es-PE"),
         };
+
 
         // === Guardar sin borrar datos anteriores ===
         const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];

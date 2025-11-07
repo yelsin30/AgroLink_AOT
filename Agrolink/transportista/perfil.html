@@ -10,6 +10,34 @@
   <link rel="icon" href="../img/logo.png" type="image/png" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="../css/Transporte/EstiloPerfil.css" />
+
+  <!-- Solo una clase nueva, todo lo demás lo maneja tu CSS -->
+  <style>
+    .perfil-section-title {
+      font-weight: 600;
+      margin-top: 12px;
+      margin-bottom: 4px;
+      color: #16291b;
+      border-left: 3px solid #00b074;
+      padding-left: 6px;
+      font-size: 0.9rem;
+    }
+
+    .doc-link {
+      font-size: 0.9rem;
+      color: #1f2933;
+      word-break: break-all;
+    }
+
+    .doc-link a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .doc-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 
 <body>
@@ -29,7 +57,7 @@
   <main>
     <header class="main-header">
       <h1><i class="fa-solid fa-id-card"></i> Mi Perfil</h1>
-      <p>Consulta y actualiza tu información personal y del vehículo.</p>
+      <p>Consulta y actualiza tu información personal, bancaria y del vehículo.</p>
     </header>
 
     <div class="perfil-layout">
@@ -62,37 +90,65 @@
           </div>
         </div>
 
-        <!-- Datos personales -->
+        <!-- Datos personales y del vehículo -->
         <form id="perfilForm" class="perfil-datos">
+
           <label>Nombre completo</label>
           <input type="text" id="nombre">
+
           <label>Correo electrónico</label>
           <input type="email" id="correo">
+
           <label>Contraseña</label>
           <input type="password" id="password" placeholder="••••••••">
+
+          <label>Teléfono</label>
+          <input type="text" id="telefono" placeholder="Ej: 987654321">
+
+          <!-- BLOQUE: DATOS DEL VEHÍCULO -->
+          <div class="perfil-section-title">Datos del vehículo</div>
+
           <label>Placa del vehículo</label>
           <input type="text" id="placa">
+
           <label>Capacidad de carga (kg)</label>
           <input type="text" id="capacidad">
+
           <label>Licencia de conducir</label>
           <input type="text" id="licencia">
+
+          <!-- BLOQUE: DATOS BANCARIOS -->
+          <div class="perfil-section-title">Datos bancarios</div>
+
           <label>Cuenta bancaria</label>
           <input type="text" id="cuentaBancaria">
+
+          <label>Número de Yape</label>
+          <input type="text" id="numeroYape" placeholder="Ej: 987654321">
+
+          <!-- BLOQUE: DOCUMENTOS -->
+          <div class="perfil-section-title">Documentos</div>
+
           <label>SOAT</label>
-          <div style="display:flex; align-items:center; gap:10px;">
+          <div class="doc-row">
             <span id="soatLabel" class="doc-link">No cargado</span>
             <input type="file" id="fileSoat" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
-            <button id="btnCambiarSoat" class="btn-secondary" style="display:none;"><i
-                class="fa-solid fa-upload"></i></button>
+            <button id="btnCambiarSoat" class="btn-secondary" style="display:none;">
+              <i class="fa-solid fa-upload"></i>
+            </button>
           </div>
+
           <label>Revisión técnica</label>
-          <div style="display:flex; align-items:center; gap:10px;">
+          <div class="doc-row">
             <span id="revisionLabel" class="doc-link">No cargado</span>
             <input type="file" id="fileRevision" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
-            <button id="btnCambiarRevision" class="btn-secondary" style="display:none;"><i
-                class="fa-solid fa-upload"></i></button>
+            <button id="btnCambiarRevision" class="btn-secondary" style="display:none;">
+              <i class="fa-solid fa-upload"></i>
+            </button>
           </div>
+
         </form>
+
 
         <div class="perfil-buttons">
           <button id="editarBtn" class="btn-secondary"><i class="fa-solid fa-pen"></i> Editar</button>
@@ -105,12 +161,14 @@
       <div class="ficha-tecnica">
         <h3><i class="fa-solid fa-id-card-clip"></i> Ficha técnica del vehículo</h3>
         <ul>
+          <li><i class="fa-solid fa-phone"></i> <strong>Teléfono:</strong> <span id="fichaTelefono">---</span></li>
           <li><i class="fa-solid fa-car"></i> <strong>Placa:</strong> <span id="fichaPlaca">---</span></li>
           <li><i class="fa-solid fa-weight-hanging"></i> <strong>Capacidad:</strong> <span
               id="fichaCapacidad">---</span></li>
           <li><i class="fa-solid fa-id-badge"></i> <strong>Licencia:</strong> <span id="fichaLicencia">---</span></li>
           <li><i class="fa-solid fa-money-check-dollar"></i> <strong>Cuenta bancaria:</strong> <span
               id="fichaCuenta">---</span></li>
+          <li><i class="fa-solid fa-wallet"></i> <strong>Número de Yape:</strong> <span id="fichaYape">---</span></li>
           <li><i class="fa-solid fa-file-shield"></i> <strong>SOAT:</strong> <span id="fichaSoat">---</span></li>
           <li><i class="fa-solid fa-screwdriver-wrench"></i> <strong>Revisión técnica:</strong> <span
               id="fichaRevision">---</span></li>
@@ -124,7 +182,6 @@
   </main>
 
   <!-- Scripts -->
-  <script src="../js/toast.js"></script>
   <script src="../js/toast.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
@@ -152,52 +209,61 @@
       const guardarBtn = document.getElementById("guardarBtn");
 
       const ficha = {
+        telefono: document.getElementById("fichaTelefono"),
         placa: document.getElementById("fichaPlaca"),
         capacidad: document.getElementById("fichaCapacidad"),
         licencia: document.getElementById("fichaLicencia"),
         cuenta: document.getElementById("fichaCuenta"),
+        yape: document.getElementById("fichaYape"),
         soat: document.getElementById("fichaSoat"),
         revision: document.getElementById("fichaRevision"),
       };
 
       // === MOSTRAR DATOS ===
       function mostrarDatos() {
-        // --- Inputs del formulario ---
+        // Inputs
         document.getElementById("nombre").value = usuario.nombre || "";
         document.getElementById("correo").value = usuario.email || "";
         document.getElementById("password").value = usuario.password || "";
+        document.getElementById("telefono").value = usuario.telefono || "";
         document.getElementById("placa").value = usuario.placa || "";
         document.getElementById("capacidad").value = usuario.capacidad || "";
         document.getElementById("licencia").value = usuario.licencia || "";
         document.getElementById("cuentaBancaria").value = usuario.cuentaBancaria || "";
+        document.getElementById("numeroYape").value = usuario.numeroYape || "";
 
-        // --- Imagen de perfil y vehículo ---
+        // Imagen perfil / vehículo
         if (usuario.fotoPerfil) previewPerfil.src = usuario.fotoPerfil;
         if (usuario.vehiculoImg) previewVehiculo.src = usuario.vehiculoImg;
 
-        // --- Documentos ---
-        if (usuario.soatNombre) soatLabel.textContent = `📄 ${usuario.soatNombre}`;
-        if (usuario.revisionNombre) revisionLabel.textContent = `📄 ${usuario.revisionNombre}`;
+        // Documentos: mostramos SOLO el nombre, nunca el base64
+        if (usuario.soatNombre) {
+          soatLabel.textContent = usuario.soatNombre;
+        } else {
+          soatLabel.textContent = "No cargado";
+        }
 
-        // --- Ficha técnica ---
+        if (usuario.revisionNombre) {
+          revisionLabel.textContent = usuario.revisionNombre;
+        } else {
+          revisionLabel.textContent = "No cargado";
+        }
+
+        // Ficha técnica
+        ficha.telefono.textContent = usuario.telefono || "No registrado";
         ficha.placa.textContent = usuario.placa || "No registrado";
         ficha.capacidad.textContent = usuario.capacidad ? `${usuario.capacidad} kg` : "No registrado";
         ficha.licencia.textContent = usuario.licencia || "No registrado";
         ficha.cuenta.textContent = usuario.cuentaBancaria || "No registrado";
+        ficha.yape.textContent = usuario.numeroYape || "No registrado";
         ficha.soat.textContent = usuario.soatNombre || "No cargado";
         ficha.revision.textContent = usuario.revisionNombre || "No cargado";
 
-        // --- Encabezado del perfil ---
-        const nombreHeader = document.getElementById("nombreHeader");
-        const rolHeader = document.getElementById("rolHeader");
-
-        nombreHeader.textContent = usuario.nombre && usuario.nombre.trim() !== ""
-          ? usuario.nombre
-          : "Nombre del Usuario";
-
-        rolHeader.textContent = usuario.rol || "Transportista";
+        // Encabezado
+        document.getElementById("nombreHeader").textContent =
+          usuario.nombre && usuario.nombre.trim() !== "" ? usuario.nombre : "Nombre del Usuario";
+        document.getElementById("rolHeader").textContent = usuario.rol || "Transportista";
       }
-
 
       mostrarDatos();
       inputs.forEach(i => i.disabled = true);
@@ -227,18 +293,44 @@
         usuario.nombre = document.getElementById("nombre").value.trim();
         usuario.email = document.getElementById("correo").value.trim();
         usuario.password = document.getElementById("password").value.trim();
+        usuario.telefono = document.getElementById("telefono").value.trim();
         usuario.placa = document.getElementById("placa").value.trim();
         usuario.capacidad = document.getElementById("capacidad").value.trim();
         usuario.licencia = document.getElementById("licencia").value.trim();
         usuario.cuentaBancaria = document.getElementById("cuentaBancaria").value.trim();
+        usuario.numeroYape = document.getElementById("numeroYape").value.trim();
 
         localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
         mostrarDatos();
         showToast("✅ Perfil actualizado correctamente.", "success");
       });
 
-      // === FUNCIÓN REUTILIZABLE PARA CARGAS ===
-      function configurarCarga(btn, input, propiedad, preview = null, label = null) {
+      // === CARGA IMÁGENES PERFIL / VEHÍCULO ===
+      function configurarImagen(btn, input, propiedad, preview) {
+        btn.addEventListener("click", e => {
+          e.preventDefault();
+          input.click();
+        });
+
+        input.addEventListener("change", e => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => {
+            usuario[propiedad] = reader.result;
+            localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
+            preview.src = reader.result;
+            showToast("✅ Imagen actualizada correctamente.", "success");
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      configurarImagen(btnCambiarPerfil, filePerfil, "fotoPerfil", previewPerfil);
+      configurarImagen(btnCambiarVehiculo, fileVehiculo, "vehiculoImg", previewVehiculo);
+
+      // === CARGA DOCUMENTOS SOAT / REVISIÓN (nombre + base64) ===
+      function configurarDocumento(btn, input, baseKey, label) {
         btn.addEventListener("click", e => {
           e.preventDefault();
           input.click();
@@ -248,32 +340,21 @@
           const file = e.target.files?.[0];
           if (!file) return;
 
-          // Si es imagen, se guarda como Base64
-          if (file.type.startsWith("image/")) {
-            const reader = new FileReader();
-            reader.onload = () => {
-              usuario[propiedad] = reader.result;
-              localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
-              if (preview) preview.src = reader.result;
-              showToast("✅ Imagen actualizada correctamente.", "success");
-            };
-            reader.readAsDataURL(file);
-          }
-          // Si es documento (PDF, etc.)
-          else {
-            usuario[propiedad] = file.name;
+          const reader = new FileReader();
+          reader.onload = () => {
+            // Guardamos contenido y nombre POR SEPARADO
+            usuario[baseKey + "Data"] = reader.result;   // Base64
+            usuario[baseKey + "Nombre"] = file.name;     // Solo nombre
             localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
-            if (label) label.textContent = `📄 ${file.name}`;
+            label.textContent = file.name;
             showToast("✅ Archivo cargado correctamente.", "success");
-          }
+          };
+          reader.readAsDataURL(file);
         });
       }
 
-      // === CONFIGURAR BOTONES ===
-      configurarCarga(btnCambiarPerfil, filePerfil, "fotoPerfil", previewPerfil);
-      configurarCarga(btnCambiarVehiculo, fileVehiculo, "vehiculoImg", previewVehiculo);
-      configurarCarga(btnCambiarSoat, fileSoat, "soatNombre", null, soatLabel);
-      configurarCarga(btnCambiarRevision, fileRevision, "revisionNombre", null, revisionLabel);
+      configurarDocumento(btnCambiarSoat, fileSoat, "soat", soatLabel);
+      configurarDocumento(btnCambiarRevision, fileRevision, "revision", revisionLabel);
 
       // === LOGOUT ===
       document.getElementById("logout").addEventListener("click", () => {

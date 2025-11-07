@@ -304,3 +304,51 @@ main {
   color: #607462;
   font-size: 0.9rem;
 }
+/* === Distribución de columnas en el formulario === */
+.perfil-datos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 40px;
+  row-gap: 10px;
+  align-items: center;
+}
+
+.perfil-datos label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #16291b;
+  margin-bottom: 4px;
+}
+
+.perfil-datos input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #e0e4e0;
+  background-color: #f7f9f7;
+  font-family: "Poppins", sans-serif;
+  color: #16291b;
+}
+
+.perfil-section-title {
+  grid-column: 1 / 3;
+  font-weight: 600;
+  margin-top: 15px;
+  margin-bottom: 5px;
+  color: #16291b;
+  border-left: 4px solid #00b074;
+  padding-left: 8px;
+  font-size: 0.95rem;
+}
+
+.doc-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.doc-link {
+  font-size: 0.9rem;
+  color: #1f2933;
+  word-break: break-all;
+}
