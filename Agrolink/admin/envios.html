@@ -1,460 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AgroLink - Gestión de Envíos</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <style>
-    :root {
-      --primary: #22c55e;
-      --primary-dark: #16a34a;
-      --secondary: #1f2937;
-      --light: #f9fafb;
-      --gray: #6b7280;
-      --red: #ef4444;
-      --yellow: #f59e0b;
-      --green: #10b981;
-      --border: #e5e7eb;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    body {
-      background-color: #f3f4f6;
-      display: flex;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      width: 250px;
-      background-color: var(--secondary);
-      color: white;
-      height: 100vh;
-      position: fixed;
-      overflow-y: auto;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-    }
-
-    .sidebar-header {
-      padding: 1.5rem;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .sidebar-header i {
-      color: var(--primary);
-      font-size: 1.5rem;
-    }
-
-    .sidebar-header h1 {
-      font-size: 1.2rem;
-      font-weight: 600;
-    }
-
-    .nav-menu {
-      padding: 1.5rem 0;
-    }
-
-    .nav-item {
-      padding: 0.75rem 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      color: #d1d5db;
-      text-decoration: none;
-      transition: all 0.2s;
-    }
-
-    .nav-item:hover,
-    .nav-item.active {
-      background-color: rgba(255,255,255,0.05);
-      color: white;
-    }
-
-    .nav-item i {
-      width: 20px;
-      text-align: center;
-    }
-
-    .nav-item.active {
-      border-left: 4px solid var(--primary);
-    }
-
-    .nav-item.logout {
-      margin-top: auto;
-      color: var(--red);
-      border-left: 4px solid var(--red);
-    }
-
-    .nav-item.logout:hover {
-      background-color: rgba(239, 68, 68, 0.1);
-      color: var(--red);
-    }
-
-    /* Main Content */
-    .main-content {
-      margin-left: 250px;
-      width: calc(100% - 250px);
-      min-height: 100vh;
-      padding: 2rem;
-    }
-
-    .header {
-      background-color: white;
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      margin-bottom: 2rem;
-    }
-
-    .header-title {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      color: var(--primary);
-    }
-
-    .header-title i {
-      font-size: 1.5rem;
-    }
-
-    .header-title h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-    }
-
-    .user-profile {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      background-color: #f9fafb;
-      padding: 0.5rem 1rem;
-      border-radius: 2rem;
-    }
-
-    .avatar {
-      width: 32px;
-      height: 32px;
-      background-color: var(--primary);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: bold;
-      font-size: 0.875rem;
-    }
-
-    .username {
-      font-weight: 600;
-      color: var(--secondary);
-    }
-
-    /* Search Filters */
-    .search-filters {
-      background-color: white;
-      border-radius: 0.75rem;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-
-    .search-filters h2 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--secondary);
-      margin-bottom: 1rem;
-    }
-
-    .filters-container {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .filter-input {
-      flex: 1;
-      min-width: 200px;
-    }
-
-    .filter-input input,
-    .filter-input select {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid var(--border);
-      border-radius: 0.5rem;
-      font-size: 0.875rem;
-      transition: border-color 0.2s;
-    }
-
-    .filter-input input:focus,
-    .filter-input select:focus {
-      outline: none;
-      border-color: var(--primary);
-    }
-
-    .filter-button {
-      padding: 0.75rem 1.5rem;
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 0.5rem;
-      cursor: pointer;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: background-color 0.2s;
-    }
-
-    .filter-button:hover {
-      background-color: var(--primary-dark);
-    }
-
-    /* Action Buttons */
-    .action-buttons {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-
-    .btn {
-      padding: 0.75rem 1.5rem;
-      border: none;
-      border-radius: 0.5rem;
-      cursor: pointer;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: background-color 0.2s;
-    }
-
-    .btn-add {
-      background-color: var(--primary);
-      color: white;
-    }
-
-    .btn-add:hover {
-      background-color: var(--primary-dark);
-    }
-
-    .btn-delete {
-      background-color: var(--red);
-      color: white;
-    }
-
-    .btn-delete:hover {
-      background-color: #dc2626;
-    }
-
-    /* Table */
-    .table-container {
-      background-color: white;
-      border-radius: 0.75rem;
-      padding: 1.5rem;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-
-    .table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .table th,
-    .table td {
-      padding: 0.75rem 1rem;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .table th {
-      background-color: #f9fafb;
-      font-weight: 600;
-      color: var(--secondary);
-      font-size: 0.875rem;
-      text-transform: uppercase;
-    }
-
-    .table tr:last-child td {
-      border-bottom: none;
-    }
-
-    .table tr:hover {
-      background-color: #f9fafb;
-    }
-
-    .status {
-      padding: 0.25rem 0.75rem;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      display: inline-block;
-    }
-
-    .status-pending {
-      background-color: #fef3c7;
-      color: #b45309;
-    }
-
-    .status-delivered {
-      background-color: #dcfce7;
-      color: #166534;
-    }
-
-    .actions {
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    .actions button {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 0.875rem;
-      color: var(--gray);
-      transition: color 0.2s;
-    }
-
-    .actions button:hover {
-      color: var(--primary);
-    }
-
-    .actions button.delete:hover {
-      color: var(--red);
-    }
-
-    /* Modal */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.5);
-      align-items: center;
-      justify-content: center;
-    }
-
-    .modal-content {
-      background-color: white;
-      padding: 2rem;
-      border-radius: 0.75rem;
-      width: 100%;
-      max-width: 500px;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: 0 5px 25px rgba(0,0,0,0.2);
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
-    }
-
-    .modal-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--secondary);
-    }
-
-    .close-modal {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: var(--gray);
-    }
-
-    .form-group {
-      margin-bottom: 1rem;
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-      color: var(--secondary);
-    }
-
-    .form-group input,
-    .form-group select {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid var(--border);
-      border-radius: 0.5rem;
-      font-size: 0.875rem;
-    }
-
-    .form-group input:focus,
-    .form-group select:focus {
-      outline: none;
-      border-color: var(--primary);
-    }
-
-    .modal-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-      margin-top: 1.5rem;
-    }
-
-    .btn-cancel {
-      background-color: #6b7280;
-      color: white;
-    }
-
-    .btn-cancel:hover {
-      background-color: #4b5563;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .sidebar {
-        width: 70px;
-        overflow-x: hidden;
-      }
-      .sidebar-header h1,
-      .nav-item span {
-        display: none;
-      }
-      .nav-item {
-        justify-content: center;
-        padding: 0.75rem;
-      }
-      .nav-item i {
-        font-size: 1.25rem;
-      }
-      .main-content {
-        margin-left: 70px;
-        width: calc(100% - 70px);
-      }
-      .filters-container {
-        flex-direction: column;
-      }
-      .filter-input {
-        min-width: 100%;
-      }
-      .action-buttons {
-        flex-direction: column;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="../css/Admin/envios.css" />
 </head>
+
 <body>
   <!-- Sidebar -->
   <aside class="sidebar">
@@ -463,44 +17,19 @@
       <h1>AgroLink</h1>
     </div>
     <nav class="nav-menu">
-      <a href="admin.html" class="nav-item">
-        <i class="fas fa-home"></i>
-        <span>Dashboard</span>
-      </a>
-      <a href="envios.html" class="nav-item active">
-        <i class="fas fa-truck"></i>
-        <span>Envíos</span>
-      </a>
-      <a href="transportistas.html" class="nav-item">
-        <i class="fas fa-users"></i>
-        <span>Transportistas</span>
-      </a>
-      <a href="productos.html" class="nav-item">
-        <i class="fas fa-box"></i>
-        <span>Productos</span>
-      </a>
-      <a href="usuarios.html" class="nav-item">
-        <i class="fas fa-user"></i>
-        <span>Usuarios</span>
-      </a>
-      <a href="reportes.html" class="nav-item">
-        <i class="fas fa-chart-bar"></i>
-        <span>Reportes</span>
-      </a>
-      <a href="configuracion.html" class="nav-item">
-        <i class="fas fa-cog"></i>
-        <span>Configuración</span>
-      </a>
-      <a href="../index.html" class="nav-item logout">
-        <i class="fas fa-sign-out-alt"></i>
-        <span>Cerrar Sesión</span>
-      </a>
+      <a href="admin.html" class="nav-item"><i class="fas fa-home"></i><span>Dashboard</span></a>
+      <a href="envios.html" class="nav-item active"><i class="fas fa-truck"></i><span>Envíos</span></a>
+      <a href="transportistas.html" class="nav-item"><i class="fas fa-users"></i><span>Transportistas</span></a>
+      <a href="productos.html" class="nav-item"><i class="fas fa-box"></i><span>Productos</span></a>
+      <a href="usuarios.html" class="nav-item"><i class="fas fa-user"></i><span>Usuarios</span></a>
+      <a href="reportes.html" class="nav-item"><i class="fas fa-chart-bar"></i><span>Reportes</span></a>
+      <a href="configuracion.html" class="nav-item"><i class="fas fa-cog"></i><span>Configuración</span></a>
+      <a href="../index.html" class="nav-item logout"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a>
     </nav>
   </aside>
 
   <!-- Main Content -->
   <main class="main-content">
-    <!-- Header -->
     <header class="header">
       <div class="header-title">
         <i class="fas fa-truck"></i>
@@ -516,36 +45,24 @@
     <div class="search-filters">
       <h2>Filtros de búsqueda</h2>
       <div class="filters-container">
-        <div class="filter-input">
-          <input type="text" placeholder="Origen (Ej. Puno)" id="filterOrigen" />
-        </div>
-        <div class="filter-input">
-          <input type="text" placeholder="Destino" id="filterDestino" />
-        </div>
+        <div class="filter-input"><input type="text" placeholder="Origen (Ej. Puno)" id="filterOrigen" /></div>
+        <div class="filter-input"><input type="text" placeholder="Destino" id="filterDestino" /></div>
         <div class="filter-input">
           <select id="filterEstado">
             <option value="">Todos los estados</option>
             <option value="Pendiente">Pendiente</option>
+            <option value="En tránsito">En tránsito</option>
             <option value="Entregado">Entregado</option>
           </select>
         </div>
-        <button class="filter-button" id="btnBuscar">
-          <i class="fas fa-search"></i>
-          Buscar
-        </button>
+        <button class="filter-button" id="btnBuscar"><i class="fas fa-search"></i>Buscar</button>
       </div>
     </div>
 
     <!-- Action Buttons -->
     <div class="action-buttons">
-      <button class="btn btn-add" id="btnAgregar">
-        <i class="fas fa-plus"></i>
-        Agregar Envío
-      </button>
-      <button class="btn btn-delete" id="btnEliminar">
-        <i class="fas fa-trash"></i>
-        Eliminar seleccionados
-      </button>
+      <button class="btn btn-add" id="btnAgregar"><i class="fas fa-plus"></i>Agregar Envío</button>
+      <button class="btn btn-delete" id="btnEliminar"><i class="fas fa-trash"></i>Eliminar Todos</button>
     </div>
 
     <!-- Table -->
@@ -563,14 +80,12 @@
             <th>Acciones</th>
           </tr>
         </thead>
-        <tbody id="enviosTableBody">
-          <!-- Los datos se cargarán aquí dinámicamente -->
-        </tbody>
+        <tbody id="enviosTableBody"></tbody>
       </table>
     </div>
   </main>
 
-  <!-- Modal para agregar envío -->
+  <!-- Modal Agregar -->
   <div class="modal" id="addModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -578,37 +93,24 @@
         <button class="close-modal">&times;</button>
       </div>
       <form id="addForm">
-        <div class="form-group">
-          <label for="addId">ID del Envío</label>
-          <input type="text" id="addId" placeholder="Ej. SHP-2025-004" required />
+        <div class="form-group"><label for="addId">ID del Envío</label><input type="text" id="addId"
+            placeholder="Ej. SHP-2025-004" /></div>
+        <div class="form-group"><label for="addOrigen">Origen</label><input type="text" id="addOrigen" required /></div>
+        <div class="form-group"><label for="addDestino">Destino</label><input type="text" id="addDestino" required />
         </div>
-        <div class="form-group">
-          <label for="addOrigen">Origen</label>
-          <input type="text" id="addOrigen" placeholder="Ej. Arequipa" required />
-        </div>
-        <div class="form-group">
-          <label for="addDestino">Destino</label>
-          <input type="text" id="addDestino" placeholder="Ej. Cusco" required />
-        </div>
-        <div class="form-group">
-          <label for="addEstado">Estado</label>
+        <div class="form-group"><label for="addEstado">Estado</label>
           <select id="addEstado" required>
             <option value="Pendiente">Pendiente</option>
+            <option value="En tránsito">En tránsito</option>
             <option value="Entregado">Entregado</option>
           </select>
         </div>
-        <div class="form-group">
-          <label for="addFecha">Fecha</label>
-          <input type="text" id="addFecha" placeholder="Ej. 22/10/2025" required />
-        </div>
-        <div class="form-group">
-          <label for="addTransportista">Transportista</label>
-          <input type="text" id="addTransportista" placeholder="Ej. Transp. Pérez" required />
-        </div>
-        <div class="form-group">
-          <label for="addProducto">Producto</label>
-          <input type="text" id="addProducto" placeholder="Ej. Maíz" required />
-        </div>
+        <div class="form-group"><label for="addFecha">Fecha</label><input type="text" id="addFecha"
+            placeholder="Ej. 22/10/2025" required /></div>
+        <div class="form-group"><label for="addTransportista">Transportista</label><input type="text"
+            id="addTransportista" placeholder="Ej. Transp. Pérez" required /></div>
+        <div class="form-group"><label for="addProducto">Producto</label><input type="text" id="addProducto"
+            placeholder="Ej. Maíz" required /></div>
         <div class="modal-footer">
           <button type="button" class="btn btn-cancel" id="cancelAdd">Cancelar</button>
           <button type="submit" class="btn btn-add">Guardar</button>
@@ -617,7 +119,7 @@
     </div>
   </div>
 
-  <!-- Modal para editar envío -->
+  <!-- Modal Editar -->
   <div class="modal" id="editModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -626,33 +128,22 @@
       </div>
       <form id="editForm">
         <input type="hidden" id="editId" />
-        <div class="form-group">
-          <label for="editOrigen">Origen</label>
-          <input type="text" id="editOrigen" required />
+        <div class="form-group"><label for="editOrigen">Origen</label><input type="text" id="editOrigen" required />
         </div>
-        <div class="form-group">
-          <label for="editDestino">Destino</label>
-          <input type="text" id="editDestino" required />
+        <div class="form-group"><label for="editDestino">Destino</label><input type="text" id="editDestino" required />
         </div>
-        <div class="form-group">
-          <label for="editEstado">Estado</label>
+        <div class="form-group"><label for="editEstado">Estado</label>
           <select id="editEstado" required>
             <option value="Pendiente">Pendiente</option>
+            <option value="En tránsito">En tránsito</option>
             <option value="Entregado">Entregado</option>
           </select>
         </div>
-        <div class="form-group">
-          <label for="editFecha">Fecha</label>
-          <input type="text" id="editFecha" required />
-        </div>
-        <div class="form-group">
-          <label for="editTransportista">Transportista</label>
-          <input type="text" id="editTransportista" required />
-        </div>
-        <div class="form-group">
-          <label for="editProducto">Producto</label>
-          <input type="text" id="editProducto" required />
-        </div>
+        <div class="form-group"><label for="editFecha">Fecha</label><input type="text" id="editFecha" required /></div>
+        <div class="form-group"><label for="editTransportista">Transportista</label><input type="text"
+            id="editTransportista" required /></div>
+        <div class="form-group"><label for="editProducto">Producto</label><input type="text" id="editProducto"
+            required /></div>
         <div class="modal-footer">
           <button type="button" class="btn btn-cancel" id="cancelEdit">Cancelar</button>
           <button type="submit" class="btn btn-add">Actualizar</button>
@@ -662,237 +153,108 @@
   </div>
 
   <script>
-    // Función para obtener datos de localStorage
+    // === 🔁 Sincronización automática con las solicitudes del productor ===
+    function syncSolicitudesConEnvios() {
+      const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink") || "[]");
+      if (solicitudes.length === 0) return;
+
+      let envios = JSON.parse(localStorage.getItem("agrolink_envios") || "[]");
+
+      solicitudes.forEach(s => {
+        const existe = envios.some(e => e.id === s.id);
+        if (!existe) {
+          envios.push({
+            id: s.id || `SHP-${Date.now()}`,
+            origen: s.origen || "—",
+            destino: s.destino || "—",
+            estado: s.estado || "Pendiente",
+            fecha: s.fecha || new Date().toLocaleDateString("es-PE"),
+            transportista: s.transportista || "Sin asignar",
+            producto: s.tipo || "Sin producto"
+          });
+        }
+      });
+
+      localStorage.setItem("agrolink_envios", JSON.stringify(envios));
+    }
+
+    // === Obtener/Guardar Envíos ===
     function getEnvios() {
-      const data = localStorage.getItem('agrolink_envios');
-      return data ? JSON.parse(data) : [];
+      return JSON.parse(localStorage.getItem("agrolink_envios") || "[]");
     }
 
-    // Función para guardar datos en localStorage
     function saveEnvios(envios) {
-      localStorage.setItem('agrolink_envios', JSON.stringify(envios));
+      localStorage.setItem("agrolink_envios", JSON.stringify(envios));
     }
 
-    // Función para generar un ID único
-    function generateId() {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const seconds = String(now.getSeconds()).padStart(2, '0');
-      return `SHP-${year}-${month}${day}-${hours}${minutes}${seconds}`;
-    }
-
-    // Función para renderizar la tabla
+    // === Renderizar tabla ===
     function renderizarTabla(enviosToShow = null) {
-      const tbody = document.getElementById('enviosTableBody');
-      tbody.innerHTML = '';
-
+      const tbody = document.getElementById("enviosTableBody");
+      tbody.innerHTML = "";
       const envios = enviosToShow || getEnvios();
 
       if (envios.length === 0) {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td colspan="8" style="text-align: center; padding: 2rem;">No hay envíos registrados.</td>`;
-        tbody.appendChild(row);
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;">No hay envíos registrados.</td></tr>`;
         return;
       }
 
       envios.forEach(envio => {
-        const row = document.createElement('tr');
+        const row = document.createElement("tr");
         row.innerHTML = `
           <td>${envio.id}</td>
           <td>${envio.origen}</td>
           <td>${envio.destino}</td>
-          <td><span class="status ${envio.estado === 'Pendiente' ? 'status-pending' : 'status-delivered'}">${envio.estado}</span></td>
+          <td><span class="status ${envio.estado === "Entregado" ? "status-delivered" : "status-pending"}">${envio.estado}</span></td>
           <td>${envio.fecha}</td>
           <td>${envio.transportista}</td>
           <td>${envio.producto}</td>
           <td class="actions">
-            <button title="Ver" class="view-btn" data-id="${envio.id}"><i class="fas fa-eye"></i></button>
-            <button title="Editar" class="edit-btn" data-id="${envio.id}"><i class="fas fa-edit"></i></button>
+            <button class="view-btn" title="Ver" data-id="${envio.id}"><i class="fas fa-eye"></i></button>
+            <button class="edit-btn" title="Editar" data-id="${envio.id}"><i class="fas fa-edit"></i></button>
             <button class="delete-btn" title="Eliminar" data-id="${envio.id}"><i class="fas fa-trash"></i></button>
-          </td>
-        `;
+          </td>`;
         tbody.appendChild(row);
       });
 
-      // Añadir eventos a los botones
-      document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const id = this.getAttribute('data-id');
-          eliminarEnvio(id);
-        });
-      });
-
-      document.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const id = this.getAttribute('data-id');
-          abrirModalEdicion(id);
-        });
-      });
-
-      document.querySelectorAll('.view-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const id = this.getAttribute('data-id');
-          verEnvio(id);
-        });
-      });
+      // Eventos
+      document.querySelectorAll(".delete-btn").forEach(b => b.onclick = () => eliminarEnvio(b.dataset.id));
+      document.querySelectorAll(".edit-btn").forEach(b => b.onclick = () => abrirModalEdicion(b.dataset.id));
+      document.querySelectorAll(".view-btn").forEach(b => b.onclick = () => verEnvio(b.dataset.id));
     }
 
-    // Función para eliminar un envío
+    // === CRUD básico ===
     function eliminarEnvio(id) {
-      if (confirm('¿Estás seguro de eliminar este envío?')) {
-        let envios = getEnvios();
-        envios = envios.filter(e => e.id !== id);
-        saveEnvios(envios);
-        renderizarTabla();
-      }
-    }
-
-    // Función para abrir el modal de edición
-    function abrirModalEdicion(id) {
-      const envios = getEnvios();
-      const envio = envios.find(e => e.id === id);
-
-      if (!envio) return;
-
-      document.getElementById('editId').value = envio.id;
-      document.getElementById('editOrigen').value = envio.origen;
-      document.getElementById('editDestino').value = envio.destino;
-      document.getElementById('editEstado').value = envio.estado;
-      document.getElementById('editFecha').value = envio.fecha;
-      document.getElementById('editTransportista').value = envio.transportista;
-      document.getElementById('editProducto').value = envio.producto;
-
-      document.getElementById('editModal').style.display = 'flex';
-    }
-
-    // Función para ver un envío
-    function verEnvio(id) {
-      const envios = getEnvios();
-      const envio = envios.find(e => e.id === id);
-
-      if (!envio) return;
-
-      alert(`Detalles del envío:\n\nID: ${envio.id}\nOrigen: ${envio.origen}\nDestino: ${envio.destino}\nEstado: ${envio.estado}\nFecha: ${envio.fecha}\nTransportista: ${envio.transportista}\nProducto: ${envio.producto}`);
-    }
-
-    // Evento para buscar
-    document.getElementById('btnBuscar').addEventListener('click', function() {
-      const origen = document.getElementById('filterOrigen').value.toLowerCase().trim();
-      const destino = document.getElementById('filterDestino').value.toLowerCase().trim();
-      const estado = document.getElementById('filterEstado').value;
-
-      const envios = getEnvios();
-
-      const filtered = envios.filter(envio => {
-        const matchesOrigen = !origen || envio.origen.toLowerCase().includes(origen);
-        const matchesDestino = !destino || envio.destino.toLowerCase().includes(destino);
-        const matchesEstado = !estado || envio.estado === estado;
-        return matchesOrigen && matchesDestino && matchesEstado;
-      });
-
-      renderizarTabla(filtered);
-    });
-
-    // Evento para agregar envío
-    document.getElementById('btnAgregar').addEventListener('click', function() {
-      document.getElementById('addModal').style.display = 'flex';
-    });
-
-    // Evento para cerrar modales
-    document.querySelectorAll('.close-modal').forEach(btn => {
-      btn.addEventListener('click', function() {
-        this.closest('.modal').style.display = 'none';
-      });
-    });
-
-    // Evento para cancelar agregar
-    document.getElementById('cancelAdd').addEventListener('click', function() {
-      document.getElementById('addModal').style.display = 'none';
-      document.getElementById('addForm').reset();
-    });
-
-    // Evento para cancelar editar
-    document.getElementById('cancelEdit').addEventListener('click', function() {
-      document.getElementById('editModal').style.display = 'none';
-      document.getElementById('editForm').reset();
-    });
-
-    // Evento para guardar nuevo envío
-    document.getElementById('addForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const id = document.getElementById('addId').value || generateId();
-      const origen = document.getElementById('addOrigen').value;
-      const destino = document.getElementById('addDestino').value;
-      const estado = document.getElementById('addEstado').value;
-      const fecha = document.getElementById('addFecha').value;
-      const transportista = document.getElementById('addTransportista').value;
-      const producto = document.getElementById('addProducto').value;
-
-      const nuevoEnvio = { id, origen, destino, estado, fecha, transportista, producto };
-
-      let envios = getEnvios();
-      envios.push(nuevoEnvio);
+      if (!confirm("¿Eliminar este envío?")) return;
+      const envios = getEnvios().filter(e => e.id !== id);
       saveEnvios(envios);
-
       renderizarTabla();
-      document.getElementById('addModal').style.display = 'none';
-      this.reset();
-      alert('✅ Envío agregado correctamente.');
-    });
+    }
 
-    // Evento para actualizar envío
-    document.getElementById('editForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const id = document.getElementById('editId').value;
-      const origen = document.getElementById('editOrigen').value;
-      const destino = document.getElementById('editDestino').value;
-      const estado = document.getElementById('editEstado').value;
-      const fecha = document.getElementById('editFecha').value;
-      const transportista = document.getElementById('editTransportista').value;
-      const producto = document.getElementById('editProducto').value;
+    function abrirModalEdicion(id) {
+      const envio = getEnvios().find(e => e.id === id);
+      if (!envio) return;
+      document.getElementById("editId").value = envio.id;
+      document.getElementById("editOrigen").value = envio.origen;
+      document.getElementById("editDestino").value = envio.destino;
+      document.getElementById("editEstado").value = envio.estado;
+      document.getElementById("editFecha").value = envio.fecha;
+      document.getElementById("editTransportista").value = envio.transportista;
+      document.getElementById("editProducto").value = envio.producto;
+      document.getElementById("editModal").style.display = "flex";
+    }
 
-      let envios = getEnvios();
-      const index = envios.findIndex(e => e.id === id);
-      if (index !== -1) {
-        envios[index] = { id, origen, destino, estado, fecha, transportista, producto };
-        saveEnvios(envios);
-        renderizarTabla();
-        document.getElementById('editModal').style.display = 'none';
-        this.reset();
-        alert('✅ Envío actualizado correctamente.');
-      }
-    });
+    function verEnvio(id) {
+      const e = getEnvios().find(e => e.id === id);
+      if (!e) return;
+      alert(`📦 Envío ${e.id}\n\nOrigen: ${e.origen}\nDestino: ${e.destino}\nEstado: ${e.estado}\nFecha: ${e.fecha}\nTransportista: ${e.transportista}\nProducto: ${e.producto}`);
+    }
 
-    // Evento para eliminar seleccionados (simulación - elimina todos)
-    document.getElementById('btnEliminar').addEventListener('click', function() {
-      const envios = getEnvios();
-      if (envios.length === 0) {
-        alert('No hay envíos para eliminar.');
-        return;
-      }
-      if (confirm(`¿Eliminar todos los ${envios.length} envíos?`)) {
-        saveEnvios([]);
-        renderizarTabla();
-      }
-    });
-
-    // Inicializar la tabla al cargar la página
-    window.addEventListener('load', function() {
-      // Simular datos iniciales si no existen
-      if (getEnvios().length === 0) {
-        const enviosIniciales = [
-          { id: 'SHP-2025-001', origen: 'Puno', destino: 'Lima', estado: 'Pendiente', fecha: '22/10/2025', transportista: 'Transp. Rodríguez', producto: 'Maíz' },
-          { id: 'SHP-2025-002', origen: 'Arequipa', destino: 'Cusco', estado: 'Pendiente', fecha: '21/10/2025', transportista: 'Transp. Luna', producto: 'Soja' },
-          { id: 'SHP-2025-003', origen: 'Trujillo', destino: 'Chiclayo', estado: 'Entregado', fecha: '20/10/2025', transportista: 'Transp. García', producto: 'Trigo' }
-        ];
-        saveEnvios(enviosIniciales);
-      }
+    // === Inicialización ===
+    window.onload = () => {
+      syncSolicitudesConEnvios(); // 🔁 Carga automática desde productor
       renderizarTabla();
-    });
+    };
   </script>
 </body>
+
 </html>

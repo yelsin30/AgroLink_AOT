@@ -42,11 +42,10 @@
       <div class="hello-wrap">
         <span>👋</span>
         <div>
-          <div>Bienvenido, <span id="helloName" class="name">YELSIN OLIDEN</span></div>
-          <small id="helloSub" class="text-muted">Tu panel de control personal</small>
+          <div>Bienvenido, <span id="helloName" class="name"></span></div>
         </div>
       </div>
-      <div id="avatar" class="user-avatar">Y</div>
+      <div id="avatar" class="user-avatar"></div>
     </div>
 
     <!-- KPIs -->
@@ -67,7 +66,7 @@
       <div class="col-md-3 col-6">
         <div class="kpi-card"><i class="fa-solid fa-weight-hanging kpi-icon"></i>
           <h6>Toneladas transportadas</h6>
-          <div class="kpi-value">0.0 t</div>
+          <div class="kpi-value">0.0 T</div>
         </div>
       </div>
       <div class="col-md-3 col-6">
@@ -86,8 +85,6 @@
           <div class="actions">
             <a href="solicitudes.html"><i class="fa-solid fa-plus"></i> Nueva solicitud</a>
             <a href="envios.html" class="active"><i class="fa-solid fa-truck"></i> Mis envíos</a>
-            <button class="btn btn-light btn-sm border"><i class="fa-solid fa-file-arrow-down"></i> Exportar
-              CSV</button>
           </div>
         </div>
         <div class="panel-body text-muted small">
@@ -198,15 +195,9 @@
       const kpis = document.querySelectorAll(".kpi-card");
       if (kpis[0]) kpis[0].querySelector(".kpi-value").textContent = `${cobertura} regiones`;
       if (kpis[1]) kpis[1].querySelector(".kpi-value").textContent = totalEnvios;
-      if (kpis[2]) kpis[2].querySelector(".kpi-value").textContent = (totalPeso / 1000).toFixed(1) + " t";
+      if (kpis[2]) kpis[2].querySelector(".kpi-value").textContent = (totalPeso / 1000).toFixed(1) + " T";
       if (kpis[3]) kpis[3].querySelector(".kpi-value").textContent =
         califProm > 0 ? califProm.toFixed(1) + " ⭐" : "— ⭐";
-
-      // 5. Texto de saludo
-      const helloSub = document.getElementById("helloSub");
-      if (helloSub) {
-        helloSub.textContent = `Tienes ${enCurso} envío(s) en curso y ${pendientes} pendiente(s).`;
-      }
 
       // 6. 👉 “Resumen rápido” con botón para borrar envíos
       const resumen = document.getElementById("resumenRapido");

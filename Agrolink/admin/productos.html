@@ -5,74 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AgroLink - Gestión de Productos</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <style>
-    :root { --primary: #22c55e; --primary-dark: #16a34a; --secondary: #1f2937; --light: #f9fafb; --gray: #6b7280; --red: #ef4444; --border: #e5e7eb; }
-    * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
-    body { background:#f3f4f6; display:flex; }
-    .sidebar { width:250px; background:var(--secondary); color:white; height:100vh; position:fixed; box-shadow:2px 0 5px rgba(0,0,0,0.1); }
-    .sidebar-header { padding:1.5rem; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:0.75rem; }
-    .sidebar-header i { color:var(--primary); font-size:1.5rem; }
-    .sidebar-header h1 { font-size:1.2rem; font-weight:600; }
-    .nav-menu { padding:1.5rem 0; }
-    .nav-item { padding:0.75rem 1.5rem; display:flex; align-items:center; gap:0.75rem; color:#d1d5db; text-decoration:none; transition:all 0.2s; }
-    .nav-item:hover, .nav-item.active { background:rgba(255,255,255,0.05); color:white; }
-    .nav-item i { width:20px; text-align:center; }
-    .nav-item.active { border-left:4px solid var(--primary); }
-    .nav-item.logout { margin-top:auto; color:var(--red); border-left:4px solid var(--red); }
-    .nav-item.logout:hover { background:rgba(239,68,68,0.1); color:var(--red); }
-    .main-content { margin-left:250px; width:calc(100%-250px); min-height:100vh; padding:2rem; }
-    .header { background:white; padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 5px rgba(0,0,0,0.1); margin-bottom:2rem; }
-    .header-title { display:flex; align-items:center; gap:0.75rem; color:var(--primary); }
-    .header-title i { font-size:1.5rem; }
-    .header-title h1 { font-size:1.5rem; font-weight:700; }
-    .user-profile { display:flex; align-items:center; gap:0.75rem; background:#f9fafb; padding:0.5rem 1rem; border-radius:2rem; }
-    .avatar { width:32px; height:32px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:0.875rem; }
-    .username { font-weight:600; color:var(--secondary); }
-    .search-filters, .table-container { background:white; border-radius:0.75rem; padding:1.5rem; margin-bottom:2rem; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
-    .search-filters h2 { font-size:1.25rem; font-weight:700; color:var(--secondary); margin-bottom:1rem; }
-    .filters-container { display:flex; gap:1rem; flex-wrap:wrap; }
-    .filter-input { flex:1; min-width:200px; }
-    .filter-input input, .filter-input select { width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:0.5rem; font-size:0.875rem; }
-    .filter-button { padding:0.75rem 1.5rem; background:var(--primary); color:white; border:none; border-radius:0.5rem; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:0.5rem; }
-    .action-buttons { display:flex; gap:1rem; margin-bottom:2rem; }
-    .btn { padding:0.75rem 1.5rem; border:none; border-radius:0.5rem; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:0.5rem; }
-    .btn-add { background:var(--primary); color:white; }
-    .btn-delete { background:var(--red); color:white; }
-    .table { width:100%; border-collapse:collapse; }
-    .table th, .table td { padding:0.75rem 1rem; text-align:left; border-bottom:1px solid var(--border); }
-    .table th { background:#f9fafb; font-weight:600; color:var(--secondary); font-size:0.875rem; text-transform:uppercase; }
-    .table tr:last-child td { border-bottom:none; }
-    .table tr:hover { background:#f9fafb; }
-    .status { padding:0.25rem 0.75rem; border-radius:999px; font-size:0.75rem; font-weight:600; display:inline-block; }
-    .status-available { background:#dcfce7; color:#166534; }
-    .status-unavailable { background:#fef2f2; color:#b91c1c; }
-    .actions { display:flex; gap:0.5rem; }
-    .actions button { background:none; border:none; cursor:pointer; font-size:0.875rem; color:var(--gray); }
-    .actions button:hover { color:var(--primary); }
-    .actions button.delete:hover { color:var(--red); }
-    .modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; }
-    .modal-content { background:white; padding:2rem; border-radius:0.75rem; width:100%; max-width:500px; max-height:90vh; overflow-y:auto; box-shadow:0 5px 25px rgba(0,0,0,0.2); }
-    .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
-    .modal-title { font-size:1.25rem; font-weight:700; color:var(--secondary); }
-    .close-modal { background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--gray); }
-    .form-group { margin-bottom:1rem; }
-    .form-group label { display:block; margin-bottom:0.5rem; font-weight:600; color:var(--secondary); }
-    .form-group input, .form-group select { width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:0.5rem; font-size:0.875rem; }
-    .modal-footer { display:flex; justify-content:flex-end; gap:1rem; margin-top:1.5rem; }
-    .btn-cancel { background:#6b7280; color:white; }
-    @media (max-width:768px) {
-      .sidebar { width:70px; overflow-x:hidden; }
-      .sidebar-header h1, .nav-item span { display:none; }
-      .nav-item { justify-content:center; padding:0.75rem; }
-      .nav-item i { font-size:1.25rem; }
-      .main-content { margin-left:70px; width:calc(100%-70px); }
-      .filters-container { flex-direction:column; }
-      .filter-input { min-width:100%; }
-      .action-buttons { flex-direction:column; }
-    }
-  </style>
+  <link rel="stylesheet" href="../css/Admin/productos.css" />
 </head>
 <body>
+  <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-header">
       <i class="fas fa-truck"></i>
@@ -90,6 +26,7 @@
     </nav>
   </aside>
 
+  <!-- Main Content -->
   <main class="main-content">
     <header class="header">
       <div class="header-title">
@@ -102,6 +39,7 @@
       </div>
     </header>
 
+    <!-- Filtros -->
     <div class="search-filters">
       <h2>Filtros de búsqueda</h2>
       <div class="filters-container">
@@ -122,11 +60,13 @@
       </div>
     </div>
 
+    <!-- Botones -->
     <div class="action-buttons">
       <button class="btn btn-add" id="btnAgregar"><i class="fas fa-plus"></i> Agregar Producto</button>
-      <button class="btn btn-delete" id="btnEliminar"><i class="fas fa-trash"></i> Eliminar seleccionados</button>
+      <button class="btn btn-delete" id="btnEliminar"><i class="fas fa-trash"></i> Eliminar todos</button>
     </div>
 
+    <!-- Tabla -->
     <div class="table-container">
       <table class="table">
         <thead>
@@ -145,6 +85,7 @@
     </div>
   </main>
 
+  <!-- Modal Agregar -->
   <div class="modal" id="addModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -154,7 +95,7 @@
       <form id="addForm">
         <div class="form-group">
           <label for="addNombre">Nombre</label>
-          <input type="text" id="addNombre" placeholder="Ej. Maíz" required />
+          <input type="text" id="addNombre" required />
         </div>
         <div class="form-group">
           <label for="addCategoria">Categoría</label>
@@ -166,11 +107,11 @@
         </div>
         <div class="form-group">
           <label for="addStock">Stock (kg)</label>
-          <input type="number" id="addStock" placeholder="Ej. 1000" required />
+          <input type="number" id="addStock" required />
         </div>
         <div class="form-group">
           <label for="addPrecio">Precio (S/)</label>
-          <input type="number" step="0.01" id="addPrecio" placeholder="Ej. 2.50" required />
+          <input type="number" step="0.01" id="addPrecio" required />
         </div>
         <div class="form-group">
           <label for="addEstado">Estado</label>
@@ -187,6 +128,7 @@
     </div>
   </div>
 
+  <!-- Modal Editar -->
   <div class="modal" id="editModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -231,174 +173,160 @@
   </div>
 
   <script>
+    // 🔁 Sincronizar productos de productores con panel admin
+    function syncProductosConAdmin() {
+      const productosProd = JSON.parse(localStorage.getItem("productosAgroLink") || "[]");
+      if (productosProd.length === 0) return;
+
+      let productosAdmin = JSON.parse(localStorage.getItem("agrolink_productos") || "[]");
+
+      productosProd.forEach(p => {
+        const existe = productosAdmin.some(pa => pa.nombre === p.nombre);
+        if (!existe) {
+          productosAdmin.push({
+            id: "PR-" + Date.now().toString().slice(-6),
+            nombre: p.nombre || "Sin nombre",
+            categoria: p.categoria || "Sin categoría",
+            stock: p.stock || "0",
+            precio: p.precio || "0.00",
+            estado: p.estado || "disponible"
+          });
+        }
+      });
+
+      localStorage.setItem("agrolink_productos", JSON.stringify(productosAdmin));
+    }
+
     function getProductos() {
-      const data = localStorage.getItem('agrolink_productos');
-      return data ? JSON.parse(data) : [];
+      return JSON.parse(localStorage.getItem("agrolink_productos") || "[]");
     }
 
     function saveProductos(productos) {
-      localStorage.setItem('agrolink_productos', JSON.stringify(productos));
+      localStorage.setItem("agrolink_productos", JSON.stringify(productos));
     }
 
-    function generateId() {
-      return 'PR-' + Date.now().toString().slice(-6);
-    }
-
+    // === Renderizar tabla ===
     function renderizarTabla(productosToShow = null) {
-      const tbody = document.getElementById('productosTableBody');
-      tbody.innerHTML = '';
-
+      const tbody = document.getElementById("productosTableBody");
+      tbody.innerHTML = "";
       const productos = productosToShow || getProductos();
 
       if (productos.length === 0) {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td colspan="7" style="text-align:center;padding:2rem;">No hay productos registrados.</td>`;
-        tbody.appendChild(row);
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;">No hay productos registrados.</td></tr>`;
         return;
       }
 
-      productos.forEach(producto => {
-        const row = document.createElement('tr');
+      productos.forEach(p => {
+        const row = document.createElement("tr");
         row.innerHTML = `
-          <td>${producto.id}</td>
-          <td>${producto.nombre}</td>
-          <td>${producto.categoria}</td>
-          <td>${producto.stock}</td>
-          <td>S/ ${producto.precio}</td>
-          <td><span class="status ${producto.estado === 'disponible' ? 'status-available' : 'status-unavailable'}">${producto.estado === 'disponible' ? 'Disponible' : 'Agotado'}</span></td>
+          <td>${p.id}</td>
+          <td>${p.nombre}</td>
+          <td>${p.categoria}</td>
+          <td>${p.stock}</td>
+          <td>S/ ${p.precio}</td>
+          <td><span class="status ${p.estado === "disponible" ? "status-available" : "status-unavailable"}">${p.estado === "disponible" ? "Disponible" : "Agotado"}</span></td>
           <td class="actions">
-            <button class="edit-btn" data-id="${producto.id}"><i class="fas fa-edit"></i></button>
-            <button class="delete-btn" data-id="${producto.id}"><i class="fas fa-trash"></i></button>
-          </td>
-        `;
+            <button class="edit-btn" data-id="${p.id}"><i class="fas fa-edit"></i></button>
+            <button class="delete-btn" data-id="${p.id}"><i class="fas fa-trash"></i></button>
+          </td>`;
         tbody.appendChild(row);
       });
 
-      document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const id = this.getAttribute('data-id');
-          if (confirm('¿Eliminar este producto?')) {
-            let productos = getProductos();
-            productos = productos.filter(p => p.id !== id);
+      document.querySelectorAll(".delete-btn").forEach(btn =>
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-id");
+          if (confirm("¿Eliminar este producto?")) {
+            let productos = getProductos().filter(p => p.id !== id);
             saveProductos(productos);
             renderizarTabla();
           }
-        });
-      });
+        })
+      );
 
-      document.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const id = this.getAttribute('data-id');
-          const productos = getProductos();
-          const producto = productos.find(p => p.id === id);
+      document.querySelectorAll(".edit-btn").forEach(btn =>
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-id");
+          const producto = getProductos().find(p => p.id === id);
           if (!producto) return;
-          document.getElementById('editId').value = producto.id;
-          document.getElementById('editNombre').value = producto.nombre;
-          document.getElementById('editCategoria').value = producto.categoria;
-          document.getElementById('editStock').value = producto.stock;
-          document.getElementById('editPrecio').value = producto.precio;
-          document.getElementById('editEstado').value = producto.estado;
-          document.getElementById('editModal').style.display = 'flex';
-        });
-      });
+          document.getElementById("editId").value = producto.id;
+          document.getElementById("editNombre").value = producto.nombre;
+          document.getElementById("editCategoria").value = producto.categoria;
+          document.getElementById("editStock").value = producto.stock;
+          document.getElementById("editPrecio").value = producto.precio;
+          document.getElementById("editEstado").value = producto.estado;
+          document.getElementById("editModal").style.display = "flex";
+        })
+      );
     }
 
-    document.getElementById('btnBuscar').addEventListener('click', function() {
-      const nombre = document.getElementById('filterNombre').value.toLowerCase().trim();
-      const categoria = document.getElementById('filterCategoria').value;
-      const productos = getProductos();
-      const filtered = productos.filter(p => {
-        const matchesNombre = !nombre || p.nombre.toLowerCase().includes(nombre);
-        const matchesCategoria = !categoria || p.categoria === categoria;
-        return matchesNombre && matchesCategoria;
-      });
+    // === Eventos ===
+    document.getElementById("btnBuscar").addEventListener("click", () => {
+      const nombre = filterNombre.value.toLowerCase().trim();
+      const categoria = filterCategoria.value;
+      const filtered = getProductos().filter(p =>
+        (!nombre || p.nombre.toLowerCase().includes(nombre)) &&
+        (!categoria || p.categoria === categoria)
+      );
       renderizarTabla(filtered);
     });
 
-    document.getElementById('btnAgregar').addEventListener('click', () => {
-      document.getElementById('addModal').style.display = 'flex';
-    });
+    btnAgregar.onclick = () => addModal.style.display = "flex";
+    cancelAdd.onclick = () => { addModal.style.display = "none"; addForm.reset(); };
+    cancelEdit.onclick = () => { editModal.style.display = "none"; editForm.reset(); };
+    document.querySelectorAll(".close-modal").forEach(btn => btn.onclick = () => btn.closest(".modal").style.display = "none");
 
-    document.querySelectorAll('.close-modal').forEach(btn => {
-      btn.addEventListener('click', () => {
-        btn.closest('.modal').style.display = 'none';
-      });
-    });
-
-    document.getElementById('cancelAdd').addEventListener('click', () => {
-      document.getElementById('addModal').style.display = 'none';
-      document.getElementById('addForm').reset();
-    });
-
-    document.getElementById('cancelEdit').addEventListener('click', () => {
-      document.getElementById('editModal').style.display = 'none';
-      document.getElementById('editForm').reset();
-    });
-
-    document.getElementById('addForm').addEventListener('submit', function(e) {
+    addForm.onsubmit = e => {
       e.preventDefault();
       const producto = {
-        id: generateId(),
-        nombre: document.getElementById('addNombre').value,
-        categoria: document.getElementById('addCategoria').value,
-        stock: document.getElementById('addStock').value,
-        precio: document.getElementById('addPrecio').value,
-        estado: document.getElementById('addEstado').value
+        id: "PR-" + Date.now().toString().slice(-6),
+        nombre: addNombre.value,
+        categoria: addCategoria.value,
+        stock: addStock.value,
+        precio: addPrecio.value,
+        estado: addEstado.value
       };
-      let productos = getProductos();
-      productos.push(producto);
+      const productos = [...getProductos(), producto];
       saveProductos(productos);
       renderizarTabla();
-      document.getElementById('addModal').style.display = 'none';
-      this.reset();
-      alert('✅ Producto agregado.');
-    });
+      addModal.style.display = "none";
+      e.target.reset();
+      alert("✅ Producto agregado correctamente.");
+    };
 
-    document.getElementById('editForm').addEventListener('submit', function(e) {
+    editForm.onsubmit = e => {
       e.preventDefault();
-      const id = document.getElementById('editId').value;
-      const producto = {
-        id,
-        nombre: document.getElementById('editNombre').value,
-        categoria: document.getElementById('editCategoria').value,
-        stock: document.getElementById('editStock').value,
-        precio: document.getElementById('editPrecio').value,
-        estado: document.getElementById('editEstado').value
-      };
+      const id = editId.value;
       let productos = getProductos();
-      const index = productos.findIndex(p => p.id === id);
-      if (index !== -1) {
-        productos[index] = producto;
+      const i = productos.findIndex(p => p.id === id);
+      if (i >= 0) {
+        productos[i] = {
+          id,
+          nombre: editNombre.value,
+          categoria: editCategoria.value,
+          stock: editStock.value,
+          precio: editPrecio.value,
+          estado: editEstado.value
+        };
         saveProductos(productos);
         renderizarTabla();
-        document.getElementById('editModal').style.display = 'none';
-        this.reset();
-        alert('✅ Producto actualizado.');
+        editModal.style.display = "none";
+        e.target.reset();
+        alert("✅ Producto actualizado correctamente.");
       }
-    });
+    };
 
-    document.getElementById('btnEliminar').addEventListener('click', function() {
-      const productos = getProductos();
-      if (productos.length === 0) {
-        alert('No hay productos para eliminar.');
-        return;
-      }
-      if (confirm(`¿Eliminar todos los ${productos.length} productos?`)) {
-        saveProductos([]);
+    btnEliminar.onclick = () => {
+      if (confirm("¿Eliminar todos los productos?")) {
+        localStorage.removeItem("agrolink_productos");
         renderizarTabla();
       }
-    });
+    };
 
-    window.addEventListener('load', function() {
-      if (getProductos().length === 0) {
-        saveProductos([
-          { id: 'PR-001', nombre: 'Maíz', categoria: 'Cereales', stock: '1200', precio: '2.50', estado: 'disponible' },
-          { id: 'PR-002', nombre: 'Soja', categoria: 'Legumbres', stock: '800', precio: '3.20', estado: 'disponible' },
-          { id: 'PR-003', nombre: 'Papa', categoria: 'Tubérculos', stock: '0', precio: '1.80', estado: 'agotado' }
-        ]);
-      }
+    // === Inicializar ===
+    window.onload = () => {
+      syncProductosConAdmin(); // 🔁 Carga automática desde productores
       renderizarTabla();
-    });
+    };
   </script>
 </body>
 </html>

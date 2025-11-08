@@ -220,6 +220,7 @@
       };
 
       // === MOSTRAR DATOS ===
+      // === MOSTRAR DATOS ===
       function mostrarDatos() {
         // Inputs
         document.getElementById("nombre").value = usuario.nombre || "";
@@ -232,22 +233,36 @@
         document.getElementById("cuentaBancaria").value = usuario.cuentaBancaria || "";
         document.getElementById("numeroYape").value = usuario.numeroYape || "";
 
-        // Imagen perfil / vehículo
-        if (usuario.fotoPerfil) previewPerfil.src = usuario.fotoPerfil;
-        if (usuario.vehiculoImg) previewVehiculo.src = usuario.vehiculoImg;
-
-        // Documentos: mostramos SOLO el nombre, nunca el base64
-        if (usuario.soatNombre) {
-          soatLabel.textContent = usuario.soatNombre;
+        // ✅ Asegurar que cada imagen esté en el lugar correcto
+        if (usuario.fotoPerfil && usuario.fotoPerfil.includes("data:image")) {
+          previewPerfil.src = usuario.fotoPerfil;
+        } else if (usuario.fotoPerfil && usuario.fotoPerfil.includes("truck")) {
+          // Si accidentalmente tiene la del camión, intercambiar
+          const temp = usuario.vehiculoImg;
+          usuario.vehiculoImg = usuario.fotoPerfil;
+          usuario.fotoPerfil = temp;
+          localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
+          previewPerfil.src = usuario.fotoPerfil || "../img/default-user.png";
         } else {
-          soatLabel.textContent = "No cargado";
+          previewPerfil.src = "../img/default-user.png";
         }
 
-        if (usuario.revisionNombre) {
-          revisionLabel.textContent = usuario.revisionNombre;
+        if (usuario.vehiculoImg && usuario.vehiculoImg.includes("data:image")) {
+          previewVehiculo.src = usuario.vehiculoImg;
+        } else if (usuario.vehiculoImg && usuario.vehiculoImg.includes("user")) {
+          // Si accidentalmente tiene la del rostro, intercambiar
+          const temp = usuario.fotoPerfil;
+          usuario.fotoPerfil = usuario.vehiculoImg;
+          usuario.vehiculoImg = temp;
+          localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
+          previewVehiculo.src = usuario.vehiculoImg || "../img/default-truck.png";
         } else {
-          revisionLabel.textContent = "No cargado";
+          previewVehiculo.src = "../img/default-truck.png";
         }
+
+        // Documentos
+        soatLabel.textContent = usuario.soatNombre || "No cargado";
+        revisionLabel.textContent = usuario.revisionNombre || "No cargado";
 
         // Ficha técnica
         ficha.telefono.textContent = usuario.telefono || "No registrado";
@@ -262,7 +277,8 @@
         // Encabezado
         document.getElementById("nombreHeader").textContent =
           usuario.nombre && usuario.nombre.trim() !== "" ? usuario.nombre : "Nombre del Usuario";
-        document.getElementById("rolHeader").textContent = usuario.rol || "Transportista";
+        document.getElementById("rolHeader").textContent =
+          usuario.rol && usuario.rol.trim() !== "" ? usuario.rol : "Transportista";
       }
 
       mostrarDatos();

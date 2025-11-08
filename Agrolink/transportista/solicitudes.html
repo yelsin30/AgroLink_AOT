@@ -56,10 +56,10 @@
         <a href="perfil.html"><i class="fa-solid fa-user"></i></a>
       </nav>
 
-      <div class="help-section">
-        <a href="#"><i class="fa-regular fa-circle-question"></i></a>
-        <a href="#" id="logout"><i class="fa-solid fa-right-from-bracket"></i><span>Salir</span></a>
-      </div>
+      <button class="logout-btn" id="logout">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span>Salir</span>
+      </button>
     </aside>
 
     <!-- ===== MAIN ===== -->
@@ -111,29 +111,54 @@
   <script src="../js/toast.js"></script>
 
   <!-- ===== LÓGICA ===== -->
-  <script>
-    document.addEventListener("DOMContentLoaded", async () => {
-      const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")) || {};
-      const db = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
-      const contenedor = document.getElementById("listaSolicitudes");
-      const overlay = document.getElementById("overlay");
-      const panel = document.getElementById("panelDetalle");
-      const btnCerrar = document.getElementById("btnCerrar");
-      const btnAceptar = document.getElementById("btnAceptar");
-      const btnRechazar = document.getElementById("btnRechazar");
-      let map = null;
-      let routing = null;
-      let solicitudActual = null;
+<script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")) || {};
+    const db = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
+    const contenedor = document.getElementById("listaSolicitudes");
+    const overlay = document.getElementById("overlay");
+    const panel = document.getElementById("panelDetalle");
+    const btnCerrar = document.getElementById("btnCerrar");
+    const btnAceptar = document.getElementById("btnAceptar");
+    const btnRechazar = document.getElementById("btnRechazar");
+    let map = null;
+    let routing = null;
+    let solicitudActual = null;
 
-      // 🔹 Filtrar solo solicitudes pendientes
-      const disponibles = db.filter(s => s.estado === "Pendiente");
-      if (disponibles.length === 0) {
-        contenedor.innerHTML = "<p>No hay solicitudes disponibles por ahora.</p>";
-        return;
-      }
+    // 🔹 Logout (registrado antes que cualquier return)
+    const logoutBtn = document.getElementById("logout");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", (e) => {
+        e.preventDefault();
 
-      // 🔹 Mostrar tarjetas de solicitudes
-      contenedor.innerHTML = "";
+        const usuarioActual = JSON.parse(localStorage.getItem("agrolinkUsuario")) || {};
+        const usuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios")) || [];
+
+        // Marcar al usuario como inactivo si existe en la lista
+        const index = usuarios.findIndex(u => u.email === usuarioActual.email);
+        if (index !== -1) {
+          usuarios[index].sesionActiva = false;
+          localStorage.setItem("agrolinkUsuarios", JSON.stringify(usuarios));
+        }
+
+        // Eliminar sesión activa
+        localStorage.removeItem("agrolinkUsuario");
+        localStorage.removeItem("agrolinkRol");
+
+        showToast("👋 Sesión cerrada correctamente", "info");
+        setTimeout(() => {
+          window.location.href = "../index.html";
+        }, 800);
+      });
+    }
+
+    // 🔹 Filtrar solicitudes
+    const disponibles = db.filter(s => s.estado === "Pendiente");
+    contenedor.innerHTML = "";
+
+    if (disponibles.length === 0) {
+      contenedor.innerHTML = "<p>No hay solicitudes disponibles por ahora.</p>";
+    } else {
       disponibles.forEach(s => {
         const card = document.createElement("div");
         card.classList.add("card");
@@ -147,133 +172,124 @@
         card.querySelector(".btn-ver").addEventListener("click", () => abrirPanel(s));
         contenedor.appendChild(card);
       });
+    }
 
-      // 🔹 Abrir panel con detalles
-      async function abrirPanel(s) {
-        solicitudActual = s;
-        panel.classList.add("show");
-        overlay.style.display = "block";
-        document.body.style.overflow = "hidden";
+    // 🔹 Abrir panel con detalles
+    async function abrirPanel(s) {
+      solicitudActual = s;
+      panel.classList.add("show");
+      overlay.style.display = "block";
+      document.body.style.overflow = "hidden";
 
-        document.getElementById("detalleTipo").textContent = s.tipo || "Sin tipo";
-        document.getElementById("detalleProductor").textContent = s.productor || "Desconocido";
+      document.getElementById("detalleTipo").textContent = s.tipo || "Sin tipo";
+      document.getElementById("detalleProductor").textContent = s.productor || "Desconocido";
 
-        const telefonoPrincipal = s.telefonoPrincipal || s.telefono || "No registrado";
-        const telefonoAlternativo = s.telefonoAlternativo || s.contactoAlt || "No registrado";
-        document.getElementById("detalleTelefono").innerHTML = `
-          <strong>Principal:</strong> ${telefonoPrincipal}<br>
-          <strong>Alternativo:</strong> ${telefonoAlternativo}
-        `;
+      const telefonoPrincipal = s.telefonoPrincipal || s.telefono || "No registrado";
+      const telefonoAlternativo = s.telefonoAlternativo || s.contactoAlt || "No registrado";
+      document.getElementById("detalleTelefono").innerHTML = `
+        <strong>Principal:</strong> ${telefonoPrincipal}<br>
+        <strong>Alternativo:</strong> ${telefonoAlternativo}
+      `;
 
-        document.getElementById("detalleCalificacion").textContent = s.calificacion || "4.8";
-        document.getElementById("detalleOrigen").textContent = s.origen;
-        document.getElementById("detalleDestino").textContent = s.destino;
-        document.getElementById("detallePeso").textContent = s.peso;
-        document.getElementById("detallePago").textContent = s.pago || "0";
-        document.getElementById("detalleFecha").textContent = s.fecha;
+      document.getElementById("detalleCalificacion").textContent = s.calificacion || "4.8";
+      document.getElementById("detalleOrigen").textContent = s.origen;
+      document.getElementById("detalleDestino").textContent = s.destino;
+      document.getElementById("detallePeso").textContent = s.peso;
+      document.getElementById("detallePago").textContent = s.pago || "0";
+      document.getElementById("detalleFecha").textContent = s.fecha;
 
-        // --- Mapa con ruta ---
-        if (map) {
-          map.remove();
-          map = null;
-        }
-        map = L.map("map").setView([-9.19, -75.015], 6);
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution: "&copy; OpenStreetMap contributors"
+      // --- Mapa con ruta ---
+      if (map) {
+        map.remove();
+        map = null;
+      }
+      map = L.map("map").setView([-9.19, -75.015], 6);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors"
+      }).addTo(map);
+
+      const origen = await obtenerCoords(s.origen);
+      const destino = await obtenerCoords(s.destino);
+
+      if (origen && destino) {
+        routing = L.Routing.control({
+          waypoints: [L.latLng(origen), L.latLng(destino)],
+          lineOptions: { styles: [{ color: "#00b074", weight: 5 }] },
+          showAlternatives: false,
+          addWaypoints: false,
+          draggableWaypoints: false,
+          fitSelectedRoutes: true,
+          createMarker: (i, wp) =>
+            L.marker(wp.latLng).bindPopup(
+              i === 0 ? `🚜 <b>Origen:</b> ${s.origen}` : `<b>Destino:</b> ${s.destino}`
+            )
         }).addTo(map);
-
-        const origen = await obtenerCoords(s.origen);
-        const destino = await obtenerCoords(s.destino);
-
-        if (origen && destino) {
-          routing = L.Routing.control({
-            waypoints: [L.latLng(origen), L.latLng(destino)],
-            lineOptions: { styles: [{ color: "#00b074", weight: 5 }] },
-            showAlternatives: false,
-            addWaypoints: false,
-            draggableWaypoints: false,
-            fitSelectedRoutes: true,
-            createMarker: (i, wp) =>
-              L.marker(wp.latLng).bindPopup(
-                i === 0 ? `🚜 <b>Origen:</b> ${s.origen}` : `<b>Destino:</b> ${s.destino}`
-              )
-          }).addTo(map);
-        }
       }
+    }
 
-      // 🔹 Buscar coordenadas
-      async function obtenerCoords(ciudad) {
-        try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(ciudad + ", Perú")}`);
-          const data = await res.json();
-          return data[0] ? [parseFloat(data[0].lat), parseFloat(data[0].lon)] : null;
-        } catch (err) {
-          console.error("Error obteniendo coordenadas:", err);
-          return null;
-        }
+    // 🔹 Buscar coordenadas
+    async function obtenerCoords(ciudad) {
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(ciudad + ", Perú")}`);
+        const data = await res.json();
+        return data[0] ? [parseFloat(data[0].lat), parseFloat(data[0].lon)] : null;
+      } catch (err) {
+        console.error("Error obteniendo coordenadas:", err);
+        return null;
       }
+    }
 
-      // 🔹 Cerrar panel
-      btnCerrar.addEventListener("click", () => {
-        panel.classList.remove("show");
-        document.body.style.overflow = "auto";
-        setTimeout(() => (overlay.style.display = "none"), 400);
-      });
-
-      // 🔹 Aceptar solicitud (ahora crea mensaje en chat)
-      btnAceptar.addEventListener("click", () => {
-        solicitudActual.estado = "En curso";
-        solicitudActual.transportista = usuario.nombre || "Transportista";
-        localStorage.setItem("solicitudesAgroLink", JSON.stringify(db));
-
-        // 🟢 Nuevo mensaje automático del transportista
-        const chatKey = `chat_${solicitudActual.id || solicitudActual.fecha}`;
-        let mensajes = JSON.parse(localStorage.getItem(chatKey) || "[]");
-
-        const yaExiste = mensajes.some(m => m.tipo === "autoInicio");
-        if (!yaExiste) {
-          const nuevoMensaje = {
-            remitente: usuario.nombre || "Transportista",
-            rol: "transportista",
-            texto: "🚚 ¡Hola! Estoy en camino al punto de recojo.",
-            fecha: new Date().toISOString(),
-            tipo: "autoInicio"
-          };
-          mensajes.push(nuevoMensaje);
-          localStorage.setItem(chatKey, JSON.stringify(mensajes));
-        }
-
-        showToast("✅ Has aceptado la solicitud.", "success");
-        cerrarYActualizar();
-
-        // (Opcional) Ir directo al chat del transportista
-        // window.location.href = `../Comunicacion/chatT.html?id=${encodeURIComponent(solicitudActual.id || solicitudActual.fecha)}&productor=${encodeURIComponent(solicitudActual.productor || "Productor")}`;
-      });
-
-      // 🔹 Rechazar solicitud
-      btnRechazar.addEventListener("click", () => {
-        solicitudActual.estado = "Rechazada";
-        localStorage.setItem("solicitudesAgroLink", JSON.stringify(db));
-        showToast("❌ Has rechazado la solicitud.", "error");
-        cerrarYActualizar();
-      });
-
-      // 🔹 Cerrar panel y recargar
-      function cerrarYActualizar() {
-        panel.classList.remove("show");
-        document.body.style.overflow = "auto";
-        setTimeout(() => overlay.style.display = "none", 400);
-        setTimeout(() => location.reload(), 600);
-      }
-
-      // 🔹 Logout
-      document.getElementById("logout").addEventListener("click", e => {
-        e.preventDefault();
-        showToast("👋 Sesión cerrada correctamente", "info");
-        setTimeout(() => (window.location.href = "../index.html"), 1000);
-      });
+    // 🔹 Cerrar panel
+    btnCerrar.addEventListener("click", () => {
+      panel.classList.remove("show");
+      document.body.style.overflow = "auto";
+      setTimeout(() => (overlay.style.display = "none"), 400);
     });
-  </script>
+
+    // 🔹 Aceptar solicitud
+    btnAceptar.addEventListener("click", () => {
+      solicitudActual.estado = "En curso";
+      solicitudActual.transportista = usuario.nombre || "Transportista";
+      localStorage.setItem("solicitudesAgroLink", JSON.stringify(db));
+
+      const chatKey = `chat_${solicitudActual.id || solicitudActual.fecha}`;
+      let mensajes = JSON.parse(localStorage.getItem(chatKey) || "[]");
+
+      const yaExiste = mensajes.some(m => m.tipo === "autoInicio");
+      if (!yaExiste) {
+        const nuevoMensaje = {
+          remitente: usuario.nombre || "Transportista",
+          rol: "transportista",
+          texto: "🚚 ¡Hola! Estoy en camino al punto de recojo.",
+          fecha: new Date().toISOString(),
+          tipo: "autoInicio"
+        };
+        mensajes.push(nuevoMensaje);
+        localStorage.setItem(chatKey, JSON.stringify(mensajes));
+      }
+
+      showToast("✅ Has aceptado la solicitud.", "success");
+      cerrarYActualizar();
+    });
+
+    // 🔹 Rechazar solicitud
+    btnRechazar.addEventListener("click", () => {
+      solicitudActual.estado = "Rechazada";
+      localStorage.setItem("solicitudesAgroLink", JSON.stringify(db));
+      showToast("❌ Has rechazado la solicitud.", "error");
+      cerrarYActualizar();
+    });
+
+    // 🔹 Cerrar panel y recargar
+    function cerrarYActualizar() {
+      panel.classList.remove("show");
+      document.body.style.overflow = "auto";
+      setTimeout(() => overlay.style.display = "none", 400);
+      setTimeout(() => location.reload(), 600);
+    }
+  });
+</script>
+
 
 
 </body>

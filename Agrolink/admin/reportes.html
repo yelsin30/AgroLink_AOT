@@ -5,33 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AgroLink - Reportes</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="../css/Admin/reportes.css" />
   <style>
-    :root { --primary: #22c55e; --secondary: #1f2937; --light: #f9fafb; --gray: #6b7280; --border: #e5e7eb; }
-    * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
-    body { background:#f3f4f6; display:flex; }
-    .sidebar { width:250px; background:var(--secondary); color:white; height:100vh; position:fixed; box-shadow:2px 0 5px rgba(0,0,0,0.1); }
-    .sidebar-header { padding:1.5rem; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:0.75rem; }
-    .sidebar-header i { color:var(--primary); font-size:1.5rem; }
-    .sidebar-header h1 { font-size:1.2rem; font-weight:600; }
-    .nav-menu { padding:1.5rem 0; }
-    .nav-item { padding:0.75rem 1.5rem; display:flex; align-items:center; gap:0.75rem; color:#d1d5db; text-decoration:none; transition:all 0.2s; }
-    .nav-item:hover, .nav-item.active { background:rgba(255,255,255,0.05); color:white; }
-    .nav-item i { width:20px; text-align:center; }
-    .nav-item.active { border-left:4px solid var(--primary); }
-    .nav-item.logout { margin-top:auto; color:var(--red); border-left:4px solid var(--red); }
-    .main-content { margin-left:250px; width:calc(100%-250px); min-height:100vh; padding:2rem; }
-    .header { background:white; padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 5px rgba(0,0,0,0.1); margin-bottom:2rem; }
-    .header-title { display:flex; align-items:center; gap:0.75rem; color:var(--primary); }
-    .header-title i { font-size:1.5rem; }
-    .header-title h1 { font-size:1.5rem; font-weight:700; }
-    .user-profile { display:flex; align-items:center; gap:0.75rem; background:#f9fafb; padding:0.5rem 1rem; border-radius:2rem; }
-    .avatar { width:32px; height:32px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:0.875rem; }
-    .card { background:white; border-radius:0.75rem; padding:1.5rem; margin-bottom:2rem; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
-    .card h2 { font-size:1.25rem; font-weight:700; color:var(--secondary); margin-bottom:1rem; }
-    .chart { height:200px; background:#f9fafb; border-radius:0.5rem; display:flex; align-items:flex-end; padding:1rem; gap:1rem; }
-    .bar { flex:1; background:var(--primary); border-radius:4px 4px 0 0; position:relative; }
-    .bar::before { content:attr(data-value); position:absolute; top:-20px; left:50%; transform:translateX(-50%); font-weight:600; }
-    .report-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:2rem; }
+    .chart { display: flex; align-items: flex-end; gap: 10px; height: 200px; margin-top: 1rem; }
+    .bar { width: 30px; background-color: #22c55e; border-radius: 4px 4px 0 0; transition: height 0.5s; position: relative; }
+    .bar::after { content: attr(data-label); position: absolute; bottom: -20px; width: 100%; text-align: center; font-size: 0.8rem; color: #555; }
+    .card { background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+    .header { background: #fff; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 1.5rem; }
+    .header-title { display: flex; align-items: center; gap: 0.75rem; color: #22c55e; }
+    .header-title h1 { font-size: 1.5rem; }
   </style>
 </head>
 <body>
@@ -66,33 +49,117 @@
 
     <div class="report-grid">
       <div class="card">
-        <h2>Envíos por Mes</h2>
-        <div class="chart">
-          <div class="bar" data-value="12" style="height:60%;"></div>
-          <div class="bar" data-value="18" style="height:90%;"></div>
-          <div class="bar" data-value="15" style="height:75%;"></div>
-          <div class="bar" data-value="20" style="height:100%;"></div>
-          <div class="bar" data-value="16" style="height:80%;"></div>
-          <div class="bar" data-value="14" style="height:70%;"></div>
-        </div>
+        <h2>📦 Envíos por Mes</h2>
+        <div id="chartEnvios" class="chart"></div>
       </div>
+
       <div class="card">
-        <h2>Productos Más Enviados</h2>
-        <div class="chart">
-          <div class="bar" data-value="45%" style="height:90%;"></div>
-          <div class="bar" data-value="30%" style="height:60%;"></div>
-          <div class="bar" data-value="25%" style="height:50%;"></div>
-        </div>
+        <h2>🌾 Productos Más Enviados</h2>
+        <div id="chartProductos" class="chart"></div>
       </div>
+
       <div class="card">
-        <h2>Transportistas Activos</h2>
-        <div style="font-size:3rem; font-weight:700; text-align:center; margin-top:2rem;">3</div>
+        <h2>🚚 Transportistas Activos</h2>
+        <div id="transportistasActivos" style="font-size:3rem;font-weight:700;text-align:center;margin-top:2rem;">0</div>
       </div>
+
       <div class="card">
-        <h2>Ingresos Estimados</h2>
-        <div style="font-size:2.5rem; font-weight:700; color:var(--primary); text-align:center; margin-top:2rem;">S/ 8,500</div>
+        <h2>💰 Ingresos Estimados</h2>
+        <div id="ingresosEstimados" style="font-size:2.5rem;font-weight:700;color:#22c55e;text-align:center;margin-top:2rem;">S/ 0.00</div>
       </div>
     </div>
   </main>
+
+  <script>
+    // === Obtener datos de localStorage ===
+    function getEnvios() {
+      return JSON.parse(localStorage.getItem("agrolink_envios") || "[]");
+    }
+
+    function getProductos() {
+      return JSON.parse(localStorage.getItem("agrolink_productos") || "[]");
+    }
+
+    function getTransportistas() {
+      return JSON.parse(localStorage.getItem("agrolink_transportistas") || "[]");
+    }
+
+    // === Envíos por mes ===
+    function generarEnviosPorMes() {
+      const envios = getEnvios();
+      const meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+      const conteo = new Array(12).fill(0);
+
+      envios.forEach(e => {
+        if (e.fecha) {
+          const partes = e.fecha.split("/");
+          const mes = parseInt(partes[1]) - 1;
+          if (!isNaN(mes) && mes >= 0 && mes < 12) conteo[mes]++;
+        }
+      });
+
+      const chart = document.getElementById("chartEnvios");
+      chart.innerHTML = "";
+      conteo.forEach((v, i) => {
+        const bar = document.createElement("div");
+        bar.className = "bar";
+        const height = (v / Math.max(...conteo, 1)) * 100;
+        bar.style.height = height + "%";
+        bar.setAttribute("data-label", meses[i]);
+        chart.appendChild(bar);
+      });
+    }
+
+    // === Productos más enviados ===
+    function generarProductosMasEnviados() {
+      const envios = getEnvios();
+      const conteo = {};
+
+      envios.forEach(e => {
+        if (e.producto) conteo[e.producto] = (conteo[e.producto] || 0) + 1;
+      });
+
+      const top = Object.entries(conteo)
+        .sort((a,b) => b[1]-a[1])
+        .slice(0,5);
+
+      const chart = document.getElementById("chartProductos");
+      chart.innerHTML = "";
+
+      top.forEach(([nombre, cantidad]) => {
+        const bar = document.createElement("div");
+        bar.className = "bar";
+        bar.style.height = (cantidad / top[0][1]) * 100 + "%";
+        bar.setAttribute("data-label", nombre);
+        chart.appendChild(bar);
+      });
+    }
+
+    // === Transportistas activos ===
+    function mostrarTransportistasActivos() {
+      const t = getTransportistas();
+      document.getElementById("transportistasActivos").innerText = t.length;
+    }
+
+    // === Ingresos estimados ===
+    function calcularIngresosEstimados() {
+      const productos = getProductos();
+      let total = 0;
+      productos.forEach(p => {
+        if (p.estado === "disponible") {
+          total += parseFloat(p.precio || 0) * parseFloat(p.stock || 0);
+        }
+      });
+      document.getElementById("ingresosEstimados").innerText = "S/ " + total.toFixed(2);
+    }
+
+    // === Inicializar reportes ===
+    window.onload = () => {
+      generarEnviosPorMes();
+      generarProductosMasEnviados();
+      mostrarTransportistasActivos();
+      calcularIngresosEstimados();
+    };
+  </script>
 </body>
 </html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -62,6 +63,11 @@
               <input id="correo" type="email" placeholder="Ej: usuario@correo.com" required />
             </div>
             <div class="col-md-6">
+              <label>Teléfono</label>
+              <input id="telefono" type="tel" placeholder="Ej: +51 987654321" />
+            </div>
+
+            <div class="col-md-6">
               <label>Ubicación principal</label>
               <select id="region">
                 <option value="">Seleccionar región...</option>
@@ -117,6 +123,7 @@
       // Mostrar datos
       document.getElementById("nombre").value = usuario.nombre || "";
       document.getElementById("correo").value = usuario.email || usuario.correo || "";
+      document.getElementById("telefono").value = usuario.telefono || "";
       document.getElementById("region").value = usuario.region || "";
       document.getElementById("productos").value = usuario.productos || "";
       document.getElementById("descripcion").value = usuario.descripcion || "";
@@ -150,6 +157,7 @@
         e.preventDefault();
         usuario.nombre = document.getElementById("nombre").value.trim();
         usuario.email = document.getElementById("correo").value.trim();
+        usuario.telefono = document.getElementById("telefono").value.trim();
         usuario.region = document.getElementById("region").value;
         usuario.productos = document.getElementById("productos").value.trim();
         usuario.descripcion = document.getElementById("descripcion").value.trim();

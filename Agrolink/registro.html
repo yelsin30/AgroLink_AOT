@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,10 +15,11 @@
   <!-- ====== ENCABEZADO ====== -->
   <header class="auth-header">
     <a href="index.html" class="logo-auth">
-      <i class="fa-solid fa-tractor" style="color:#2b7a0b; font-size:1.8rem; margin-right:8px;"></i>
-      <span style="font-weight:700; font-size:1.3rem; color:#2b7a0b;">AgroLink</span>
+      <i class="fa-solid fa-tractor"></i>
+      <span>AgroLink</span>
     </a>
   </header>
+
 
   <!-- ====== CONTENIDO PRINCIPAL ====== -->
   <main class="auth-container">
@@ -154,8 +156,19 @@
           nuevoUsuario.cuentaBancaria = document.getElementById("cuentaBancaria").value.trim();
           nuevoUsuario.fotoPerfil = await fileToBase64(document.getElementById("fotoPerfil").files[0]);
           nuevoUsuario.vehiculoImg = await fileToBase64(document.getElementById("vehiculoImg").files[0]);
-          nuevoUsuario.soat = await fileToBase64(document.getElementById("soat").files[0]);
-          nuevoUsuario.revision = await fileToBase64(document.getElementById("revision").files[0]);
+          // === Guardar documentos ===
+          const soatFile = document.getElementById("soat").files[0];
+          const revisionFile = document.getElementById("revision").files[0];
+
+          if (soatFile) {
+            nuevoUsuario.soatData = await fileToBase64(soatFile);
+            nuevoUsuario.soatNombre = soatFile.name;
+          }
+
+          if (revisionFile) {
+            nuevoUsuario.revisionData = await fileToBase64(revisionFile);
+            nuevoUsuario.revisionNombre = revisionFile.name;
+          }
         }
 
         // Guardar en localStorage
@@ -175,4 +188,5 @@
     });
   </script>
 </body>
+
 </html>

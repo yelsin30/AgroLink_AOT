@@ -15,6 +15,9 @@
 
   <!-- Favicon -->
   <link rel="icon" href="../img/logo.png" type="image/png" />
+  <!-- Leaflet Routing Machine -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+  <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
 
   <!-- ✅ CSS externo -->
   <link rel="stylesheet" href="../css/Productor/envios.css">
@@ -283,6 +286,7 @@
   <!-- SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
   <!-- Si tienes tu toast.js lo dejas. Si no, esto evita error -->
   <script>
     if (typeof showToast === "undefined") {
@@ -605,20 +609,57 @@
           showToast("No hay coordenadas para esa ruta.");
           return;
         }
+
         mapPanel.style.display = "block";
         if (_mapPanel) {
           _mapPanel.remove();
           _mapPanel = null;
         }
-        _mapPanel = L.map('mapPanel').setView(A, 6);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: "&copy; OpenStreetMap"
+
+        _mapPanel = L.map("mapPanel").setView(A, 6);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: "&copy; OpenStreetMap",
         }).addTo(_mapPanel);
-        L.marker(A).addTo(_mapPanel).bindPopup(seleccion.origen);
-        L.marker(B).addTo(_mapPanel).bindPopup(seleccion.destino);
-        L.polyline([A, B], { color: "#03b075", weight: 4 }).addTo(_mapPanel);
-        _mapPanel.fitBounds([A, B]);
+
+        // Marcadores de inicio y fin
+        const markerA = L.marker(A).addTo(_mapPanel).bindPopup(seleccion.origen);
+        const markerB = L.marker(B).addTo(_mapPanel).bindPopup(seleccion.destino);
+
+        // 🗺️ Obtener ruta real con OSRM (Open Source Routing Machine)
+        const url = `https://router.project-osrm.org/route/v1/driving/${A[1]},${A[0]};${B[1]},${B[0]}?overview=full&geometries=geojson`;
+
+        fetch(url)
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.routes && data.routes.length > 0) {
+              const route = data.routes[0].geometry;
+              const line = L.geoJSON(route, {
+                style: { color: "#03b075", weight: 5, opacity: 0.85 },
+              }).addTo(_mapPanel);
+
+              _mapPanel.fitBounds(line.getBounds());
+
+              // Añadir información del viaje
+              const km = (data.routes[0].distance / 1000).toFixed(1);
+              const min = Math.round(data.routes[0].duration / 60);
+              L.popup()
+                .setLatLng(B)
+                .setContent(
+                  `<b>Ruta calculada</b><br>Distancia: ${km} km<br>Duración aprox: ${min} min`
+                )
+                .openOn(_mapPanel);
+            } else {
+              showToast("No se encontró ruta real.");
+              L.polyline([A, B], { color: "#03b075", weight: 4 }).addTo(_mapPanel);
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            showToast("Error al cargar la ruta real.");
+            L.polyline([A, B], { color: "#03b075", weight: 4 }).addTo(_mapPanel);
+          });
       });
+
 
       // Cancelar
       btnCancelar.addEventListener("click", () => {
@@ -661,25 +702,88 @@
 
       document.getElementById("btnMapaGeneral").addEventListener("click", () => {
         mapSheet.style.display = "block";
+
         setTimeout(() => {
           if (!mapGeneral) {
-            mapGeneral = L.map('mapGeneral').setView([-9.189967, -75.015152], 6);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-              attribution: "&copy; OpenStreetMap"
+            mapGeneral = L.map("mapGeneral").setView([-9.189967, -75.015152], 6);
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+              attribution: "&copy; OpenStreetMap",
             }).addTo(mapGeneral);
           } else {
+            mapGeneral.eachLayer((layer) => {
+              if (!(layer instanceof L.TileLayer)) mapGeneral.removeLayer(layer);
+            });
             mapGeneral.invalidateSize();
           }
+
           const list = filtrar();
-          list.forEach(e => {
-            const A = coords[e.origen], B = coords[e.destino];
+          if (!list.length) {
+            showToast("No hay rutas para mostrar.");
+            return;
+          }
+
+          // Cargar rutas reales con OSRM
+          list.forEach((e) => {
+            const A = coords[e.origen];
+            const B = coords[e.destino];
             if (!A || !B) return;
-            L.marker(A).addTo(mapGeneral).bindPopup(`<b>${e.tipo}</b><br>${e.origen}`);
-            L.marker(B).addTo(mapGeneral).bindPopup(`Destino: ${e.destino}`);
-            L.polyline([A, B], { color: "#03b075", weight: 3, opacity: .85 }).addTo(mapGeneral);
+
+            const colorRuta =
+              /completado/i.test(e.estado || "")
+                ? "#198754" // verde
+                : /en\s*curso/i.test(e.estado || "")
+                  ? "#0d6efd" // azul
+                  : /cancelado|rechazad/i.test(e.estado || "")
+                    ? "#d62828" // rojo
+                    : "#03b075"; // verde estándar
+
+            const url = `https://router.project-osrm.org/route/v1/driving/${A[1]},${A[0]};${B[1]},${B[0]}?overview=full&geometries=geojson`;
+
+            fetch(url)
+              .then((res) => res.json())
+              .then((data) => {
+                if (data.routes && data.routes.length > 0) {
+                  const route = data.routes[0].geometry;
+                  const line = L.geoJSON(route, {
+                    style: { color: colorRuta, weight: 4, opacity: 0.85 },
+                  }).addTo(mapGeneral);
+
+                  // Agregar marcadores
+                  L.marker(A)
+                    .addTo(mapGeneral)
+                    .bindPopup(`<b>${e.tipo}</b><br>${e.origen}`);
+                  L.marker(B)
+                    .addTo(mapGeneral)
+                    .bindPopup(`Destino: ${e.destino}`);
+
+                  // Mostrar info resumen
+                  const km = (data.routes[0].distance / 1000).toFixed(1);
+                  const min = Math.round(data.routes[0].duration / 60);
+                  line.bindTooltip(
+                    `${e.origen} → ${e.destino}<br><b>${km} km</b> · ${min} min`,
+                    { permanent: false, direction: "center" }
+                  );
+                } else {
+                  // Fallback línea recta
+                  L.polyline([A, B], {
+                    color: colorRuta,
+                    weight: 4,
+                    opacity: 0.6,
+                  }).addTo(mapGeneral);
+                }
+              })
+              .catch(() => {
+                // Si falla OSRM, dibujar línea recta simple
+                L.polyline([A, B], {
+                  color: colorRuta,
+                  weight: 4,
+                  opacity: 0.6,
+                }).addTo(mapGeneral);
+              });
           });
-        }, 30);
+        }, 100);
       });
+
 
       closeMapSheet.addEventListener("click", () => {
         mapSheet.style.display = "none";
