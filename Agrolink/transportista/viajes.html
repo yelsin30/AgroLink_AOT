@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,106 +11,22 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
 
-  <!-- Estilo principal AgroLink -->
-  <link rel="stylesheet" href="../css/Transporte/EstiloT.css" />
-
-  <style>
-    /* Ajustes extra para esta página */
-    #map {
-      height: 420px;
-      width: 100%;
-      border-radius: 14px;
-      margin-top: 1.2rem;
-      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    .card-viaje {
-      background: #fff;
-      border-radius: 14px;
-      padding: 1rem 1.3rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      margin-bottom: 1rem;
-      border-left: 5px solid #00b074;
-      transition: transform .2s ease, box-shadow .2s ease;
-      cursor: pointer;
-    }
-    .card-viaje:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 4px 12px rgba(0, 176, 116, 0.2);
-    }
-
-    .viaje-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: .5rem;
-    }
-    .viaje-header h6 {
-      margin: 0;
-      font-size: 1rem;
-      color: #16291b;
-      font-weight: 700;
-    }
-    .viaje-header .estado {
-      font-size: 0.85rem;
-      padding: .3rem .6rem;
-      border-radius: 10px;
-      color: #fff;
-      font-weight: 600;
-      text-transform: capitalize;
-    }
-    .estado.en\ curso { background-color: #00b074; }
-    .estado.completado { background-color: #16291b; }
-    .estado.cancelado,
-    .estado.rechazada { background-color: #d13c3c; }
-
-    .tab-btn {
-      border: 1px solid #00b074;
-      background: #fff;
-      color: #16291b;
-      padding: 6px 14px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.2s;
-      font-weight: 600;
-    }
-    .tab-btn.active {
-      background: #00b074;
-      color: #fff;
-    }
-
-    .route-info {
-      margin-top: 0.8rem;
-      padding: 0.8rem 1rem;
-      border-radius: 12px;
-      background: #f1f8f1;
-      border: 1px solid #cde3cd;
-      font-size: 0.95rem;
-      color: #16291b;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .route-info i {
-      color: #00b074;
-      font-size: 1.1rem;
-    }
-    .route-info strong {
-      color: #00b074;
-    }
-  </style>
+  <!-- Estilo principal -->
+  <link rel="stylesheet" href="../css/Transporte/EstiloViajes.css" />
 </head>
 
 <body>
-  <!-- === SIDEBAR === -->
+  <!-- === SIDEBAR AGROLINK OFICIAL === -->
   <aside class="sidebar">
     <i class="fa-solid fa-tractor logo"></i>
+
     <div class="nav-icons">
-      <button onclick="location.href='dashboard.html'"><i class="fa-solid fa-home"></i></button>
+      <button onclick="location.href='dashboard.html'"><i class="fa-solid fa-house"></i></button>
       <button onclick="location.href='solicitudes.html'"><i class="fa-solid fa-list"></i></button>
-      <button class="active" onclick="location.href='viajes.html'"><i class="fa-solid fa-truck"></i></button>
+      <button class="active"><i class="fa-solid fa-truck"></i></button>
       <button onclick="location.href='perfil.html'"><i class="fa-solid fa-user"></i></button>
     </div>
+
     <button class="logout-btn" id="logout">
       <i class="fa-solid fa-right-from-bracket"></i>
       <span>Salir</span>
@@ -124,34 +41,30 @@
         <p>Consulta tus viajes completados, en curso y cancelados, con detalles de ruta, distancia y tiempo.</p>
       </header>
 
-      <!-- === TARJETAS KPI === -->
+      <!-- === KPI === -->
       <div class="stats-row" id="stats">
         <div class="stat-card">
           <div class="stat-icon"><i class="fa-solid fa-truck"></i></div>
           <div class="stat-text">
-            <h4 id="enCurso">0</h4>
-            <span>En curso</span>
+            <h4 id="enCurso">0</h4><span>En curso</span>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-icon"><i class="fa-solid fa-check"></i></div>
           <div class="stat-text">
-            <h4 id="completados">0</h4>
-            <span>Completados</span>
+            <h4 id="completados">0</h4><span>Completados</span>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
           <div class="stat-text">
-            <h4 id="totalGanado">S/ 0.00</h4>
-            <span>Ingresos Totales</span>
+            <h4 id="totalGanado">S/ 0.00</h4><span>Ingresos Totales</span>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-icon"><i class="fa-solid fa-star"></i></div>
           <div class="stat-text">
-            <h4>4.8</h4>
-            <span>Promedio</span>
+            <h4>4.8</h4><span>Promedio</span>
           </div>
         </div>
       </div>
@@ -159,8 +72,7 @@
       <!-- === PANEL PRINCIPAL === -->
       <div class="panel">
         <h5><i class="fa-solid fa-map-location-dot"></i> Rutas y Viajes</h5>
-
-        <div class="tabs d-flex gap-2 mb-3">
+        <div class="tabs">
           <button class="tab-btn active" data-tab="curso">En curso</button>
           <button class="tab-btn" data-tab="completados">Completados</button>
           <button class="tab-btn" data-tab="cancelados">Cancelados</button>
@@ -177,6 +89,18 @@
         </div>
       </div>
 
+      <!-- === PANEL DETALLES === -->
+      <div class="detalle-overlay" id="detalleOverlay">
+        <div class="detalle-panel">
+          <div class="detalle-header">
+            <h2><i class="fa-solid fa-box"></i> Detalles del Pedido</h2>
+            <button class="detalle-cerrar" id="cerrarDetalle"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <div class="detalle-content" id="detalleContenido"></div>
+          <button id="btnRuta"><i class="fa-solid fa-route"></i> Ver ruta en el mapa</button>
+        </div>
+      </div>
+
       <footer>© 2025 AgroLink. Todos los derechos reservados.</footer>
     </div>
   </main>
@@ -187,62 +111,68 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
-      // === MAPA BASE ===
       const map = L.map("map").setView([-9.19, -75.015], 6);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: "&copy; OpenStreetMap contributors"
       }).addTo(map);
 
-      const routeInfo = document.getElementById("routeInfo");
       let routingControl = null;
+      const routeInfo = document.getElementById("routeInfo");
+      let solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
 
-      // === DATOS DESDE LOCALSTORAGE ===
-      const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
+      const panel = document.getElementById("detalleOverlay");
+      const btnCerrar = document.getElementById("cerrarDetalle");
+      const btnRuta = document.getElementById("btnRuta");
 
-      const viajesEnCurso = solicitudes.filter(v => /curso/i.test(v.estado));
-      const viajesCompletados = solicitudes.filter(v => /completad/i.test(v.estado));
-      const viajesCancelados = solicitudes.filter(v => /cancelad|rechazad/i.test(v.estado));
-
-      // === KPI ===
-      document.getElementById("enCurso").textContent = viajesEnCurso.length;
-      document.getElementById("completados").textContent = viajesCompletados.length;
-      const totalGanado = viajesCompletados.reduce(
-        (acc, v) => acc + (parseFloat(v.pagoFinal || v.pago) || 0),
-        0
-      );
-      document.getElementById("totalGanado").textContent = `S/ ${totalGanado.toFixed(2)}`;
-
-      const container = document.getElementById("viajesContainer");
-
-      // Obtener coords desde Nominatim
+      // === Funciones ===
       async function obtenerCoords(ciudad) {
         try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-              ciudad + ", Perú"
-            )}`
-          );
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(ciudad + ", Perú")}`);
           const data = await res.json();
           return data[0] ? [parseFloat(data[0].lat), parseFloat(data[0].lon)] : null;
-        } catch (err) {
-          console.error("Error obteniendo coordenadas:", err);
+        } catch {
           return null;
         }
       }
 
-      // Renderizar lista y conectar con mapa
-      async function renderViajes(lista) {
-        container.innerHTML = "";
-        if (lista.length === 0) {
-          container.innerHTML = "<p class='text-muted'>No hay viajes en esta categoría.</p>";
-          routeInfo.innerHTML = `
-            <i class="fa-solid fa-route"></i>
-            <span>Selecciona un viaje de la lista para ver la ruta detallada.</span>
-          `;
+      async function mostrarRuta(viaje) {
+        const origen = await obtenerCoords(viaje.origen);
+        const destino = await obtenerCoords(viaje.destino);
+        if (!origen || !destino) {
+          routeInfo.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i><span>No se pudo calcular la ruta.</span>`;
           return;
         }
+        if (routingControl) map.removeControl(routingControl);
+        routingControl = L.Routing.control({
+          waypoints: [L.latLng(origen), L.latLng(destino)],
+          lineOptions: { styles: [{ color: "#00b074", weight: 5 }] },
+          addWaypoints: false,
+          draggableWaypoints: false,
+          fitSelectedRoutes: true
+        })
+          .on("routesfound", e => {
+            const r = e.routes[0],
+              d = r.summary.totalDistance / 1000,
+              t = r.summary.totalTime;
+            routeInfo.innerHTML = `<i class="fa-solid fa-route"></i>
+            <span><strong>Ruta:</strong> ${viaje.origen} → ${viaje.destino}<br>
+            <strong>Distancia:</strong> ${d.toFixed(1)} km | <strong>Duración:</strong> ${Math.floor(t / 3600)}h ${Math.round((t % 3600) / 60)}min</span>`;
+          }).addTo(map);
+      }
 
-        for (const v of lista) {
+      function actualizarKPIs() {
+        const enCurso = solicitudes.filter(v => /curso/i.test(v.estado));
+        const completados = solicitudes.filter(v => /completad/i.test(v.estado));
+        const total = completados.reduce((a, v) => a + (parseFloat(v.pagoFinal || v.pago) || 0), 0);
+        document.getElementById("enCurso").textContent = enCurso.length;
+        document.getElementById("completados").textContent = completados.length;
+        document.getElementById("totalGanado").textContent = `S/ ${total.toFixed(2)}`;
+      }
+
+      async function renderViajes(lista) {
+        const container = document.getElementById("viajesContainer");
+        container.innerHTML = lista.length ? "" : "<p class='text-muted'>No hay viajes en esta categoría.</p>";
+        lista.forEach(v => {
           const card = document.createElement("div");
           card.classList.add("card-viaje");
           card.innerHTML = `
@@ -251,97 +181,80 @@
               <span class="estado ${v.estado.toLowerCase()}">${v.estado}</span>
             </div>
             <p><strong>Fecha:</strong> ${v.fecha || "No especificada"}</p>
-            <p><strong>Pago:</strong> S/ ${(v.pagoFinal || v.pago || 0)}</p>
-          `;
-
-          card.addEventListener("click", async () => {
-            const origen = await obtenerCoords(v.origen);
-            const destino = await obtenerCoords(v.destino);
-
-            if (!origen || !destino) {
-              routeInfo.innerHTML = `
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                <span>No se pudo calcular la ruta para este viaje.</span>
-              `;
-              return;
-            }
-
-            // Limpiar ruta anterior
-            if (routingControl) {
-              map.removeControl(routingControl);
-              routingControl = null;
-            }
-
-            routingControl = L.Routing.control({
-              waypoints: [L.latLng(origen), L.latLng(destino)],
-              lineOptions: { styles: [{ color: "#00b074", weight: 5 }] },
-              showAlternatives: false,
-              addWaypoints: false,
-              draggableWaypoints: false,
-              fitSelectedRoutes: true,
-              createMarker: (i, wp) => {
-                return L.marker(wp.latLng, {
-                  icon: L.icon({
-                    iconUrl:
-                      i === 0
-                        ? "https://cdn-icons-png.flaticon.com/512/809/809957.png"
-                        : "https://cdn-icons-png.flaticon.com/512/684/684908.png",
-                    iconSize: [32, 32]
-                  })
-                }).bindPopup(
-                  i === 0
-                    ? `🚚 <b>Origen:</b> ${v.origen}`
-                    : `<b>Destino:</b> ${v.destino}`
-                );
-              }
-            })
-              .on("routesfound", e => {
-                const route = e.routes[0];
-                const distKm = route.summary.totalDistance / 1000;
-                const tiempoSeg = route.summary.totalTime;
-                const horas = Math.floor(tiempoSeg / 3600);
-                const minutos = Math.round((tiempoSeg % 3600) / 60);
-
-                routeInfo.innerHTML = `
-                  <i class="fa-solid fa-route"></i>
-                  <span>
-                    <strong>Ruta seleccionada:</strong> ${v.origen} → ${v.destino}<br>
-                    <strong>Distancia:</strong> ${distKm.toFixed(1)} km &nbsp; | &nbsp;
-                    <strong>Duración estimada:</strong> ${horas} h ${minutos} min
-                  </span>
-                `;
-              })
-              .addTo(map);
+            <p><strong>Pago:</strong> S/ ${(v.pagoFinal || v.pago || 0).toFixed(2)}</p>
+            <div class="botones-viaje">
+              <button class="btn-ver" onclick="verDetalles('${v.id}')">Ver Detalles</button>
+              ${/curso/i.test(v.estado)
+              ? `<button class="btn-completar" onclick="marcarCompletado('${v.id}')">Marcar como Completado</button>` : ""}
+            </div>`;
+          card.addEventListener("click", e => {
+            if (!e.target.closest(".botones-viaje")) mostrarRuta(v);
           });
-
           container.appendChild(card);
-        }
+        });
       }
 
-      // Render inicial: viajes en curso
-      renderViajes(viajesEnCurso);
+      // === Panel lateral ===
+      window.verDetalles = id => {
+        const s = solicitudes.find(x => x.id === id);
+        if (!s) return;
+        document.getElementById("detalleContenido").innerHTML = `
+          <p><strong>ID:</strong> ${s.id}</p>
+          <p><strong>Productor:</strong> ${s.productor}</p>
+          <p><strong>Origen:</strong> ${s.origen}</p>
+          <p><strong>Destino:</strong> ${s.destino}</p>
+          <p><strong>Peso:</strong> ${s.peso} kg</p>
+          <p><strong>Pago:</strong> S/ ${s.pago}</p>
+          <p><strong>Fecha:</strong> ${s.fecha}</p>
+          <p><strong>Teléfono:</strong> ${s.telefono || "No registrado"}</p>
+          ${s.fechaCompletado ? `<p><strong>Completado el:</strong> ${s.fechaCompletado}</p>` : ""}`;
+        panel.classList.add("show");
+        btnRuta.onclick = () => {
+          mostrarRuta(s);
+          panel.classList.remove("show");
+        };
+      };
+      btnCerrar.onclick = () => panel.classList.remove("show");
+      panel.addEventListener("click", e => { if (e.target === panel) panel.classList.remove("show"); });
 
-      // Tabs
-      const tabBtns = document.querySelectorAll(".tab-btn");
-      tabBtns.forEach(btn => {
-        btn.addEventListener("click", () => {
-          tabBtns.forEach(b => b.classList.remove("active"));
-          btn.classList.add("active");
+      // === Marcar como completado ===
+      window.marcarCompletado = id => {
+        const s = solicitudes.find(x => x.id === id);
+        if (!s) return;
+        s.estado = "Completado";
+        s.fechaCompletado = new Date().toLocaleString("es-PE");
+        localStorage.setItem("solicitudesAgroLink", JSON.stringify(solicitudes));
+        actualizarKPIs();
+        renderViajes(solicitudes.filter(v => /curso/i.test(v.estado)));
+        alert(`✅ El viaje ${s.origen} → ${s.destino} fue completado.`);
+      };
 
-          const tab = btn.dataset.tab;
-          if (tab === "curso") renderViajes(viajesEnCurso);
-          else if (tab === "completados") renderViajes(viajesCompletados);
-          else renderViajes(viajesCancelados);
+      // === Tabs funcionales ===
+      const tabs = document.querySelectorAll(".tab-btn");
+      tabs.forEach(tab => {
+        tab.addEventListener("click", e => {
+          tabs.forEach(t => t.classList.remove("active"));
+          e.target.classList.add("active");
+          const tipo = e.target.dataset.tab;
+          let lista = [];
+          if (tipo === "curso") lista = solicitudes.filter(v => /curso/i.test(v.estado));
+          if (tipo === "completados") lista = solicitudes.filter(v => /completad/i.test(v.estado));
+          if (tipo === "cancelados") lista = solicitudes.filter(v => /cancelad/i.test(v.estado));
+          renderViajes(lista);
         });
       });
 
-      // Logout
-      document.getElementById("logout").addEventListener("click", () => {
+      // === Logout ===
+      document.getElementById("logout").onclick = () => {
         localStorage.clear();
         alert("👋 Sesión cerrada correctamente");
-        window.location.href = "../index.html";
-      });
+        location.href = "../index.html";
+      };
+
+      actualizarKPIs();
+      renderViajes(solicitudes.filter(v => /curso/i.test(v.estado)));
     });
   </script>
 </body>
+
 </html>

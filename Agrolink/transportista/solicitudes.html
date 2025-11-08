@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -21,9 +22,11 @@
       line-height: 1.5;
       margin-left: 5px;
     }
+
     #detalleTelefono strong {
       color: #00b074;
     }
+
     .tel-header {
       display: flex;
       align-items: center;
@@ -31,6 +34,7 @@
       font-weight: 600;
       color: #16291b;
     }
+
     .tel-header i {
       color: #00b074;
     }
@@ -151,11 +155,9 @@
         overlay.style.display = "block";
         document.body.style.overflow = "hidden";
 
-        // --- Información general ---
         document.getElementById("detalleTipo").textContent = s.tipo || "Sin tipo";
         document.getElementById("detalleProductor").textContent = s.productor || "Desconocido";
 
-        // --- Mostrar teléfonos juntos ---
         const telefonoPrincipal = s.telefonoPrincipal || s.telefono || "No registrado";
         const telefonoAlternativo = s.telefonoAlternativo || s.contactoAlt || "No registrado";
         document.getElementById("detalleTelefono").innerHTML = `
@@ -199,7 +201,7 @@
         }
       }
 
-      // 🔹 Buscar coordenadas con OpenStreetMap
+      // 🔹 Buscar coordenadas
       async function obtenerCoords(ciudad) {
         try {
           const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(ciudad + ", Perú")}`);
@@ -218,13 +220,34 @@
         setTimeout(() => (overlay.style.display = "none"), 400);
       });
 
-      // 🔹 Aceptar solicitud
+      // 🔹 Aceptar solicitud (ahora crea mensaje en chat)
       btnAceptar.addEventListener("click", () => {
         solicitudActual.estado = "En curso";
         solicitudActual.transportista = usuario.nombre || "Transportista";
         localStorage.setItem("solicitudesAgroLink", JSON.stringify(db));
+
+        // 🟢 Nuevo mensaje automático del transportista
+        const chatKey = `chat_${solicitudActual.id || solicitudActual.fecha}`;
+        let mensajes = JSON.parse(localStorage.getItem(chatKey) || "[]");
+
+        const yaExiste = mensajes.some(m => m.tipo === "autoInicio");
+        if (!yaExiste) {
+          const nuevoMensaje = {
+            remitente: usuario.nombre || "Transportista",
+            rol: "transportista",
+            texto: "🚚 ¡Hola! Estoy en camino al punto de recojo.",
+            fecha: new Date().toISOString(),
+            tipo: "autoInicio"
+          };
+          mensajes.push(nuevoMensaje);
+          localStorage.setItem(chatKey, JSON.stringify(mensajes));
+        }
+
         showToast("✅ Has aceptado la solicitud.", "success");
         cerrarYActualizar();
+
+        // (Opcional) Ir directo al chat del transportista
+        // window.location.href = `../Comunicacion/chatT.html?id=${encodeURIComponent(solicitudActual.id || solicitudActual.fecha)}&productor=${encodeURIComponent(solicitudActual.productor || "Productor")}`;
       });
 
       // 🔹 Rechazar solicitud
@@ -235,7 +258,7 @@
         cerrarYActualizar();
       });
 
-      // 🔹 Función para cerrar y recargar
+      // 🔹 Cerrar panel y recargar
       function cerrarYActualizar() {
         panel.classList.remove("show");
         document.body.style.overflow = "auto";
@@ -247,11 +270,12 @@
       document.getElementById("logout").addEventListener("click", e => {
         e.preventDefault();
         showToast("👋 Sesión cerrada correctamente", "info");
-        localStorage.removeItem("agrolinkRol");
-        localStorage.removeItem("agrolinkUsuario");
         setTimeout(() => (window.location.href = "../index.html"), 1000);
       });
     });
   </script>
+
+
 </body>
+
 </html>

@@ -1,8 +1,4 @@
-/* ===================================================
-   AGROLINK - ESTILO SOLICITUDES (EstiloSoli.css)
-   Diseño unificado con Transportista Dashboard
-   =================================================== */
-
+/* =================================================== AGROLINK - ESTILO SOLICITUDES (EstiloSoli.css) Diseño unificado con Transportista Dashboard =================================================== */
 /* === BASE GENERAL === */
 body {
   background-color: #f7f9f7;
@@ -105,7 +101,8 @@ body {
   padding: 2rem;
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 60px); /* deja espacio para el footer */
+  min-height: calc(100vh - 60px);
+  /* deja espacio para el footer */
   box-sizing: border-box;
 }
 

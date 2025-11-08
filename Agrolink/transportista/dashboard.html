@@ -1,25 +1,22 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Panel Transportista | AgroLink</title>
 
   <!-- Bootstrap -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-
-  <!-- Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css">
-
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
+  <!-- FullCalendar -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
   <!-- Estilo personalizado -->
   <link rel="stylesheet" href="../css/Transporte/EstiloT.css">
 </head>
+
 <body>
-  <!-- Sidebar -->
+  <!-- === SIDEBAR AGROLINK OFICIAL === -->
   <aside class="sidebar">
     <i class="fa-solid fa-tractor logo"></i>
     <div class="nav-icons">
@@ -34,64 +31,56 @@
     </button>
   </aside>
 
-  <!-- Contenido principal -->
+  <!-- === CONTENIDO PRINCIPAL === -->
   <main>
     <div class="content-container">
+      <!-- ENCABEZADO -->
       <header class="mb-4">
         <h1><i class="fa-solid fa-gauge-high"></i> Panel de Control</h1>
         <p>Bienvenido, <span id="nombreUsuario">Transportista 👷‍♂️</span></p>
       </header>
 
-      <!-- Layout de dos columnas -->
-      <div class="dashboard-layout">
+      <div class="dashboard-layout d-flex gap-4 flex-wrap">
         <!-- IZQUIERDA -->
-        <div class="left-panel">
-          <div class="stats-row">
+        <div class="left-panel flex-grow-1">
+          <!-- KPIs -->
+          <div class="stats-row mb-4">
             <div class="stat-card">
-              <div class="stat-icon"><i class="fa-solid fa-road"></i></div>
-              <div class="stat-text"><h4 id="viajesActivos">0</h4><span>Rutas activas</span></div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
-              <div class="stat-text"><h4 id="viajesPendientes">0</h4><span>Pendientes</span></div>
+              <div class="stat-icon"><i class="fa-solid fa-truck"></i></div>
+              <div><h4 id="viajesTotales">0</h4><span>Viajes Totales</span></div>
             </div>
             <div class="stat-card">
               <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
-              <div class="stat-text"><h4 id="viajesCompletados">0</h4><span>Completados</span></div>
+              <div><h4 id="completados">0</h4><span>Completados</span></div>
             </div>
             <div class="stat-card">
-              <div class="stat-icon"><i class="fa-solid fa-money-bill-trend-up"></i></div>
-              <div class="stat-text"><h4>S/ <span id="ganancia">0</span></h4><span>Ganancia total</span></div>
+              <div class="stat-icon"><i class="fa-solid fa-road"></i></div>
+              <div><h4 id="distanciaTotal">0 km</h4><span>Distancia Estimada</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+              <div><h4>S/ <span id="gananciaTotal">0.00</span></h4><span>Ganancia Total</span></div>
             </div>
           </div>
 
-          <!-- Mapa -->
-          <div class="panel">
-            <h5><i class="fa-solid fa-map-location-dot"></i> Rutas Activas</h5>
-            <div id="map"></div>
-            <p id="mapInfo" class="text-center mt-2 text-muted small">Cargando rutas...</p>
+          <!-- HISTORIAL DE VIAJES -->
+          <div class="panel mb-4">
+            <h5><i class="fa-solid fa-calendar-days"></i> Historial de Viajes</h5>
+            <div id="calendario"></div>
           </div>
         </div>
 
         <!-- DERECHA -->
-        <div class="right-panel">
-          <div class="perfil-box">
-            <img src="../img/default-user.png" id="fotoPerfil" alt="Foto de perfil">
-            <h5 id="nombrePerfil">Transportista</h5>
-            <p><i class="fa-solid fa-id-badge"></i> <span id="placaPerfil">ABC-123</span></p>
+        <div class="right-panel" style="min-width:320px;">
+          <!-- PERFIL -->
+          <div class="perfil-box p-3 text-center shadow-sm rounded bg-white">
+            <img src="../img/default-user.png" id="fotoPerfil" alt="Foto de perfil"
+              class="rounded-circle mb-3" width="90" height="90">
+            <h5 id="nombrePerfil" class="fw-bold mb-0">Transportista</h5>
+            <p class="text-muted">
+              <i class="fa-solid fa-id-badge"></i> <span id="placaPerfil">No registrada</span>
+            </p>
 
-            <!-- Estado -->
-            <div class="estado-switch mt-3">
-              <label class="form-check-label fw-semibold" for="estadoDisponible">
-                <i class="fa-solid fa-signal"></i> Estado:
-              </label>
-              <div class="form-check form-switch ms-2">
-                <input class="form-check-input" type="checkbox" id="estadoDisponible">
-              </div>
-            </div>
-            <p id="estadoTexto" class="text-muted small mb-3">Desconectado</p>
-
-            <!-- Calificación -->
             <div class="rating-box mb-3">
               <i class="fa-solid fa-star text-warning"></i>
               <i class="fa-solid fa-star text-warning"></i>
@@ -101,31 +90,32 @@
               <span class="ms-1 fw-semibold" id="calificacion">4.8 / 5</span>
             </div>
 
-            <!-- Próximo viaje -->
-            <div class="next-trip-box p-3">
-              <h6><i class="fa-solid fa-truck-fast"></i> Próximo viaje</h6>
-              <p id="proximoViaje" class="text-muted small">No hay viajes asignados.</p>
-              <button id="btnIniciarRuta" class="btn btn-success btn-sm w-100 mt-2" disabled>
-                <i class="fa-solid fa-route"></i> Iniciar ruta
-              </button>
+            <button class="btn btn-success w-100" onclick="location.href='perfil.html'">
+              <i class="fa-solid fa-user-gear"></i> Ver perfil completo
+            </button>
+          </div>
+
+          <!-- CHATS -->
+          <div class="chats-box mt-4 p-3 border rounded bg-white">
+            <h6><i class="fa-solid fa-comments text-success"></i> Chats Activos (<span id="contadorChats">0</span>)</h6>
+            <div id="listaChats" class="mt-2">
+              <p class="text-muted small mb-0">No tienes chats activos.</p>
             </div>
           </div>
         </div>
       </div>
 
-      <footer class="text-center mt-3 text-muted small">
+      <footer class="text-center mt-4 text-muted small">
         © 2025 AgroLink. Todos los derechos reservados.
       </footer>
     </div>
   </main>
 
-  <!-- Scripts -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+  <!-- === SCRIPT === -->
   <script>
-    document.addEventListener("DOMContentLoaded", async () => {
-      const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")) || {};
-      const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
+    document.addEventListener("DOMContentLoaded", () => {
+      const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario") || "{}");
+      const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink") || "[]");
 
       // Perfil
       document.getElementById("nombreUsuario").textContent = usuario.nombre || "Transportista 👷‍♂️";
@@ -133,108 +123,61 @@
       document.getElementById("placaPerfil").textContent = usuario.placa || "No registrada";
       if (usuario.fotoPerfil) document.getElementById("fotoPerfil").src = usuario.fotoPerfil;
 
+      const nombreTransp = (usuario.nombre || "").toLowerCase();
+      const asignados = solicitudes.filter(s => (s.transportista || "").toLowerCase() === nombreTransp);
+
       // KPIs
-      const activos = solicitudes.filter(s => /en\s*curso/i.test(s.estado || ""));
-      const pendientes = solicitudes.filter(s => /pendiente/i.test(s.estado || ""));
-      const completados = solicitudes.filter(s => /completado/i.test(s.estado || ""));
-      document.getElementById("viajesActivos").textContent = activos.length;
-      document.getElementById("viajesPendientes").textContent = pendientes.length;
-      document.getElementById("viajesCompletados").textContent = completados.length;
-      document.getElementById("ganancia").textContent =
-        completados.reduce((a, s) => a + (parseFloat(s.pagoFinal || s.pago) || 0), 0).toFixed(2);
+      const completados = asignados.filter(s => /completado/i.test(s.estado));
+      const totalGanado = completados.reduce((a, s) => a + (parseFloat(s.pagoFinal || s.pago) || 0), 0);
+      const totalDist = asignados.length * 120;
 
-      // Mapa
-      const map = L.map("map").setView([-9.19, -75.015], 6);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
-      const mapInfo = document.getElementById("mapInfo");
+      document.getElementById("viajesTotales").textContent = asignados.length;
+      document.getElementById("completados").textContent = completados.length;
+      document.getElementById("distanciaTotal").textContent = `${totalDist} km`;
+      document.getElementById("gananciaTotal").textContent = totalGanado.toFixed(2);
 
-      // Estado disponible
-      const estadoSwitch = document.getElementById("estadoDisponible");
-      const estadoTexto = document.getElementById("estadoTexto");
-      const estadoGuardado = localStorage.getItem("estadoDisponible");
-      if (estadoGuardado === "true") {
-        estadoSwitch.checked = true;
-        estadoTexto.textContent = "🟢 Disponible";
-      } else {
-        estadoTexto.textContent = "🔴 Ocupado";
-      }
-      estadoSwitch.addEventListener("change", () => {
-        const disp = estadoSwitch.checked;
-        localStorage.setItem("estadoDisponible", disp);
-        estadoTexto.textContent = disp ? "🟢 Disponible" : "🔴 Ocupado";
-      });
-
-      // Calificación
-      document.getElementById("calificacion").textContent = "4.8 / 5";
-
-      // Próximo viaje
-      const proximo = solicitudes.find(s => /pendiente/i.test(s.estado || ""));
-      const viajeBox = document.getElementById("proximoViaje");
-      const btnRuta = document.getElementById("btnIniciarRuta");
-
-      if (proximo) {
-        viajeBox.innerHTML = `
-          <strong>Origen:</strong> ${proximo.origen}<br>
-          <strong>Destino:</strong> ${proximo.destino}<br>
-          <strong>Fecha:</strong> ${proximo.fecha}
-        `;
-        btnRuta.disabled = false;
-
-        btnRuta.addEventListener("click", async () => {
-          const o = await obtenerCoords(proximo.origen);
-          const d = await obtenerCoords(proximo.destino);
-          if (o && d) {
-            L.Routing.control({
-              waypoints: [L.latLng(o), L.latLng(d)],
-              lineOptions: { styles: [{ color: "#00b074", weight: 5 }] },
-              showAlternatives: false,
-              addWaypoints: false,
-              createMarker: (i, wp) => L.marker(wp.latLng).bindPopup(
-                i === 0 ? `🚚 <b>Origen:</b> ${proximo.origen}` : `<b>Destino:</b> ${proximo.destino}`
-              )
-            }).addTo(map);
-          }
-        });
-      } else {
-        viajeBox.textContent = "No hay viajes asignados.";
-        btnRuta.disabled = true;
-      }
-
-      // Mostrar rutas activas
-      if (activos.length === 0) {
-        mapInfo.textContent = "No hay rutas activas en este momento.";
-      } else {
-        mapInfo.textContent = `Mostrando ${activos.length} ruta(s) activa(s)...`;
-        for (const s of activos) {
-          const o = await obtenerCoords(s.origen);
-          const d = await obtenerCoords(s.destino);
-          if (o && d) {
-            L.Routing.control({
-              waypoints: [L.latLng(o), L.latLng(d)],
-              lineOptions: { styles: [{ color: "#00b074", weight: 5 }] },
-              addWaypoints: false,
-              draggableWaypoints: false,
-              showAlternatives: false,
-              fitSelectedRoutes: true
-            }).addTo(map);
-          }
+      // Calendario
+      const calendarEl = document.getElementById("calendario");
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: "dayGridMonth",
+        locale: "es",
+        height: 550,
+        headerToolbar: { left: "prev,next today", center: "title", right: "" },
+        events: completados.map(v => ({
+          title: `${v.origen} → ${v.destino}`,
+          start: v.fecha,
+          backgroundColor: "#00b074",
+          borderColor: "#00b074",
+          extendedProps: v
+        })),
+        eventClick: info => {
+          const v = info.event.extendedProps;
+          alert(`📦 ${v.origen} → ${v.destino}\n📅 ${v.fecha}\n💰 S/ ${(v.pagoFinal || v.pago).toFixed(2)}\n👨‍🌾 ${v.productor}`);
         }
-      }
+      });
+      calendar.render();
 
-      // Cerrar sesión
+      // Chats
+      const enCurso = asignados.filter(s => /curso/i.test(s.estado));
+      document.getElementById("contadorChats").textContent = enCurso.length;
+      document.getElementById("listaChats").innerHTML = enCurso.length
+        ? enCurso.map(s => `
+          <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+            <div><strong>${s.tipo || "Carga"}</strong><br><small class="text-muted">${s.origen} → ${s.destino}</small></div>
+            <button class="btn btn-sm btn-success" onclick="window.location.href='./Comunicacion/chatT.html?id=${encodeURIComponent(s.id)}&productor=${encodeURIComponent(s.productor || '')}'">
+              <i class="fa-solid fa-comments"></i> Chat
+            </button>
+          </div>
+        `).join("")
+        : `<p class="text-muted small mb-0">No tienes chats activos.</p>`;
+
+      // Logout
       document.getElementById("logout").addEventListener("click", () => {
-        alert("👋 Sesión cerrada correctamente. ¡Hasta pronto, transportista!");
-        localStorage.removeItem("agrolinkUsuario");
-        localStorage.removeItem("agrolinkRol");
+        alert("👋 Sesión cerrada correctamente. ¡Hasta pronto!");
+        localStorage.clear();
         window.location.href = "../index.html";
       });
     });
-
-    async function obtenerCoords(ciudad) {
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(ciudad + ", Perú")}`);
-      const data = await res.json();
-      return data[0] ? [parseFloat(data[0].lat), parseFloat(data[0].lon)] : null;
-    }
   </script>
 </body>
 </html>

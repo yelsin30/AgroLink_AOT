@@ -1,0 +1,262 @@
+:root {
+  --verde: #16291b;
+  --fondo: #f7f9f7;
+}
+
+body {
+  background: var(--fondo);
+  font-family: "Poppins", sans-serif;
+}
+
+/* ===== SIDEBAR ===== */
+.agro-sidebar {
+  width: 74px;
+  background: #fff;
+  position: fixed;
+  inset: 0 auto 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, .03);
+  z-index: 100;
+}
+
+.agro-logo i {
+  font-size: 1.9rem;
+  color: var(--verde);
+}
+
+.agro-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 1.3rem;
+  align-items: center;
+}
+
+.agro-menu button {
+  border: none;
+  background: transparent;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  color: #4a5568;
+  font-size: 1.25rem;
+  transition: all .25s ease;
+  cursor: pointer;
+}
+
+.agro-menu button:hover {
+  background: rgba(22, 41, 27, .07);
+  color: var(--verde);
+  transform: scale(1.1);
+}
+
+.agro-menu button.active {
+  background: #03b075;
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(3, 176, 117, .25);
+  transform: scale(1.1);
+}
+
+.agro-logout {
+  color: #d62828;
+  font-size: .9rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .35rem;
+  cursor: pointer;
+  transition: .3s;
+}
+
+.agro-logout:hover {
+  transform: scale(1.1);
+  color: #a4161a;
+}
+
+/* ===== MAIN ===== */
+main {
+  margin-left: 90px;
+  padding: 1.5rem 1.7rem 2.5rem;
+  min-height: 100vh;
+}
+
+.top-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.2rem;
+}
+
+.hello-wrap {
+  display: flex;
+  gap: .6rem;
+  align-items: flex-start;
+}
+
+.hello-wrap .name {
+  font-weight: 700;
+  color: var(--verde);
+}
+
+.user-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: #e3f1e6;
+  color: var(--verde);
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  border: 2px solid rgba(22, 41, 27, .25);
+}
+
+/* ===== KPI ===== */
+.kpi-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.1rem 1.2rem;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, .03);
+  position: relative;
+  min-height: 115px;
+  border: 1px solid rgba(22, 41, 27, .05);
+  transition: transform .2s;
+}
+
+.kpi-card:hover {
+  transform: translateY(-3px);
+}
+
+.kpi-card h6 {
+  font-size: .9rem;
+  font-weight: 700;
+  color: var(--verde);
+}
+
+.kpi-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.kpi-icon {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 2.1rem;
+  color: rgba(22, 41, 27, .08);
+}
+
+/* ===== PANEL ===== */
+.board {
+  display: grid;
+  grid-template-columns: minmax(0, 2.2fr) minmax(280px, .9fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.panel {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, .03);
+  border: 1px solid rgba(22, 41, 27, .03);
+  min-height: 200px;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.1rem .4rem;
+}
+
+.panel-title {
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+  color: var(--verde);
+  font-weight: 700;
+}
+
+.panel-body {
+  padding: 1rem;
+}
+
+/* ===== CALENDARIO ===== */
+.calendar-card {
+  margin-top: 1.5rem;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, .03);
+  border: 1px solid rgba(22, 41, 27, .05);
+  padding: 1rem;
+}
+
+#calendar {
+  width: 100%;
+}
+
+.fc-event {
+  border-radius: 6px !important;
+  font-size: .85rem !important;
+  padding: 2px 4px !important;
+}
+
+/* ===== LEYENDA ===== */
+.legend {
+  display: flex;
+  gap: 1rem;
+  margin-top: .7rem;
+}
+
+.legend span {
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+  font-size: .9rem;
+  color: var(--verde);
+}
+
+.legend i {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+footer {
+  margin-left: 90px;
+  padding: 1rem 1.7rem;
+  font-size: .8rem;
+  color: #666;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 992px) {
+  .board {
+    grid-template-columns: 1fr;
+  }
+
+  main {
+    margin-left: 80px;
+  }
+}
+
+@media (max-width:700px) {
+  .agro-sidebar {
+    flex-direction: row;
+    width: 100%;
+    height: 62px;
+    inset: auto 0 0 0;
+  }
+
+  main,
+  footer {
+    margin-left: 0;
+    margin-bottom: 68px;
+  }
+}
