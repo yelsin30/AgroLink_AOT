@@ -11,14 +11,12 @@
 </head>
 
 <body class="auth-body">
-
   <header class="auth-header">
     <a href="index.html" class="logo-auth">
       <i class="fa-solid fa-tractor"></i>
       <span>AgroLink</span>
     </a>
   </header>
-
 
   <main class="auth-container">
     <div class="auth-card">
@@ -27,10 +25,10 @@
 
       <form id="loginForm" class="auth-form">
         <label for="email">Correo electrónico</label>
-        <input type="email" id="email" placeholder="usuario@correo.com">
+        <input type="email" id="email" placeholder="usuario@correo.com" required>
 
         <label for="password">Contraseña</label>
-        <input type="password" id="password" placeholder="********">
+        <input type="password" id="password" placeholder="********" required>
 
         <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
 
@@ -54,33 +52,56 @@
       const form = document.getElementById("loginForm");
       const mensajeError = document.getElementById("mensajeError");
 
+      // 🔐 Crear cuenta admin por defecto si no existe
+      const usuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios")) || [];
+      const existeAdmin = usuarios.some(u => u.correo === "admin@agrolink.com");
+
+      if (!existeAdmin) {
+        usuarios.push({
+          id: "USR-000",
+          nombre: "Administrador General",
+          correo: "admin@agrolink.com",
+          password: "admin123",
+          rol: "admin",
+          ultimoAcceso: new Date().toLocaleDateString("es-PE")
+        });
+        localStorage.setItem("agrolinkUsuarios", JSON.stringify(usuarios));
+      }
+
       form.addEventListener("submit", e => {
         e.preventDefault();
 
         const email = document.getElementById("email").value.trim().toLowerCase();
         const password = document.getElementById("password").value.trim();
 
-        const usuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios")) || [];
-        const usuario = usuarios.find(u => u.email === email && u.password === password);
+        const usuariosActualizados = JSON.parse(localStorage.getItem("agrolinkUsuarios")) || [];
+        const usuario = usuariosActualizados.find(u => u.correo === email && u.password === password);
 
         if (!usuario) {
-          mensajeError.textContent = "⚠️ No se encontró una cuenta registrada. Por favor regístrate.";
+          mensajeError.textContent = "⚠️ Credenciales incorrectas. Intenta nuevamente.";
           mensajeError.style.display = "block";
           setTimeout(() => mensajeError.style.display = "none", 2500);
           return;
         }
 
+        // 🧠 Guardar sesión activa
         localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
         localStorage.setItem("agrolinkRol", usuario.rol);
 
-        if (usuario.rol === "productor") {
+        // 🧭 Redirecciones según rol
+        if (usuario.rol === "admin") {
+          alert("👨‍💼 Bienvenido Administrador");
+          window.location.href = "admin/admin.html";
+        } else if (usuario.rol === "productor") {
           window.location.href = "productor/dashboard.html";
-        } else {
+        } else if (usuario.rol === "conductor") {
           window.location.href = "transportista/dashboard.html";
+        } else {
+          mensajeError.textContent = "⚠️ Rol de usuario no reconocido.";
+          mensajeError.style.display = "block";
         }
       });
     });
   </script>
 </body>
-
 </html>
