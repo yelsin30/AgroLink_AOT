@@ -114,29 +114,60 @@
   <!-- === SCRIPT === -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario") || "{}");
+      // 1) Verificar sesión
+      const sesionGuardada = localStorage.getItem("agrolinkUsuario");
+      if (!sesionGuardada) {
+        // No hay sesión -> al login
+        window.location.href = "../login.html";
+        return;
+      }
+
+      let usuario = JSON.parse(sesionGuardada);
+      const usuariosLista = JSON.parse(localStorage.getItem("agrolinkUsuarios") || "[]");
+
+      // 2) Sincronizar con la versión más reciente en agrolinkUsuarios
+      if (usuariosLista.length > 0) {
+        const claveEmail = usuario.email || usuario.correo || "";
+        if (claveEmail) {
+          const idx = usuariosLista.findIndex(
+            u => (u.email || u.correo || "").toLowerCase() === claveEmail.toLowerCase()
+          );
+          if (idx !== -1) {
+            usuario = usuariosLista[idx];       // usamos la versión actualizada
+            localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
+          }
+        }
+      }
+
       const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink") || "[]");
 
-      // Perfil
+      // 3) Perfil
       document.getElementById("nombreUsuario").textContent = usuario.nombre || "Transportista 👷‍♂️";
       document.getElementById("nombrePerfil").textContent = usuario.nombre || "Transportista";
       document.getElementById("placaPerfil").textContent = usuario.placa || "No registrada";
-      if (usuario.fotoPerfil) document.getElementById("fotoPerfil").src = usuario.fotoPerfil;
+      if (usuario.fotoPerfil) {
+        document.getElementById("fotoPerfil").src = usuario.fotoPerfil;
+      }
 
       const nombreTransp = (usuario.nombre || "").toLowerCase();
-      const asignados = solicitudes.filter(s => (s.transportista || "").toLowerCase() === nombreTransp);
+      const asignados = solicitudes.filter(
+        s => (s.transportista || "").toLowerCase() === nombreTransp
+      );
 
-      // KPIs
-      const completados = asignados.filter(s => /completado/i.test(s.estado));
-      const totalGanado = completados.reduce((a, s) => a + (parseFloat(s.pagoFinal || s.pago) || 0), 0);
+      // 4) KPIs
+      const completados = asignados.filter(s => /completado/i.test(s.estado || ""));
+      const totalGanado = completados.reduce(
+        (a, s) => a + (parseFloat(s.pagoFinal || s.pago) || 0),
+        0
+      );
       const totalDist = asignados.length * 120;
 
       document.getElementById("viajesTotales").textContent = asignados.length;
       document.getElementById("completados").textContent = completados.length;
-      document.getElementById("distanciaTotal").textContent = `${totalDist} km`;
+      document.getElementById("distanciaTotal").textContent = totalDist + " km";
       document.getElementById("gananciaTotal").textContent = totalGanado.toFixed(2);
 
-      // Calendario
+      // 5) Calendario
       const calendarEl = document.getElementById("calendario");
       const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: "dayGridMonth",
@@ -144,7 +175,7 @@
         height: 550,
         headerToolbar: { left: "prev,next today", center: "title", right: "" },
         events: completados.map(v => ({
-          title: `${v.origen} → ${v.destino}`,
+          title: (v.origen || "?") + " → " + (v.destino || "?"),
           start: v.fecha,
           backgroundColor: "#00b074",
           borderColor: "#00b074",
@@ -152,29 +183,56 @@
         })),
         eventClick: info => {
           const v = info.event.extendedProps;
-          alert(`📦 ${v.origen} → ${v.destino}\n📅 ${v.fecha}\n💰 S/ ${(v.pagoFinal || v.pago).toFixed(2)}\n👨‍🌾 ${v.productor}`);
+          const pago = parseFloat(v.pagoFinal || v.pago || 0).toFixed(2);
+          alert(
+            `📦 ${v.origen || "?"} → ${v.destino || "?"}\n` +
+            `📅 ${v.fecha || "-"}\n` +
+            `💰 S/ ${pago}\n` +
+            `👨‍🌾 ${v.productor || "Productor"}`
+          );
         }
       });
       calendar.render();
 
-      // Chats
-      const enCurso = asignados.filter(s => /curso/i.test(s.estado));
+      // 6) Chats activos
+      const enCurso = asignados.filter(s => /curso/i.test(s.estado || ""));
       document.getElementById("contadorChats").textContent = enCurso.length;
+
       document.getElementById("listaChats").innerHTML = enCurso.length
         ? enCurso.map(s => `
           <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-            <div><strong>${s.tipo || "Carga"}</strong><br><small class="text-muted">${s.origen} → ${s.destino}</small></div>
-            <button class="btn btn-sm btn-success" onclick="window.location.href='./Comunicacion/chatT.html?id=${encodeURIComponent(s.id)}&productor=${encodeURIComponent(s.productor || '')}'">
+            <div>
+              <strong>${s.tipo || "Carga"}</strong><br>
+              <small class="text-muted">${s.origen || "?"} → ${s.destino || "?"}</small>
+            </div>
+            <button class="btn btn-sm btn-success"
+              onclick="window.location.href='./Comunicacion/chatT.html?id=${encodeURIComponent(s.id)}&productor=${encodeURIComponent(s.productor || '')}'">
               <i class="fa-solid fa-comments"></i> Chat
             </button>
           </div>
         `).join("")
         : `<p class="text-muted small mb-0">No tienes chats activos.</p>`;
 
-      // Logout
+      // 7) Logout SIN borrar toda la data
       document.getElementById("logout").addEventListener("click", () => {
+        // Marcar sesionActiva = false en agrolinkUsuarios
+        const lista = JSON.parse(localStorage.getItem("agrolinkUsuarios") || "[]");
+        const claveEmail = usuario.email || usuario.correo || "";
+        if (claveEmail && lista.length > 0) {
+          const idx = lista.findIndex(
+            u => (u.email || u.correo || "").toLowerCase() === claveEmail.toLowerCase()
+          );
+          if (idx !== -1) {
+            lista[idx].sesionActiva = false;
+            localStorage.setItem("agrolinkUsuarios", JSON.stringify(lista));
+          }
+        }
+
+        // Limpiar solo la sesión actual
+        localStorage.removeItem("agrolinkUsuario");
+        localStorage.removeItem("agrolinkRol");
+
         alert("👋 Sesión cerrada correctamente. ¡Hasta pronto!");
-        localStorage.clear();
         window.location.href = "../index.html";
       });
     });

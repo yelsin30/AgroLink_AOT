@@ -1,39 +1,31 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Historial de Viajes | AgroLink</title>
 
-  <!-- Íconos y mapa -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
-
-  <!-- Estilo principal -->
   <link rel="stylesheet" href="../css/Transporte/EstiloViajes.css" />
 </head>
 
 <body>
-  <!-- === SIDEBAR AGROLINK OFICIAL === -->
   <aside class="sidebar">
     <i class="fa-solid fa-tractor logo"></i>
-
     <div class="nav-icons">
       <button onclick="location.href='dashboard.html'"><i class="fa-solid fa-house"></i></button>
       <button onclick="location.href='solicitudes.html'"><i class="fa-solid fa-list"></i></button>
       <button class="active"><i class="fa-solid fa-truck"></i></button>
       <button onclick="location.href='perfil.html'"><i class="fa-solid fa-user"></i></button>
     </div>
-
     <button class="logout-btn" id="logout">
       <i class="fa-solid fa-right-from-bracket"></i>
       <span>Salir</span>
     </button>
   </aside>
 
-  <!-- === CONTENIDO PRINCIPAL === -->
   <main>
     <div class="content-container">
       <header>
@@ -41,35 +33,13 @@
         <p>Consulta tus viajes completados, en curso y cancelados, con detalles de ruta, distancia y tiempo.</p>
       </header>
 
-      <!-- === KPI === -->
       <div class="stats-row" id="stats">
-        <div class="stat-card">
-          <div class="stat-icon"><i class="fa-solid fa-truck"></i></div>
-          <div class="stat-text">
-            <h4 id="enCurso">0</h4><span>En curso</span>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon"><i class="fa-solid fa-check"></i></div>
-          <div class="stat-text">
-            <h4 id="completados">0</h4><span>Completados</span>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
-          <div class="stat-text">
-            <h4 id="totalGanado">S/ 0.00</h4><span>Ingresos Totales</span>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon"><i class="fa-solid fa-star"></i></div>
-          <div class="stat-text">
-            <h4>4.8</h4><span>Promedio</span>
-          </div>
-        </div>
+        <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-truck"></i></div><div class="stat-text"><h4 id="enCurso">0</h4><span>En curso</span></div></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-check"></i></div><div class="stat-text"><h4 id="completados">0</h4><span>Completados</span></div></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div><div class="stat-text"><h4 id="totalGanado">S/ 0.00</h4><span>Ingresos Totales</span></div></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-star"></i></div><div class="stat-text"><h4>4.8</h4><span>Promedio</span></div></div>
       </div>
 
-      <!-- === PANEL PRINCIPAL === -->
       <div class="panel">
         <h5><i class="fa-solid fa-map-location-dot"></i> Rutas y Viajes</h5>
         <div class="tabs">
@@ -89,7 +59,6 @@
         </div>
       </div>
 
-      <!-- === PANEL DETALLES === -->
       <div class="detalle-overlay" id="detalleOverlay">
         <div class="detalle-panel">
           <div class="detalle-header">
@@ -105,17 +74,30 @@
     </div>
   </main>
 
-  <!-- === SCRIPTS === -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
 
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
-      const map = L.map("map").setView([-9.19, -75.015], 6);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "&copy; OpenStreetMap contributors"
-      }).addTo(map);
 
+      // === 🔐 Verificación y sincronización de sesión ===
+      const sesionGuardada = localStorage.getItem("agrolinkUsuario");
+      if (!sesionGuardada) {
+        window.location.href = "../login.html";
+        return;
+      }
+
+      let usuario = JSON.parse(sesionGuardada);
+      let usuariosLista = JSON.parse(localStorage.getItem("agrolinkUsuarios") || "[]");
+      const idx = usuariosLista.findIndex(u => (u.email || u.correo) === (usuario.email || usuario.correo));
+      if (idx !== -1) {
+        usuario = usuariosLista[idx];
+        localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
+      }
+
+      // === MAPA ===
+      const map = L.map("map").setView([-9.19, -75.015], 6);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "&copy; OpenStreetMap contributors" }).addTo(map);
       let routingControl = null;
       const routeInfo = document.getElementById("routeInfo");
       let solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
@@ -124,15 +106,12 @@
       const btnCerrar = document.getElementById("cerrarDetalle");
       const btnRuta = document.getElementById("btnRuta");
 
-      // === Funciones ===
       async function obtenerCoords(ciudad) {
         try {
           const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(ciudad + ", Perú")}`);
           const data = await res.json();
           return data[0] ? [parseFloat(data[0].lat), parseFloat(data[0].lon)] : null;
-        } catch {
-          return null;
-        }
+        } catch { return null; }
       }
 
       async function mostrarRuta(viaje) {
@@ -149,15 +128,12 @@
           addWaypoints: false,
           draggableWaypoints: false,
           fitSelectedRoutes: true
-        })
-          .on("routesfound", e => {
-            const r = e.routes[0],
-              d = r.summary.totalDistance / 1000,
-              t = r.summary.totalTime;
-            routeInfo.innerHTML = `<i class="fa-solid fa-route"></i>
+        }).on("routesfound", e => {
+          const r = e.routes[0], d = r.summary.totalDistance / 1000, t = r.summary.totalTime;
+          routeInfo.innerHTML = `<i class="fa-solid fa-route"></i>
             <span><strong>Ruta:</strong> ${viaje.origen} → ${viaje.destino}<br>
             <strong>Distancia:</strong> ${d.toFixed(1)} km | <strong>Duración:</strong> ${Math.floor(t / 3600)}h ${Math.round((t % 3600) / 60)}min</span>`;
-          }).addTo(map);
+        }).addTo(map);
       }
 
       function actualizarKPIs() {
@@ -184,17 +160,13 @@
             <p><strong>Pago:</strong> S/ ${(v.pagoFinal || v.pago || 0).toFixed(2)}</p>
             <div class="botones-viaje">
               <button class="btn-ver" onclick="verDetalles('${v.id}')">Ver Detalles</button>
-              ${/curso/i.test(v.estado)
-              ? `<button class="btn-completar" onclick="marcarCompletado('${v.id}')">Marcar como Completado</button>` : ""}
+              ${/curso/i.test(v.estado) ? `<button class="btn-completar" onclick="marcarCompletado('${v.id}')">Marcar como Completado</button>` : ""}
             </div>`;
-          card.addEventListener("click", e => {
-            if (!e.target.closest(".botones-viaje")) mostrarRuta(v);
-          });
+          card.addEventListener("click", e => { if (!e.target.closest(".botones-viaje")) mostrarRuta(v); });
           container.appendChild(card);
         });
       }
 
-      // === Panel lateral ===
       window.verDetalles = id => {
         const s = solicitudes.find(x => x.id === id);
         if (!s) return;
@@ -209,15 +181,12 @@
           <p><strong>Teléfono:</strong> ${s.telefono || "No registrado"}</p>
           ${s.fechaCompletado ? `<p><strong>Completado el:</strong> ${s.fechaCompletado}</p>` : ""}`;
         panel.classList.add("show");
-        btnRuta.onclick = () => {
-          mostrarRuta(s);
-          panel.classList.remove("show");
-        };
+        btnRuta.onclick = () => { mostrarRuta(s); panel.classList.remove("show"); };
       };
+
       btnCerrar.onclick = () => panel.classList.remove("show");
       panel.addEventListener("click", e => { if (e.target === panel) panel.classList.remove("show"); });
 
-      // === Marcar como completado ===
       window.marcarCompletado = id => {
         const s = solicitudes.find(x => x.id === id);
         if (!s) return;
@@ -229,7 +198,6 @@
         alert(`✅ El viaje ${s.origen} → ${s.destino} fue completado.`);
       };
 
-      // === Tabs funcionales ===
       const tabs = document.querySelectorAll(".tab-btn");
       tabs.forEach(tab => {
         tab.addEventListener("click", e => {
@@ -244,9 +212,16 @@
         });
       });
 
-      // === Logout ===
+      // === Logout persistente ===
       document.getElementById("logout").onclick = () => {
-        localStorage.clear();
+        const usuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios")) || [];
+        const idx = usuarios.findIndex(u => (u.email || u.correo) === (usuario.email || usuario.correo));
+        if (idx !== -1) {
+          usuarios[idx].sesionActiva = false;
+          localStorage.setItem("agrolinkUsuarios", JSON.stringify(usuarios));
+        }
+        localStorage.removeItem("agrolinkUsuario");
+        localStorage.removeItem("agrolinkRol");
         alert("👋 Sesión cerrada correctamente");
         location.href = "../index.html";
       };
@@ -256,5 +231,4 @@
     });
   </script>
 </body>
-
 </html>

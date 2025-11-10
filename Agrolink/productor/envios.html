@@ -296,17 +296,43 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      // ===== Seguridad mínima =====
-      const rol = localStorage.getItem("agrolinkRol");
-      const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario") || "{}");
-      if (rol !== "productor") {
-        // si quieres lo rediriges
-        // location.href = "../login.html";
+      /* ======================================
+         🔒 SESIÓN PERSISTENTE DEL PRODUCTOR
+      ====================================== */
+      let usuario = JSON.parse(localStorage.getItem("agrolinkUsuario"));
+      const listaUsuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios") || "[]");
+
+      // Si no hay usuario logueado, se va al inicio
+      if (!usuario || !usuario.correo) {
+        alert("⚠️ No has iniciado sesión. Por favor, vuelve a ingresar.");
+        window.location.href = "../index.html";
+        return;
+      }
+
+      // Sincronizar con la versión más reciente en agrolinkUsuarios
+      const actualizado = listaUsuarios.find(u => u.correo === usuario.correo);
+      if (actualizado) {
+        usuario = { ...usuario, ...actualizado };
+        localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
       }
 
       const nombreUser = usuario.nombre || "Productor";
-      document.getElementById("helloName").textContent = nombreUser;
-      document.getElementById("avatar").textContent = (nombreUser[0] || "A").toUpperCase();
+      const helloNameEl = document.getElementById("helloName");
+      const avatarEl = document.getElementById("avatar");
+
+      if (helloNameEl) helloNameEl.textContent = nombreUser;
+
+      if (avatarEl) {
+        if (usuario.avatar || usuario.fotoPerfil) {
+          avatarEl.innerHTML = `<img src="${usuario.avatar || usuario.fotoPerfil}" alt="${nombreUser}">`;
+        } else {
+          avatarEl.textContent = (nombreUser[0] || "A").toUpperCase();
+        }
+      }
+
+      const rol = usuario.rol || localStorage.getItem("agrolinkRol") || "";
+      // Si quisieras forzar solo productores:
+      // if (rol !== "productor") window.location.href = "../index.html";
 
       // ===== Datos =====
       const all = JSON.parse(localStorage.getItem("solicitudesAgroLink") || "[]");
@@ -363,8 +389,6 @@
           `Tienes ${enCurso} envío(s) en curso y ${pend} pendiente(s).`;
       }
 
-
-
       // ===== Filtros =====
       function filtrar() {
         let out = envios.slice();
@@ -378,7 +402,6 @@
             return estado.includes(estadoBuscado);
           });
         }
-
 
         if (query.trim()) {
           const ql = query.trim().toLowerCase();
@@ -578,7 +601,7 @@
           dEstado.textContent = seleccion.estado || "—";
           dProgress.style.width = progressPct(seleccion.estado) + "%";
 
-          // ✅ CORREGIDO: ruta relativa hacia la carpeta Comunicación
+          // ✅ ruta al chat
           btnContactar.removeAttribute("target");
           btnContactar.href = `./Comunicacion/chat.html?id=${encodeURIComponent(seleccion.id)}&transportista=${encodeURIComponent(seleccion.transportista || '')}`;
 
@@ -587,7 +610,6 @@
 
           openSlide();
         }
-
 
         if (dup) {
           const id = dup.dataset.id;
@@ -622,11 +644,9 @@
           attribution: "&copy; OpenStreetMap",
         }).addTo(_mapPanel);
 
-        // Marcadores de inicio y fin
         const markerA = L.marker(A).addTo(_mapPanel).bindPopup(seleccion.origen);
         const markerB = L.marker(B).addTo(_mapPanel).bindPopup(seleccion.destino);
 
-        // 🗺️ Obtener ruta real con OSRM (Open Source Routing Machine)
         const url = `https://router.project-osrm.org/route/v1/driving/${A[1]},${A[0]};${B[1]},${B[0]}?overview=full&geometries=geojson`;
 
         fetch(url)
@@ -640,7 +660,6 @@
 
               _mapPanel.fitBounds(line.getBounds());
 
-              // Añadir información del viaje
               const km = (data.routes[0].distance / 1000).toFixed(1);
               const min = Math.round(data.routes[0].duration / 60);
               L.popup()
@@ -661,21 +680,19 @@
           });
       });
 
-
       // Cancelar
       btnCancelar.addEventListener("click", () => {
         if (!seleccion) return;
         if (!confirm("¿Cancelar este envío?")) return;
         const idx = all.findIndex(x => String(x.id || "") === String(seleccion.id || ""));
         if (idx > -1) {
-          all[idx].estado = "Cancelado"; // Estado sin emoji para que los KPIs lo detecten bien
+          all[idx].estado = "Cancelado";
           localStorage.setItem("solicitudesAgroLink", JSON.stringify(all));
           envios = all.filter(s => (s.productor || "").toLowerCase() === nombreUser.toLowerCase());
           showToast("❌ Envío cancelado.");
           render();
           closeSlideFn();
         }
-
       });
 
       // Stars
@@ -723,7 +740,6 @@
             return;
           }
 
-          // Cargar rutas reales con OSRM
           list.forEach((e) => {
             const A = coords[e.origen];
             const B = coords[e.destino];
@@ -731,12 +747,12 @@
 
             const colorRuta =
               /completado/i.test(e.estado || "")
-                ? "#198754" // verde
+                ? "#198754"
                 : /en\s*curso/i.test(e.estado || "")
-                  ? "#0d6efd" // azul
+                  ? "#0d6efd"
                   : /cancelado|rechazad/i.test(e.estado || "")
-                    ? "#d62828" // rojo
-                    : "#03b075"; // verde estándar
+                    ? "#d62828"
+                    : "#03b075";
 
             const url = `https://router.project-osrm.org/route/v1/driving/${A[1]},${A[0]};${B[1]},${B[0]}?overview=full&geometries=geojson`;
 
@@ -749,7 +765,6 @@
                     style: { color: colorRuta, weight: 4, opacity: 0.85 },
                   }).addTo(mapGeneral);
 
-                  // Agregar marcadores
                   L.marker(A)
                     .addTo(mapGeneral)
                     .bindPopup(`<b>${e.tipo}</b><br>${e.origen}`);
@@ -757,7 +772,6 @@
                     .addTo(mapGeneral)
                     .bindPopup(`Destino: ${e.destino}`);
 
-                  // Mostrar info resumen
                   const km = (data.routes[0].distance / 1000).toFixed(1);
                   const min = Math.round(data.routes[0].duration / 60);
                   line.bindTooltip(
@@ -765,7 +779,6 @@
                     { permanent: false, direction: "center" }
                   );
                 } else {
-                  // Fallback línea recta
                   L.polyline([A, B], {
                     color: colorRuta,
                     weight: 4,
@@ -774,7 +787,6 @@
                 }
               })
               .catch(() => {
-                // Si falla OSRM, dibujar línea recta simple
                 L.polyline([A, B], {
                   color: colorRuta,
                   weight: 4,
@@ -784,7 +796,6 @@
           });
         }, 100);
       });
-
 
       closeMapSheet.addEventListener("click", () => {
         mapSheet.style.display = "none";
@@ -808,10 +819,13 @@
         a.click();
       });
 
-      // ===== Logout =====
+      // ===== Logout (solo cierra sesión, no borra usuarios) =====
       document.getElementById("btnLogout").addEventListener("click", () => {
+        localStorage.removeItem("agrolinkUsuario");
+        localStorage.removeItem("agrolinkRol");
         location.href = "../index.html";
       });
+
       // === Borrar envíos desde el panel de resumen rápido ===
       const btnBorrarEnvios = document.getElementById("btnBorrarEnvios");
       if (btnBorrarEnvios) {
@@ -856,9 +870,8 @@
 
           let solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
 
-          // 🔧 Acepta tanto 'id' como 'ID'
           solicitudes = solicitudes.filter(e => {
-            const idActual = e.id || e.ID; // compatibilidad
+            const idActual = e.id || e.ID;
             return !seleccionados.includes(String(idActual));
           });
 
@@ -866,7 +879,7 @@
 
           alert(`🗑️ Se eliminaron ${seleccionados.length} envío(s).`);
           modalBorrar.hide();
-          location.reload(); // refresca KPIs y listado
+          location.reload();
         });
       }
 
@@ -874,6 +887,7 @@
       render();
     });
   </script>
+
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const path = window.location.pathname;
@@ -895,10 +909,7 @@
         }
       });
     });
-
   </script>
-
-
 
 </body>
 

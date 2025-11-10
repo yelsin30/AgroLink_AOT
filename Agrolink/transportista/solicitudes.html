@@ -1,56 +1,40 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Solicitudes disponibles | AgroLink</title>
 
-  <!-- ÍCONO -->
   <link rel="icon" href="../img/logo.png" type="image/png">
-
-  <!-- CSS PRINCIPAL -->
   <link rel="stylesheet" href="../css/Transporte/EstiloSoli.css">
-
-  <!-- LIBRERÍAS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
-
 </head>
 
 <body>
   <div class="container">
-    <!-- ===== SIDEBAR ===== -->
     <aside class="sidebar">
-      <div class="logo-section">
-        <i class="fa-solid fa-tractor"></i>
-      </div>
-
+      <div class="logo-section"><i class="fa-solid fa-tractor"></i></div>
       <nav class="nav-links">
         <a href="dashboard.html"><i class="fa-solid fa-home"></i></a>
         <a href="solicitudes.html" class="active"><i class="fa-solid fa-list"></i></a>
         <a href="viajes.html"><i class="fa-solid fa-truck"></i></a>
         <a href="perfil.html"><i class="fa-solid fa-user"></i></a>
       </nav>
-
       <div class="help-section">
         <a href="#" id="logout"><i class="fa-solid fa-right-from-bracket"></i><span>Salir</span></a>
       </div>
     </aside>
 
-    <!-- ===== MAIN ===== -->
     <main class="main-content">
       <header class="main-header">
         <h1>Solicitudes disponibles</h1>
         <p>Selecciona una solicitud para ver más detalles o aceptarla.</p>
       </header>
 
-      <!-- FILTROS -->
       <section class="filters" id="filtros">
-        <select id="filterTipo">
-          <option value="">Tipo (Todos)</option>
-        </select>
+        <select id="filterTipo"><option value="">Tipo (Todos)</option></select>
         <input id="filterOrigen" placeholder="Origen (ciudad)" />
         <input id="filterDestino" placeholder="Destino (ciudad)" />
         <input id="filterMinPago" type="number" placeholder="Pago mínimo S/" min="0" />
@@ -69,7 +53,6 @@
     <p>© 2025 AgroLink. Todos los derechos reservados.</p>
   </footer>
 
-  <!-- ===== PANEL DETALLE ===== -->
   <div class="panel-overlay" id="overlay"></div>
   <div class="panel" id="panelDetalle">
     <div class="panel-header">
@@ -79,7 +62,6 @@
     <div class="panel-content">
       <div class="tel-header"><i class="fa-solid fa-phone"></i> Teléfonos</div>
       <p id="detalleTelefono"></p>
-
       <p><strong>Calificación:</strong> ⭐ <span id="detalleCalificacion"></span></p>
       <p><strong>Origen:</strong> <span id="detalleOrigen"></span></p>
       <p><strong>Destino:</strong> <span id="detalleDestino"></span></p>
@@ -90,21 +72,32 @@
     </div>
     <div class="panel-buttons">
       <button class="btn btn-accept" id="btnAceptar"><i class="fa-solid fa-check"></i> Aceptar</button>
-      <!-- Eliminamos la opción de "Rechazar" del panel (no visible para transportistas) -->
       <button class="btn btn-denunciar" id="btnDenunciar"><i class="fa-solid fa-flag"></i> Denunciar</button>
       <button class="btn btn-close" id="btnCerrar">Cerrar</button>
     </div>
   </div>
 
-  <!-- ===== LIBRERÍAS ===== -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
   <script src="../js/toast.js"></script>
 
-  <!-- ===== LÓGICA ===== -->
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
-      const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")) || {};
+      // === 🔐 Verificación y sincronización de sesión ===
+      const sesionGuardada = localStorage.getItem("agrolinkUsuario");
+      if (!sesionGuardada) {
+        window.location.href = "../login.html";
+        return;
+      }
+      let usuario = JSON.parse(sesionGuardada);
+      let usuariosLista = JSON.parse(localStorage.getItem("agrolinkUsuarios") || "[]");
+      const idx = usuariosLista.findIndex(u => (u.email || u.correo) === (usuario.email || usuario.correo));
+      if (idx !== -1) {
+        usuario = usuariosLista[idx];
+        localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
+      }
+
+      // === Variables principales ===
       let db = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
       const contenedor = document.getElementById("listaSolicitudes");
       const overlay = document.getElementById("overlay");
@@ -125,12 +118,10 @@
       let routing = null;
       let solicitudActual = null;
 
-      // --- UTIL: Guardar DB en localStorage ---
       function guardarDB() {
         localStorage.setItem("solicitudesAgroLink", JSON.stringify(db));
       }
 
-      // --- FILTRADO: poblar opciones de tipo dinámicamente ---
       function poblarTipos() {
         const tipos = Array.from(new Set(db.map(s => s.tipo).filter(Boolean)));
         filterTipo.innerHTML = '<option value="">Tipo (Todos)</option>';
@@ -142,11 +133,8 @@
         });
       }
 
-      // --- RENDER: muestra la lista según filtros y estado Pendiente ---
       function renderList() {
-        // Aplicamos filtros: siempre partir de solicitudes pendientes
         const pendientes = db.filter(s => s.estado === "Pendiente");
-
         const tipoVal = filterTipo.value.trim();
         const origenVal = filterOrigen.value.trim().toLowerCase();
         const destinoVal = filterDestino.value.trim().toLowerCase();
@@ -163,11 +151,9 @@
           return true;
         });
 
-        contenedor.innerHTML = "";
-        if (resultados.length === 0) {
-          contenedor.innerHTML = '<p class="no-results">No se encontraron solicitudes que coincidan con los filtros.</p>';
-          return;
-        }
+        contenedor.innerHTML = resultados.length
+          ? ""
+          : '<p class="no-results">No se encontraron solicitudes que coincidan con los filtros.</p>';
 
         resultados.forEach(s => {
           const card = document.createElement("div");
@@ -185,11 +171,8 @@
         });
       }
 
-      // --- Abrir panel con detalles ---
       async function abrirPanel(s) {
         solicitudActual = s;
-
-        // proteger: si por alguna razon la solicitud ya no está pendiente, no mostrar
         if (!solicitudActual || solicitudActual.estado !== "Pendiente") {
           showToast("Esta solicitud ya no está disponible.", "info");
           renderList();
@@ -202,14 +185,10 @@
 
         document.getElementById("detalleTipo").textContent = s.tipo || "Sin tipo";
         document.getElementById("detalleProductor").textContent = s.productor || "Desconocido";
-
-        const telefonoPrincipal = s.telefonoPrincipal || s.telefono || "No registrado";
-        const telefonoAlternativo = s.telefonoAlternativo || s.contactoAlt || "No registrado";
         document.getElementById("detalleTelefono").innerHTML = `
-          <strong>Principal:</strong> ${telefonoPrincipal}<br>
-          <strong>Alternativo:</strong> ${telefonoAlternativo}
+          <strong>Principal:</strong> ${s.telefonoPrincipal || s.telefono || "No registrado"}<br>
+          <strong>Alternativo:</strong> ${s.telefonoAlternativo || s.contactoAlt || "No registrado"}
         `;
-
         document.getElementById("detalleCalificacion").textContent = s.calificacion || "4.8";
         document.getElementById("detalleOrigen").textContent = s.origen || '---';
         document.getElementById("detalleDestino").textContent = s.destino || '---';
@@ -217,11 +196,7 @@
         document.getElementById("detallePago").textContent = s.pago || '0';
         document.getElementById("detalleFecha").textContent = s.fecha || '';
 
-        // Mapa con ruta (si hay coordenadas)
-        if (map) {
-          map.remove();
-          map = null;
-        }
+        if (map) map.remove();
         map = L.map("map").setView([-9.19, -75.015], 6);
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution: "&copy; OpenStreetMap contributors"
@@ -229,7 +204,6 @@
 
         const origen = await obtenerCoords(s.origen);
         const destino = await obtenerCoords(s.destino);
-
         if (origen && destino) {
           routing = L.Routing.control({
             waypoints: [L.latLng(origen), L.latLng(destino)],
@@ -239,60 +213,47 @@
             draggableWaypoints: false,
             fitSelectedRoutes: true,
             createMarker: (i, wp) =>
-              L.marker(wp.latLng).bindPopup(
-                i === 0 ? `🚜 <b>Origen:</b> ${s.origen}` : `<b>Destino:</b> ${s.destino}`
-              )
+              L.marker(wp.latLng).bindPopup(i === 0 ? `🚜 <b>Origen:</b> ${s.origen}` : `<b>Destino:</b> ${s.destino}`)
           }).addTo(map);
         }
       }
 
-      // --- Obtener coordenadas con Nominatim (OpenStreetMap) ---
       async function obtenerCoords(ciudad) {
         if (!ciudad) return null;
         try {
           const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(ciudad + ", Perú")}`);
           const data = await res.json();
           return data[0] ? [parseFloat(data[0].lat), parseFloat(data[0].lon)] : null;
-        } catch (err) {
-          console.error("Error obteniendo coordenadas:", err);
-          return null;
-        }
+        } catch { return null; }
       }
 
-      // --- Cerrar panel ---
       btnCerrar.addEventListener("click", () => {
         panel.classList.remove("show");
         document.body.style.overflow = "auto";
         setTimeout(() => (overlay.style.display = "none"), 400);
       });
 
-      // --- Aceptar solicitud ---
       btnAceptar.addEventListener("click", () => {
         if (!solicitudActual || solicitudActual.estado !== "Pendiente") {
           showToast("La solicitud ya no está disponible.", "info");
           renderList();
           return;
         }
-
-        // Marcar como en curso y asignar transportista actual
         solicitudActual.estado = "En curso";
         solicitudActual.transportista = usuario.nombre || "Transportista";
         solicitudActual.transportistaId = usuario.id || null;
         guardarDB();
 
-        // Mensaje automático en chat
         const chatKey = `chat_${solicitudActual.id || solicitudActual.fecha}`;
         let mensajes = JSON.parse(localStorage.getItem(chatKey) || "[]");
-        const yaExiste = mensajes.some(m => m.tipo === "autoInicio");
-        if (!yaExiste) {
-          const nuevoMensaje = {
+        if (!mensajes.some(m => m.tipo === "autoInicio")) {
+          mensajes.push({
             remitente: usuario.nombre || "Transportista",
             rol: "transportista",
             texto: "🚚 ¡Hola! Estoy en camino al punto de recojo.",
             fecha: new Date().toISOString(),
             tipo: "autoInicio"
-          };
-          mensajes.push(nuevoMensaje);
+          });
           localStorage.setItem(chatKey, JSON.stringify(mensajes));
         }
 
@@ -300,26 +261,18 @@
         cerrarYActualizar();
       });
 
-      // --- Denunciar solicitud (guardamos en localStorage y ocultamos la solicitud) ---
       btnDenunciar.addEventListener("click", () => {
         if (!solicitudActual || solicitudActual.estado !== "Pendiente") {
           showToast("La solicitud ya no está disponible.", "info");
           renderList();
           return;
         }
-
         const motivo = prompt("Indica el motivo de la denuncia (opcional):");
-        // Si usuario cancela prompt (null) pedimos confirmación simple
-        if (motivo === null) {
-          const confirmar = confirm("¿Deseas denunciar esta solicitud sin motivo? (Se eliminará de la lista visible)");
-          if (!confirmar) return;
-        }
+        if (motivo === null && !confirm("¿Deseas denunciar sin motivo?")) return;
 
-        // Marcamos la solicitud como denunciada (no visible para otros transportistas)
         solicitudActual.estado = "Denunciada";
         guardarDB();
 
-        // Guardamos la denuncia en una lista independiente
         const denuncias = JSON.parse(localStorage.getItem("denunciasAgroLink") || "[]");
         denuncias.push({
           id: `den_${Date.now()}`,
@@ -336,47 +289,41 @@
         cerrarYActualizar();
       });
 
-      // --- Cerrar panel y refrescar lista ---
       function cerrarYActualizar() {
         panel.classList.remove("show");
         document.body.style.overflow = "auto";
         setTimeout(() => (overlay.style.display = "none"), 400);
         setTimeout(() => {
-          // recargamos db y re-renderizamos sin recargar la página
           db = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
-          poblarTipos();
-          renderList();
+          poblarTipos(); renderList();
         }, 500);
       }
 
-      // --- Filtros: aplicar y reset ---
-      btnAplicar.addEventListener("click", (e) => {
+      btnAplicar.addEventListener("click", e => { e.preventDefault(); renderList(); });
+      btnReset.addEventListener("click", e => {
         e.preventDefault();
+        [filterTipo, filterOrigen, filterDestino, filterMinPago, filterMaxPago].forEach(f => f.value = "");
         renderList();
       });
 
-      btnReset.addEventListener("click", (e) => {
-        e.preventDefault();
-        filterTipo.value = "";
-        filterOrigen.value = "";
-        filterDestino.value = "";
-        filterMinPago.value = "";
-        filterMaxPago.value = "";
-        renderList();
-      });
-
-      // --- Logout ---
+      // === 🔚 Logout persistente ===
       document.getElementById("logout").addEventListener("click", e => {
         e.preventDefault();
+        const usuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios")) || [];
+        const idx = usuarios.findIndex(u => (u.email || u.correo) === (usuario.email || usuario.correo));
+        if (idx !== -1) {
+          usuarios[idx].sesionActiva = false;
+          localStorage.setItem("agrolinkUsuarios", JSON.stringify(usuarios));
+        }
+        localStorage.removeItem("agrolinkUsuario");
+        localStorage.removeItem("agrolinkRol");
         showToast("👋 Sesión cerrada correctamente", "info");
-        setTimeout(() => (window.location.href = "../index.html"), 1000);
+        setTimeout(() => window.location.href = "../index.html", 800);
       });
 
-      // Inicialización
       poblarTipos();
       renderList();
     });
   </script>
 </body>
-
 </html>
