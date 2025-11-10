@@ -160,310 +160,310 @@
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  /* ======================================================
-     🔒 VALIDACIÓN DE SESIÓN PERSISTENTE (Opción 2)
-  ====================================================== */
-  let usuario = JSON.parse(localStorage.getItem("agrolinkUsuario"));
-  const usuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios")) || [];
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      /* ======================================================
+         🔒 VALIDACIÓN DE SESIÓN PERSISTENTE (Opción 2)
+      ====================================================== */
+      let usuario = JSON.parse(localStorage.getItem("agrolinkUsuario"));
+      const usuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios")) || [];
 
-  // Si no hay sesión activa, redirige al index
-  if (!usuario || !(usuario.email || usuario.correo)) {
-    alert("⚠️ No has iniciado sesión. Vuelve a ingresar.");
-    window.location.href = "../index.html";
-    return;
-  }
-
-  // Sincroniza con el registro más reciente
-  const clave = usuario.email || usuario.correo;
-  const actualizado = usuarios.find(u => (u.email || u.correo) === clave);
-  if (actualizado) {
-    usuario = { ...usuario, ...actualizado };
-    localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
-  }
-
-  // Cerrar sesión sin borrar todos los usuarios
-  const btnLogout = document.getElementById("logout");
-  if (btnLogout) {
-    btnLogout.addEventListener("click", e => {
-      e.preventDefault();
-      usuario.sesionActiva = false;
-      localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
-      setTimeout(() => {
+      // Si no hay sesión activa, redirige al index
+      if (!usuario || !(usuario.email || usuario.correo)) {
+        alert("⚠️ No has iniciado sesión. Vuelve a ingresar.");
         window.location.href = "../index.html";
-      }, 500);
-    });
-  }
+        return;
+      }
 
-  /* ======================================================
-     🚜 LÓGICA ORIGINAL DE SOLICITUDES (sin cambios)
-  ====================================================== */
-  const resumenBox = document.getElementById("resumenBox");
-  const resumenTexto = document.getElementById("resumenTexto");
-  const btnMapa = document.getElementById("btnMapa");
-  const modal = document.getElementById("modalMapa");
-  const cerrarMapa = document.getElementById("cerrarMapa");
-  const mapInfo = document.getElementById("mapInfo");
+      // Sincroniza con el registro más reciente
+      const clave = usuario.email || usuario.correo;
+      const actualizado = usuarios.find(u => (u.email || u.correo) === clave);
+      if (actualizado) {
+        usuario = { ...usuario, ...actualizado };
+        localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
+      }
 
-  const tipoCarga = document.getElementById("tipoCarga");
-  const otroTipoWrap = document.getElementById("otroTipoWrap");
-  const otroTipo = document.getElementById("otroTipo");
+      // Cerrar sesión sin borrar todos los usuarios
+      const btnLogout = document.getElementById("logout");
+      if (btnLogout) {
+        btnLogout.addEventListener("click", e => {
+          e.preventDefault();
+          usuario.sesionActiva = false;
+          localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
+          setTimeout(() => {
+            window.location.href = "../index.html";
+          }, 500);
+        });
+      }
 
-  const origenInput = document.getElementById("origen");
-  const destinoInput = document.getElementById("destino");
-  const errorOrigen = document.getElementById("errorOrigen");
-  const errorDestino = document.getElementById("errorDestino");
+      /* ======================================================
+         🚜 LÓGICA ORIGINAL DE SOLICITUDES (sin cambios)
+      ====================================================== */
+      const resumenBox = document.getElementById("resumenBox");
+      const resumenTexto = document.getElementById("resumenTexto");
+      const btnMapa = document.getElementById("btnMapa");
+      const modal = document.getElementById("modalMapa");
+      const cerrarMapa = document.getElementById("cerrarMapa");
+      const mapInfo = document.getElementById("mapInfo");
 
-  let distanciaRealKm = null;
-  let costoGlobal = 0;
+      const tipoCarga = document.getElementById("tipoCarga");
+      const otroTipoWrap = document.getElementById("otroTipoWrap");
+      const otroTipo = document.getElementById("otroTipo");
 
-  let map = null;
-  let routingControl = null;
+      const origenInput = document.getElementById("origen");
+      const destinoInput = document.getElementById("destino");
+      const errorOrigen = document.getElementById("errorOrigen");
+      const errorDestino = document.getElementById("errorDestino");
 
-  const kpiActivas = document.getElementById("kpiActivas");
-  const kpiPendientes = document.getElementById("kpiPendientes");
-  const kpiCompletadas = document.getElementById("kpiCompletadas");
+      let distanciaRealKm = null;
+      let costoGlobal = 0;
 
-  // === Mostrar campo "Otro" ===
-  tipoCarga.addEventListener("change", () => {
-    if (tipoCarga.value === "otro") {
-      otroTipoWrap.style.display = "block";
-      otroTipo.required = true;
-    } else {
-      otroTipoWrap.style.display = "none";
-      otroTipo.required = false;
-      otroTipo.value = "";
-    }
-  });
+      let map = null;
+      let routingControl = null;
 
-  // === Validación para origen y destino (solo letras y espacios) ===
-  function validarTexto(input, errorElement) {
-    const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
-    const valor = input.value.trim();
+      const kpiActivas = document.getElementById("kpiActivas");
+      const kpiPendientes = document.getElementById("kpiPendientes");
+      const kpiCompletadas = document.getElementById("kpiCompletadas");
 
-    if (valor === "") {
-      errorElement.style.display = "none";
-      return true;
-    }
+      // === Mostrar campo "Otro" ===
+      tipoCarga.addEventListener("change", () => {
+        if (tipoCarga.value === "otro") {
+          otroTipoWrap.style.display = "block";
+          otroTipo.required = true;
+        } else {
+          otroTipoWrap.style.display = "none";
+          otroTipo.required = false;
+          otroTipo.value = "";
+        }
+      });
 
-    if (!regex.test(valor)) {
-      errorElement.style.display = "block";
-      return false;
-    } else {
-      errorElement.style.display = "none";
-      return true;
-    }
-  }
+      // === Validación para origen y destino (solo letras y espacios) ===
+      function validarTexto(input, errorElement) {
+        const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+        const valor = input.value.trim();
 
-  origenInput.addEventListener("input", () => validarTexto(origenInput, errorOrigen));
-  destinoInput.addEventListener("input", () => validarTexto(destinoInput, errorDestino));
+        if (valor === "") {
+          errorElement.style.display = "none";
+          return true;
+        }
 
-  // === FUNCIONES AUXILIARES ===
-  function actualizarKPIs() {
-    const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
-    kpiActivas.textContent = solicitudes.length;
-    kpiPendientes.textContent = solicitudes.filter(s => s.estado === "Pendiente").length;
-    kpiCompletadas.textContent = solicitudes.filter(s => s.estado === "Completado").length;
-  }
-  actualizarKPIs();
+        if (!regex.test(valor)) {
+          errorElement.style.display = "block";
+          return false;
+        } else {
+          errorElement.style.display = "none";
+          return true;
+        }
+      }
 
-  async function obtenerCoords(ciudad) {
-    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(ciudad + ", Perú")}`);
-    const data = await res.json();
-    return data[0] ? [parseFloat(data[0].lat), parseFloat(data[0].lon)] : null;
-  }
+      origenInput.addEventListener("input", () => validarTexto(origenInput, errorOrigen));
+      destinoInput.addEventListener("input", () => validarTexto(destinoInput, errorDestino));
 
-  function calcularCosto(distanciaKm) {
-    return ((distanciaKm / 6) * 17 + (distanciaKm > 200 ? 50 : 20) + (distanciaKm / 70) * 30) * 1.4;
-  }
+      // === FUNCIONES AUXILIARES ===
+      function actualizarKPIs() {
+        const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
+        kpiActivas.textContent = solicitudes.length;
+        kpiPendientes.textContent = solicitudes.filter(s => s.estado === "Pendiente").length;
+        kpiCompletadas.textContent = solicitudes.filter(s => s.estado === "Completado").length;
+      }
+      actualizarKPIs();
 
-  async function calcDistancia() {
-    const origen = origenInput.value.trim();
-    const destino = destinoInput.value.trim();
-    if (!origen || !destino) return;
+      async function obtenerCoords(ciudad) {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(ciudad + ", Perú")}`);
+        const data = await res.json();
+        return data[0] ? [parseFloat(data[0].lat), parseFloat(data[0].lon)] : null;
+      }
 
-    const o = await obtenerCoords(origen);
-    const d = await obtenerCoords(destino);
-    if (!o || !d) return;
+      function calcularCosto(distanciaKm) {
+        return ((distanciaKm / 6) * 17 + (distanciaKm > 200 ? 50 : 20) + (distanciaKm / 70) * 30) * 1.4;
+      }
 
-    const dist = L.latLng(o).distanceTo(L.latLng(d)) / 1000;
-    distanciaRealKm = dist;
-    costoGlobal = calcularCosto(dist);
+      async function calcDistancia() {
+        const origen = origenInput.value.trim();
+        const destino = destinoInput.value.trim();
+        if (!origen || !destino) return;
 
-    resumenBox.style.display = "block";
-    resumenTexto.innerHTML = `
+        const o = await obtenerCoords(origen);
+        const d = await obtenerCoords(destino);
+        if (!o || !d) return;
+
+        const dist = L.latLng(o).distanceTo(L.latLng(d)) / 1000;
+        distanciaRealKm = dist;
+        costoGlobal = calcularCosto(dist);
+
+        resumenBox.style.display = "block";
+        resumenTexto.innerHTML = `
       <strong>Distancia:</strong> ${dist.toFixed(1)} km<br>
       <strong>Costo sugerido:</strong> 
       <span style="color:#00b074;font-weight:600;">S/ ${costoGlobal.toFixed(2)}</span>
     `;
-  }
+      }
 
-  origenInput.addEventListener("input", calcDistancia);
-  destinoInput.addEventListener("input", calcDistancia);
+      origenInput.addEventListener("input", calcDistancia);
+      destinoInput.addEventListener("input", calcDistancia);
 
-  // === MAPA CON RUTA REAL ===
-  btnMapa.addEventListener("click", async () => {
-    const origen = origenInput.value.trim();
-    const destino = destinoInput.value.trim();
-    if (!origen || !destino) {
-      alert("Por favor, ingresa origen y destino válidos.");
-      return;
-    }
+      // === MAPA CON RUTA REAL ===
+      btnMapa.addEventListener("click", async () => {
+        const origen = origenInput.value.trim();
+        const destino = destinoInput.value.trim();
+        if (!origen || !destino) {
+          alert("Por favor, ingresa origen y destino válidos.");
+          return;
+        }
 
-    modal.style.display = "flex";
-    await new Promise(r => setTimeout(r, 250));
+        modal.style.display = "flex";
+        await new Promise(r => setTimeout(r, 250));
 
-    const o = await obtenerCoords(origen);
-    const d = await obtenerCoords(destino);
-    if (!o || !d) {
-      mapInfo.innerHTML = "No se pudo calcular la ruta.";
-      return;
-    }
+        const o = await obtenerCoords(origen);
+        const d = await obtenerCoords(destino);
+        if (!o || !d) {
+          mapInfo.innerHTML = "No se pudo calcular la ruta.";
+          return;
+        }
 
-    if (map) {
-      map.remove();
-      map = null;
-    }
+        if (map) {
+          map.remove();
+          map = null;
+        }
 
-    map = L.map("map").setView(o, 6);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+        map = L.map("map").setView(o, 6);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 
-    routingControl = L.Routing.control({
-      waypoints: [L.latLng(o), L.latLng(d)],
-      lineOptions: { styles: [{ color: "#00b074", weight: 5 }] },
-      addWaypoints: false,
-      draggableWaypoints: false,
-      showAlternatives: false,
-      fitSelectedRoutes: true,
-    })
-      .on("routesfound", e => {
-        const route = e.routes[0];
-        distanciaRealKm = route.summary.totalDistance / 1000;
-        const duracionH = route.summary.totalTime / 3600;
-        costoGlobal = calcularCosto(distanciaRealKm);
+        routingControl = L.Routing.control({
+          waypoints: [L.latLng(o), L.latLng(d)],
+          lineOptions: { styles: [{ color: "#00b074", weight: 5 }] },
+          addWaypoints: false,
+          draggableWaypoints: false,
+          showAlternatives: false,
+          fitSelectedRoutes: true,
+        })
+          .on("routesfound", e => {
+            const route = e.routes[0];
+            distanciaRealKm = route.summary.totalDistance / 1000;
+            const duracionH = route.summary.totalTime / 3600;
+            costoGlobal = calcularCosto(distanciaRealKm);
 
-        mapInfo.innerHTML = `
+            mapInfo.innerHTML = `
           <strong>Distancia:</strong> ${distanciaRealKm.toFixed(1)} km &nbsp; | &nbsp;
           <strong>Duración:</strong> ${duracionH.toFixed(1)} h
         `;
-        resumenBox.style.display = "block";
-        resumenTexto.innerHTML = `
+            resumenBox.style.display = "block";
+            resumenTexto.innerHTML = `
           <strong>Distancia:</strong> ${distanciaRealKm.toFixed(1)} km<br>
           <strong>Duración:</strong> ${duracionH.toFixed(1)} h<br>
           <strong>Costo sugerido:</strong> 
           <span style="color:#00b074;font-weight:600;">S/ ${costoGlobal.toFixed(2)}</span>
         `;
-        map.fitBounds(L.latLngBounds(o, d));
-        setTimeout(() => map.invalidateSize(), 400);
-      })
-      .addTo(map);
-  });
+            map.fitBounds(L.latLngBounds(o, d));
+            setTimeout(() => map.invalidateSize(), 400);
+          })
+          .addTo(map);
+      });
 
-  cerrarMapa.addEventListener("click", () => {
-    modal.style.display = "none";
-    if (map) {
-      map.remove();
-      map = null;
-    }
-  });
-  window.onclick = e => {
-    if (e.target === modal) {
-      modal.style.display = "none";
-      if (map) {
-        map.remove();
-        map = null;
-      }
-    }
-  };
+      cerrarMapa.addEventListener("click", () => {
+        modal.style.display = "none";
+        if (map) {
+          map.remove();
+          map = null;
+        }
+      });
+      window.onclick = e => {
+        if (e.target === modal) {
+          modal.style.display = "none";
+          if (map) {
+            map.remove();
+            map = null;
+          }
+        }
+      };
 
-  // === GUARDAR SOLICITUD ===
-  const form = document.getElementById("solicitudForm");
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+      // === GUARDAR SOLICITUD ===
+      const form = document.getElementById("solicitudForm");
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-    if (!validarTexto(origenInput, errorOrigen) || !validarTexto(destinoInput, errorDestino)) {
-      alert("⚠️ Por favor, ingresa nombres válidos para origen y destino (solo letras).");
-      return;
-    }
+        if (!validarTexto(origenInput, errorOrigen) || !validarTexto(destinoInput, errorDestino)) {
+          alert("⚠️ Por favor, ingresa nombres válidos para origen y destino (solo letras).");
+          return;
+        }
 
-    let tipoProducto = tipoCarga.value;
-    if (tipoProducto === "otro") {
-      const especificacion = otroTipo.value.trim();
-      if (!especificacion) {
-        alert("⚠️ Por favor, especifica el tipo de producto.");
-        otroTipo.focus();
-        return;
-      }
-      tipoProducto = `Otro: ${especificacion}`;
-    }
+        let tipoProducto = tipoCarga.value;
+        if (tipoProducto === "otro") {
+          const especificacion = otroTipo.value.trim();
+          if (!especificacion) {
+            alert("⚠️ Por favor, especifica el tipo de producto.");
+            otroTipo.focus();
+            return;
+          }
+          tipoProducto = `Otro: ${especificacion}`;
+        }
 
-    const origen = origenInput.value.trim();
-    const destino = destinoInput.value.trim();
-    const fecha = document.getElementById("fecha").value;
-    const peso = parseFloat(document.getElementById("peso").value);
-    const contactoAlt = document.getElementById("contactoAlt").value.trim();
+        const origen = origenInput.value.trim();
+        const destino = destinoInput.value.trim();
+        const fecha = document.getElementById("fecha").value;
+        const peso = parseFloat(document.getElementById("peso").value);
+        const contactoAlt = document.getElementById("contactoAlt").value.trim();
 
-    const generarID = () => `AGL-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
+        const generarID = () => `AGL-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
 
-    if (!distanciaRealKm) {
-      const o = await obtenerCoords(origen);
-      const d = await obtenerCoords(destino);
-      if (o && d) {
-        distanciaRealKm = L.latLng(o).distanceTo(L.latLng(d)) / 1000;
-        costoGlobal = calcularCosto(distanciaRealKm);
-      }
-    }
+        if (!distanciaRealKm) {
+          const o = await obtenerCoords(origen);
+          const d = await obtenerCoords(destino);
+          if (o && d) {
+            distanciaRealKm = L.latLng(o).distanceTo(L.latLng(d)) / 1000;
+            costoGlobal = calcularCosto(distanciaRealKm);
+          }
+        }
 
-    const nuevaSolicitud = {
-      id: generarID(),
-      productor: usuario.nombre,
-      tipo: tipoProducto,
-      origen,
-      destino,
-      fecha,
-      peso: peso.toFixed(1),
-      telefonoPrincipal: usuario.telefono || "No registrado",
-      telefonoAlternativo: contactoAlt || null,
-      telefono: usuario.telefono || contactoAlt || "No registrado",
-      pago: parseFloat(costoGlobal.toFixed(2)),
-      pagoFinal: null,
-      estado: "Pendiente",
-      fechaRegistro: new Date().toLocaleString("es-PE"),
-    };
+        const nuevaSolicitud = {
+          id: generarID(),
+          productor: usuario.nombre,
+          tipo: tipoProducto,
+          origen,
+          destino,
+          fecha,
+          peso: peso.toFixed(1),
+          telefonoPrincipal: usuario.telefono || "No registrado",
+          telefonoAlternativo: contactoAlt || null,
+          telefono: usuario.telefono || contactoAlt || "No registrado",
+          pago: parseFloat(costoGlobal.toFixed(2)),
+          pagoFinal: null,
+          estado: "Pendiente",
+          fechaRegistro: new Date().toLocaleString("es-PE"),
+        };
 
-    const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
-    solicitudes.push(nuevaSolicitud);
-    localStorage.setItem("solicitudesAgroLink", JSON.stringify(solicitudes));
-    actualizarKPIs();
+        const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
+        solicitudes.push(nuevaSolicitud);
+        localStorage.setItem("solicitudesAgroLink", JSON.stringify(solicitudes));
+        actualizarKPIs();
 
-    form.reset();
-    otroTipoWrap.style.display = "none";
-    otroTipo.required = false;
-    resumenBox.style.display = "none";
+        form.reset();
+        otroTipoWrap.style.display = "none";
+        otroTipo.required = false;
+        resumenBox.style.display = "none";
 
-    Swal.fire({
-      title: "¡Solicitud registrada!",
-      html: `<p style='font-size:1.1rem;'>🆔 <b>ID:</b> ${nuevaSolicitud.id}</p>
+        Swal.fire({
+          title: "¡Solicitud registrada!",
+          html: `<p style='font-size:1.1rem;'>🆔 <b>ID:</b> ${nuevaSolicitud.id}</p>
              <p style='font-size:1.1rem;'>💰 <b>Costo estimado:</b> S/ ${costoGlobal.toFixed(2)}</p>`,
-      icon: "success",
-      showConfirmButton: false,
-      timer: 3000,
-      timerProgressBar: true,
-      background: "#f8fff9",
-      color: "#0f5132",
-      iconColor: "#198754"
+          icon: "success",
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          background: "#f8fff9",
+          color: "#0f5132",
+          iconColor: "#198754"
+        });
+      });
     });
-  });
-});
-</script>
+  </script>
 </body>
 
 </html>
