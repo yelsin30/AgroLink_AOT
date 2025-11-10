@@ -259,18 +259,23 @@ main {
   background: #00935f;
 }
 
-/* === FICHA TÉCNICA === */
+/* === FICHA TÉCNICA DEL VEHÍCULO === */
 .ficha-tecnica {
   background: #fff;
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e6e6e6;
+  border-radius: 10px;
+  padding: 16px 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  max-width: 400px;
 }
 
 .ficha-tecnica h3 {
+  font-size: 1.1rem;
   color: #16291b;
-  font-weight: 700;
-  margin-bottom: 1rem;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .ficha-tecnica ul {
@@ -283,19 +288,37 @@ main {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 0;
-  color: #333;
-  border-bottom: 1px solid #e8f6eb;
-}
-
-.ficha-tecnica i {
-  color: #00b074;
-  font-size: 1.1rem;
+  padding: 6px 0;
+  font-size: 0.95rem;
+  color: #111827;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .ficha-tecnica li:last-child {
   border-bottom: none;
 }
+
+/* Íconos alineados y uniformes */
+.ficha-tecnica i {
+  width: 22px;
+  min-width: 22px;
+  text-align: center;
+  color: #00b074;
+  font-size: 1rem;
+}
+
+/* Texto destacado (títulos de campos) */
+.ficha-tecnica strong {
+  color: #16291b;
+  min-width: 120px;
+  font-weight: 600;
+}
+
+/* Valores a la derecha */
+.ficha-tecnica span {
+  color: #4b5563;
+}
+
 
 /* === FOOTER === */
 .footer {

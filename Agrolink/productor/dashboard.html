@@ -42,76 +42,79 @@
       <div class="hello-wrap">
         <span>👋</span>
         <div>
-          <div>Bienvenido, <span id="helloName" class="name"></span></div>
+          <div>Bienvenido, <span id="helloName" class="name">Productor</span></div>
+          <small id="helloSub" class="text-muted">Tu panel de control personal</small>
         </div>
       </div>
-      <div id="avatar" class="user-avatar"></div>
-    </div>
-
-    <!-- KPIs -->
-    <div class="row g-3 mb-3">
-      <div class="col-md-3 col-6">
-        <div class="kpi-card"><i class="fa-solid fa-money-bill-trend-up kpi-icon"></i>
-          <h6>Cobertura nacional</h6>
-          <div class="kpi-value">0 regiones</div>
-          <i class="fa-solid fa-map-location-dot kpi-icon"></i>
-        </div>
-      </div>
-      <div class="col-md-3 col-6">
-        <div class="kpi-card"><i class="fa-solid fa-truck kpi-icon"></i>
-          <h6>Envíos totales</h6>
-          <div class="kpi-value">0</div>
-        </div>
-      </div>
-      <div class="col-md-3 col-6">
-        <div class="kpi-card"><i class="fa-solid fa-weight-hanging kpi-icon"></i>
-          <h6>Toneladas transportadas</h6>
-          <div class="kpi-value">0.0 T</div>
-        </div>
-      </div>
-      <div class="col-md-3 col-6">
-        <div class="kpi-card"><i class="fa-solid fa-star kpi-icon"></i>
-          <h6>Calificación promedio</h6>
-          <div class="kpi-value">— ⭐</div>
-        </div>
+      <div id="avatar" class="user-avatar" title="Ver perfil" onclick="location.href='perfil.html'">
+        A
       </div>
     </div>
 
-    <!-- Panel principal -->
-    <div class="board">
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title"><i class="fa-solid fa-map"></i> Actividad reciente</div>
-          <div class="actions">
-            <a href="solicitudes.html"><i class="fa-solid fa-plus"></i> Nueva solicitud</a>
-            <a href="envios.html" class="active"><i class="fa-solid fa-truck"></i> Mis envíos</a>
+      <!-- KPIs -->
+      <div class="row g-3 mb-3">
+        <div class="col-md-3 col-6">
+          <div class="kpi-card"><i class="fa-solid fa-money-bill-trend-up kpi-icon"></i>
+            <h6>Cobertura nacional</h6>
+            <div class="kpi-value">0 regiones</div>
+            <i class="fa-solid fa-map-location-dot kpi-icon"></i>
           </div>
         </div>
-        <div class="panel-body text-muted small">
-          <p><i class="fa-regular fa-circle-check text-success"></i> No tienes actividad todavía</p>
-          <p>Crea tu primera solicitud para verla aquí</p>
+        <div class="col-md-3 col-6">
+          <div class="kpi-card"><i class="fa-solid fa-truck kpi-icon"></i>
+            <h6>Envíos totales</h6>
+            <div class="kpi-value">0</div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="kpi-card"><i class="fa-solid fa-weight-hanging kpi-icon"></i>
+            <h6>Toneladas transportadas</h6>
+            <div class="kpi-value">0.0 T</div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="kpi-card"><i class="fa-solid fa-star kpi-icon"></i>
+            <h6>Calificación promedio</h6>
+            <div class="kpi-value">— ⭐</div>
+          </div>
         </div>
       </div>
 
-      <!-- PANEL DERECHO -->
-      <div class="panel" id="panelResumen">
-        <div class="panel-header">
-          <div class="panel-title"><i class="fa-solid fa-bolt"></i> Resumen rápido</div>
+      <!-- Panel principal -->
+      <div class="board">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title"><i class="fa-solid fa-map"></i> Actividad reciente</div>
+            <div class="actions">
+              <a href="solicitudes.html"><i class="fa-solid fa-plus"></i> Nueva solicitud</a>
+              <a href="envios.html" class="active"><i class="fa-solid fa-truck"></i> Mis envíos</a>
+            </div>
+          </div>
+          <div class="panel-body text-muted small">
+            <p><i class="fa-regular fa-circle-check text-success"></i> No tienes actividad todavía</p>
+            <p>Crea tu primera solicitud para verla aquí</p>
+          </div>
         </div>
-        <div class="panel-body small" id="resumenRapido"></div>
-      </div>
-    </div>
 
-    <!-- Calendario -->
-    <div class="calendar-card">
-      <h5 class="mb-3 text-success"><i class="fa-solid fa-calendar-days"></i> Calendario de envíos</h5>
-      <div id="calendar"></div>
-      <div class="legend">
-        <span><i style="background:#03b075;"></i> Completado</span>
-        <span><i style="background:#ffc107;"></i> En curso</span>
-        <span><i style="background:#999;"></i> Pendiente</span>
+        <!-- PANEL DERECHO -->
+        <div class="panel" id="panelResumen">
+          <div class="panel-header">
+            <div class="panel-title"><i class="fa-solid fa-bolt"></i> Resumen rápido</div>
+          </div>
+          <div class="panel-body small" id="resumenRapido"></div>
+        </div>
       </div>
-    </div>
+
+      <!-- Calendario -->
+      <div class="calendar-card">
+        <h5 class="mb-3 text-success"><i class="fa-solid fa-calendar-days"></i> Calendario de envíos</h5>
+        <div id="calendar"></div>
+        <div class="legend">
+          <span><i style="background:#03b075;"></i> Completado</span>
+          <span><i style="background:#ffc107;"></i> En curso</span>
+          <span><i style="background:#999;"></i> Pendiente</span>
+        </div>
+      </div>
   </main>
 
   <footer>© 2025 AgroLink. Todos los derechos reservados.</footer>
@@ -159,8 +162,17 @@
       const nombreUser = usuario.nombre || "Productor";
       const helloName = document.getElementById("helloName");
       const avatar = document.getElementById("avatar");
+
       if (helloName) helloName.textContent = nombreUser;
-      if (avatar) avatar.textContent = (nombreUser[0] || "A").toUpperCase();
+
+      // Si el usuario tiene una foto guardada en su perfil (ej: usuario.foto = "ruta.jpg")
+            if (avatar) {
+        if (usuario.avatar || usuario.fotoPerfil) {
+          avatar.innerHTML = `<img src="${usuario.avatar || usuario.fotoPerfil}" alt="${nombreUser}">`;
+        } else {
+          avatar.textContent = (nombreUser[0] || "A").toUpperCase();
+        }
+      }
 
       // 2. Leemos TODO lo que se guardó en solicitudesAgroLink
       const all = JSON.parse(localStorage.getItem("solicitudesAgroLink") || "[]");

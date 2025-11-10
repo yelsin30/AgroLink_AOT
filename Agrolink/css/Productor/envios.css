@@ -291,25 +291,39 @@ main {
   font-size: .9rem;
 }
 
+/* Estilos para alinear correctamente los estados */
 .badge-state {
-  padding: .25rem .55rem;
-  border-radius: 999px;
-  font-size: .7rem;
-  font-weight: 600;
-  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
 }
 
-.state-curso {
-  background: #ffc107;
-  color: #5c4500;
+.badge-state i {
+  font-size: 0.8rem;
 }
 
 .state-comp {
-  background: #03b075;
+  background: rgba(0, 176, 116, 0.15);
+  color: #00b074;
+}
+
+.state-curso {
+  background: rgb(255, 196, 0);
+  color: #5c4500;
 }
 
 .state-canc {
-  background: #6c757d;
+  background: rgba(214, 40, 40, 0.12);
+  color: #d62828;
+}
+
+.state-pend {
+  background: rgba(108, 117, 125, 0.15);
+  color: #495057;
 }
 
 .envio-meta {

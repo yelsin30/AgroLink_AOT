@@ -1,4 +1,8 @@
-/* =================================================== AGROLINK - ESTILO SOLICITUDES (EstiloSoli.css) Diseño unificado con Transportista Dashboard =================================================== */
+/* ===================================================
+   AGROLINK - ESTILO SOLICITUDES (EstiloSoli.css)
+   Diseño unificado con Transportista Dashboard
+   =================================================== */
+
 /* === BASE GENERAL === */
 body {
   background-color: #f7f9f7;
@@ -99,8 +103,7 @@ body {
   padding: 2rem;
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 60px);
-  /* deja espacio para el footer */
+  min-height: calc(100vh - 60px); /* deja espacio para el footer */
   box-sizing: border-box;
 }
 
@@ -113,6 +116,41 @@ body {
 .main-header p {
   color: #4b6650;
   margin-bottom: 2rem;
+}
+
+/* === FILTROS (NUEVO) === */
+.filters {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+
+.filters input,
+.filters select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  min-width: 140px;
+}
+
+.filters .btn-filter {
+  padding: 8px 12px;
+  border: none;
+  background: #00b074;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.filters .btn-reset {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #111827;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
 /* === TARJETAS DE SOLICITUDES === */
@@ -128,6 +166,8 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   border: 1px solid #e8f6eb;
   transition: all 0.25s ease;
+  /* del snippet: útil para cuando no uses grid */
+  margin-bottom: 10px;
 }
 
 .card:hover {
@@ -150,6 +190,7 @@ body {
   margin: 0.2rem 0;
 }
 
+/* botón ver dentro de cards */
 .btn-ver {
   background-color: #00b074;
   color: #fff;
@@ -212,10 +253,14 @@ body {
   font-size: 0.95rem;
 }
 
+/* botones del panel */
 .panel-buttons {
   display: flex;
   gap: 0.6rem;
   margin-top: 1rem;
+  /* del snippet: alineación y padding extra */
+  justify-content: flex-end;
+  padding: 12px;
 }
 
 .btn {
@@ -247,6 +292,12 @@ body {
   background-color: #a93226;
 }
 
+/* nuevo: botón denunciar */
+.btn-denunciar {
+  background: #ef4444;
+  color: white;
+}
+
 .btn-close {
   background-color: #e0e0e0;
   color: #333;
@@ -263,6 +314,37 @@ body {
   border-radius: 10px;
   margin-top: 1rem;
   border: 1px solid #e2f2e4;
+  /* del snippet: para recortar bordes internos */
+  overflow: hidden;
+}
+
+/* === TELÉFONO DETALLE (NUEVO) === */
+#detalleTelefono {
+  line-height: 1.5;
+}
+
+#detalleTelefono strong {
+  color: #00b074;
+}
+
+/* encabezado de teléfono reutilizable */
+.tel-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: #16291b;
+}
+
+.tel-header i {
+  color: #00b074;
+}
+
+/* === MENSAJE SIN RESULTADOS (NUEVO) === */
+.no-results {
+  padding: 18px;
+  text-align: center;
+  color: #6b7280;
 }
 
 /* === FOOTER FIJO ABAJO === */
@@ -288,12 +370,4 @@ body {
     width: 100%;
     border-radius: 0;
   }
-}
-
-#detalleTelefono {
-  line-height: 1.5;
-}
-
-#detalleTelefono strong {
-  color: #00b074;
 }

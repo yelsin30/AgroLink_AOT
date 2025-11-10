@@ -12,7 +12,6 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
 
-  <!-- ✅ CSS externo -->
   <link rel="stylesheet" href="../css/Productor/solicitudes.css" />
 </head>
 
@@ -72,19 +71,28 @@
             <option>Frutas</option>
             <option>Verduras</option>
             <option>Maquinaria Agrícola</option>
+            <option value="otro">Otro (especificar)</option>
           </select>
+
+          <!-- Campo para especificar "Otro" -->
+          <div id="otroTipoWrap" style="display:none; margin-top:10px;">
+            <label>Especifica el tipo de producto</label>
+            <input type="text" id="otroTipo" placeholder="Ej: Tubérculos, Plantas ornamentales...">
+          </div>
 
           <label>Origen</label>
           <input id="origen" placeholder="Ej: Cajamarca" required />
+          <small class="text-danger" id="errorOrigen" style="display:none;">Solo se permiten letras y espacios</small>
 
           <label>Destino</label>
           <input id="destino" placeholder="Ej: Lima" required />
+          <small class="text-danger" id="errorDestino" style="display:none;">Solo se permiten letras y espacios</small>
 
           <label>Fecha de envío</label>
           <input type="date" id="fecha" required />
 
           <label>Peso estimado (kg)</label>
-          <input type="number" id="peso" min="1" placeholder="Ej: 500" required />
+          <input type="number" id="peso" min="0.1" step="0.1" placeholder="Ej: 500 o 50.5" required />
 
           <label>Teléfono alternativo (opcional)</label>
           <input type="tel" id="contactoAlt" placeholder="Ej: 987654321" />
@@ -119,6 +127,44 @@
     </div>
   </div>
 
+  <!-- Toast de éxito moderno -->
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+    <div id="toastSolicitud" class="toast align-items-center text-bg-success border-0" role="alert"
+      aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          <i class="fa-solid fa-circle-check me-2"></i>
+          <strong>Solicitud registrada correctamente</strong><br>
+          <small id="toastDetalle"></small>
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+          aria-label="Cerrar"></button>
+      </div>
+    </div>
+  </div>
+  <!-- Toast de éxito moderno -->
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+    <div id="toastSolicitud" class="toast align-items-center text-bg-success border-0" role="alert"
+      aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          <i class="fa-solid fa-circle-check me-2"></i>
+          <strong>Solicitud registrada correctamente</strong><br>
+          <small id="toastDetalle"></small>
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+          aria-label="Cerrar"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
   <script>
@@ -130,8 +176,17 @@
       const cerrarMapa = document.getElementById("cerrarMapa");
       const mapInfo = document.getElementById("mapInfo");
 
-      let distanciaRealKm = null; // 🔹 se actualiza con la distancia real del mapa
-      let costoGlobal = 0; // 🔹 costo sincronizado global
+      const tipoCarga = document.getElementById("tipoCarga");
+      const otroTipoWrap = document.getElementById("otroTipoWrap");
+      const otroTipo = document.getElementById("otroTipo");
+
+      const origenInput = document.getElementById("origen");
+      const destinoInput = document.getElementById("destino");
+      const errorOrigen = document.getElementById("errorOrigen");
+      const errorDestino = document.getElementById("errorDestino");
+
+      let distanciaRealKm = null;
+      let costoGlobal = 0;
 
       let map = null;
       let routingControl = null;
@@ -139,6 +194,40 @@
       const kpiActivas = document.getElementById("kpiActivas");
       const kpiPendientes = document.getElementById("kpiPendientes");
       const kpiCompletadas = document.getElementById("kpiCompletadas");
+
+      // === Mostrar campo "Otro" ===
+      tipoCarga.addEventListener("change", () => {
+        if (tipoCarga.value === "otro") {
+          otroTipoWrap.style.display = "block";
+          otroTipo.required = true;
+        } else {
+          otroTipoWrap.style.display = "none";
+          otroTipo.required = false;
+          otroTipo.value = "";
+        }
+      });
+
+      // === Validación para origen y destino (solo letras y espacios) ===
+      function validarTexto(input, errorElement) {
+        const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+        const valor = input.value.trim();
+
+        if (valor === "") {
+          errorElement.style.display = "none";
+          return true;
+        }
+
+        if (!regex.test(valor)) {
+          errorElement.style.display = "block";
+          return false;
+        } else {
+          errorElement.style.display = "none";
+          return true;
+        }
+      }
+
+      origenInput.addEventListener("input", () => validarTexto(origenInput, errorOrigen));
+      destinoInput.addEventListener("input", () => validarTexto(destinoInput, errorDestino));
 
       // === FUNCIONES AUXILIARES ===
       function actualizarKPIs() {
@@ -155,15 +244,14 @@
         return data[0] ? [parseFloat(data[0].lat), parseFloat(data[0].lon)] : null;
       }
 
-      // ✅ Fórmula central para unificar costos
       function calcularCosto(distanciaKm) {
         return ((distanciaKm / 6) * 17 + (distanciaKm > 200 ? 50 : 20) + (distanciaKm / 70) * 30) * 1.4;
       }
 
       // === Cálculo inicial en el resumen ===
       async function calcDistancia() {
-        const origen = document.getElementById("origen").value.trim();
-        const destino = document.getElementById("destino").value.trim();
+        const origen = origenInput.value.trim();
+        const destino = destinoInput.value.trim();
         if (!origen || !destino) return;
 
         const o = await obtenerCoords(origen);
@@ -182,13 +270,13 @@
       `;
       }
 
-      document.getElementById("origen").addEventListener("input", calcDistancia);
-      document.getElementById("destino").addEventListener("input", calcDistancia);
+      origenInput.addEventListener("input", calcDistancia);
+      destinoInput.addEventListener("input", calcDistancia);
 
       // === MAPA CON RUTA REAL ===
       btnMapa.addEventListener("click", async () => {
-        const origen = document.getElementById("origen").value.trim();
-        const destino = document.getElementById("destino").value.trim();
+        const origen = origenInput.value.trim();
+        const destino = destinoInput.value.trim();
         if (!origen || !destino) {
           alert("Por favor, ingresa origen y destino válidos.");
           return;
@@ -226,7 +314,6 @@
             const duracionH = route.summary.totalTime / 3600;
             costoGlobal = calcularCosto(distanciaRealKm);
 
-            // Actualiza modal y resumen sincronizados
             mapInfo.innerHTML = `
             <strong>Distancia:</strong> ${distanciaRealKm.toFixed(1)} km &nbsp; | &nbsp;
             <strong>Duración:</strong> ${duracionH.toFixed(1)} h
@@ -277,11 +364,29 @@
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const tipoCarga = document.getElementById("tipoCarga").value;
-        const origen = document.getElementById("origen").value.trim();
-        const destino = document.getElementById("destino").value.trim();
+        // Validar origen y destino
+        if (!validarTexto(origenInput, errorOrigen) || !validarTexto(destinoInput, errorDestino)) {
+          alert("⚠️ Por favor, ingresa nombres válidos para origen y destino (solo letras).");
+          return;
+        }
+
+        let tipoProducto = tipoCarga.value;
+
+        // Si seleccionó "otro", validar que haya especificado
+        if (tipoProducto === "otro") {
+          const especificacion = otroTipo.value.trim();
+          if (!especificacion) {
+            alert("⚠️ Por favor, especifica el tipo de producto.");
+            otroTipo.focus();
+            return;
+          }
+          tipoProducto = `Otro: ${especificacion}`;
+        }
+
+        const origen = origenInput.value.trim();
+        const destino = destinoInput.value.trim();
         const fecha = document.getElementById("fecha").value;
-        const peso = document.getElementById("peso").value;
+        const peso = parseFloat(document.getElementById("peso").value);
         const contactoAlt = document.getElementById("contactoAlt").value.trim();
 
         const usuario = JSON.parse(localStorage.getItem("agrolinkUsuario")) || { nombre: "Productor desconocido" };
@@ -291,7 +396,6 @@
           return `AGL-${new Date().getFullYear()}-${num}`;
         };
 
-        // ✅ Si no se calculó antes, calcular ahora (usa la misma fórmula)
         if (!distanciaRealKm) {
           const o = await obtenerCoords(origen);
           const d = await obtenerCoords(destino);
@@ -301,15 +405,14 @@
           }
         }
 
-        // === Crear la solicitud ===
         const nuevaSolicitud = {
           id: generarID(),
           productor: usuario.nombre,
-          tipo: tipoCarga,
+          tipo: tipoProducto,
           origen,
           destino,
           fecha,
-          peso,
+          peso: peso.toFixed(1),
           telefonoPrincipal: usuario.telefono || "No registrado",
           telefonoAlternativo: contactoAlt || null,
           telefono: usuario.telefono || contactoAlt || "No registrado",
@@ -325,14 +428,45 @@
         actualizarKPIs();
 
         form.reset();
+        otroTipoWrap.style.display = "none";
+        otroTipo.required = false;
         resumenBox.style.display = "none";
 
-        alert(`✅ Solicitud registrada correctamente.
-        🆔 ID: ${nuevaSolicitud.id}
-        💰 Costo estimado: S/ ${costoGlobal.toFixed(2)}`);
+        // 💚 SweetAlert2 moderno
+        Swal.fire({
+          title: "¡Solicitud registrada!",
+          html: `
+    <p style='font-size:1.1rem; margin-bottom:6px;'>
+      🆔 <b>ID:</b> ${nuevaSolicitud.id}
+    </p>
+    <p style='font-size:1.1rem;'>
+      💰 <b>Costo estimado:</b> S/ ${costoGlobal.toFixed(2)}
+    </p>
+  `,
+          icon: "success",
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          background: "#f8fff9",
+          color: "#0f5132",
+          iconColor: "#198754"
+        });
+
+        // 💬 Toast moderno Bootstrap
+        const toastBody = document.getElementById("toastDetalle");
+        toastBody.innerHTML = `
+🆔 <b>ID:</b> ${nuevaSolicitud.id}<br>
+💰 <b>Costo estimado:</b> S/ ${costoGlobal.toFixed(2)}
+`;
+
+        const toastEl = document.getElementById("toastSolicitud");
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+
       });
     });
   </script>
+
 
 </body>
 

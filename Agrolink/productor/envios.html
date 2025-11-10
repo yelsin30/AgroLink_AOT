@@ -403,9 +403,10 @@
         list.forEach(e => {
           const st = e.estado || "—";
           const badge =
-            /Completado/.test(st) ? 'state-comp' :
-              /En curso/.test(st) ? 'state-curso' :
-                /Cancelado/.test(st) ? 'state-canc' : 'state-canc';
+            /Pendiente/.test(st) ? 'state-pend' :
+              /Completado/.test(st) ? 'state-comp' :
+                /En curso/.test(st) ? 'state-curso' :
+                  /Cancelado/.test(st) ? 'state-canc' : 'state-canc';
 
           const card = document.createElement("div");
           card.className = "envio-card";
