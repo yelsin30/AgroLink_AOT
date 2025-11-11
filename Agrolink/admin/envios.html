@@ -24,7 +24,7 @@
       <a href="usuarios.html" class="nav-item"><i class="fas fa-user"></i><span>Usuarios</span></a>
       <a href="reportes.html" class="nav-item"><i class="fas fa-chart-bar"></i><span>Reportes</span></a>
       <a href="configuracion.html" class="nav-item"><i class="fas fa-cog"></i><span>Configuración</span></a>
-      <a href="../index.html" class="nav-item logout"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a>
+      <a href="../index.html" class="nav-item logout" id="btnLogout"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a>
     </nav>
   </aside>
 
@@ -36,16 +36,16 @@
         <h1>Gestión de Envíos</h1>
       </div>
       <div class="user-profile">
-        <div class="avatar">A</div>
-        <span class="username">Admin</span>
+        <div class="avatar" id="adminAvatar">A</div>
+        <span class="username" id="adminName">Admin</span>
       </div>
     </header>
 
-    <!-- Search Filters -->
+    <!-- Filtros -->
     <div class="search-filters">
       <h2>Filtros de búsqueda</h2>
       <div class="filters-container">
-        <div class="filter-input"><input type="text" placeholder="Origen (Ej. Puno)" id="filterOrigen" /></div>
+        <div class="filter-input"><input type="text" placeholder="Origen" id="filterOrigen" /></div>
         <div class="filter-input"><input type="text" placeholder="Destino" id="filterDestino" /></div>
         <div class="filter-input">
           <select id="filterEstado">
@@ -55,17 +55,17 @@
             <option value="Entregado">Entregado</option>
           </select>
         </div>
-        <button class="filter-button" id="btnBuscar"><i class="fas fa-search"></i>Buscar</button>
+        <button class="filter-button" id="btnBuscar"><i class="fas fa-search"></i> Buscar</button>
       </div>
     </div>
 
-    <!-- Action Buttons -->
+    <!-- Botones -->
     <div class="action-buttons">
       <button class="btn btn-add" id="btnAgregar"><i class="fas fa-plus"></i>Agregar Envío</button>
       <button class="btn btn-delete" id="btnEliminar"><i class="fas fa-trash"></i>Eliminar Todos</button>
     </div>
 
-    <!-- Table -->
+    <!-- Tabla -->
     <div class="table-container">
       <table class="table">
         <thead>
@@ -93,24 +93,19 @@
         <button class="close-modal">&times;</button>
       </div>
       <form id="addForm">
-        <div class="form-group"><label for="addId">ID del Envío</label><input type="text" id="addId"
-            placeholder="Ej. SHP-2025-004" /></div>
-        <div class="form-group"><label for="addOrigen">Origen</label><input type="text" id="addOrigen" required /></div>
-        <div class="form-group"><label for="addDestino">Destino</label><input type="text" id="addDestino" required />
-        </div>
-        <div class="form-group"><label for="addEstado">Estado</label>
+        <div class="form-group"><label>ID</label><input type="text" id="addId" placeholder="Ej. SHP-001" /></div>
+        <div class="form-group"><label>Origen</label><input type="text" id="addOrigen" required /></div>
+        <div class="form-group"><label>Destino</label><input type="text" id="addDestino" required /></div>
+        <div class="form-group"><label>Estado</label>
           <select id="addEstado" required>
             <option value="Pendiente">Pendiente</option>
             <option value="En tránsito">En tránsito</option>
             <option value="Entregado">Entregado</option>
           </select>
         </div>
-        <div class="form-group"><label for="addFecha">Fecha</label><input type="text" id="addFecha"
-            placeholder="Ej. 22/10/2025" required /></div>
-        <div class="form-group"><label for="addTransportista">Transportista</label><input type="text"
-            id="addTransportista" placeholder="Ej. Transp. Pérez" required /></div>
-        <div class="form-group"><label for="addProducto">Producto</label><input type="text" id="addProducto"
-            placeholder="Ej. Maíz" required /></div>
+        <div class="form-group"><label>Fecha</label><input type="text" id="addFecha" placeholder="dd/mm/aaaa" required /></div>
+        <div class="form-group"><label>Transportista</label><input type="text" id="addTransportista" required /></div>
+        <div class="form-group"><label>Producto</label><input type="text" id="addProducto" required /></div>
         <div class="modal-footer">
           <button type="button" class="btn btn-cancel" id="cancelAdd">Cancelar</button>
           <button type="submit" class="btn btn-add">Guardar</button>
@@ -128,22 +123,18 @@
       </div>
       <form id="editForm">
         <input type="hidden" id="editId" />
-        <div class="form-group"><label for="editOrigen">Origen</label><input type="text" id="editOrigen" required />
-        </div>
-        <div class="form-group"><label for="editDestino">Destino</label><input type="text" id="editDestino" required />
-        </div>
-        <div class="form-group"><label for="editEstado">Estado</label>
+        <div class="form-group"><label>Origen</label><input type="text" id="editOrigen" required /></div>
+        <div class="form-group"><label>Destino</label><input type="text" id="editDestino" required /></div>
+        <div class="form-group"><label>Estado</label>
           <select id="editEstado" required>
             <option value="Pendiente">Pendiente</option>
             <option value="En tránsito">En tránsito</option>
             <option value="Entregado">Entregado</option>
           </select>
         </div>
-        <div class="form-group"><label for="editFecha">Fecha</label><input type="text" id="editFecha" required /></div>
-        <div class="form-group"><label for="editTransportista">Transportista</label><input type="text"
-            id="editTransportista" required /></div>
-        <div class="form-group"><label for="editProducto">Producto</label><input type="text" id="editProducto"
-            required /></div>
+        <div class="form-group"><label>Fecha</label><input type="text" id="editFecha" required /></div>
+        <div class="form-group"><label>Transportista</label><input type="text" id="editTransportista" required /></div>
+        <div class="form-group"><label>Producto</label><input type="text" id="editProducto" required /></div>
         <div class="modal-footer">
           <button type="button" class="btn btn-cancel" id="cancelEdit">Cancelar</button>
           <button type="submit" class="btn btn-add">Actualizar</button>
@@ -153,41 +144,18 @@
   </div>
 
   <script>
-    // === 🔁 Sincronización automática con las solicitudes del productor ===
-    function syncSolicitudesConEnvios() {
-      const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink") || "[]");
-      if (solicitudes.length === 0) return;
+    // ======= BASE DE DATOS =======
+    const STORAGE_KEY = "agrolink_envios";
 
-      let envios = JSON.parse(localStorage.getItem("agrolink_envios") || "[]");
-
-      solicitudes.forEach(s => {
-        const existe = envios.some(e => e.id === s.id);
-        if (!existe) {
-          envios.push({
-            id: s.id || `SHP-${Date.now()}`,
-            origen: s.origen || "—",
-            destino: s.destino || "—",
-            estado: s.estado || "Pendiente",
-            fecha: s.fecha || new Date().toLocaleDateString("es-PE"),
-            transportista: s.transportista || "Sin asignar",
-            producto: s.tipo || "Sin producto"
-          });
-        }
-      });
-
-      localStorage.setItem("agrolink_envios", JSON.stringify(envios));
-    }
-
-    // === Obtener/Guardar Envíos ===
     function getEnvios() {
-      return JSON.parse(localStorage.getItem("agrolink_envios") || "[]");
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
     }
 
     function saveEnvios(envios) {
-      localStorage.setItem("agrolink_envios", JSON.stringify(envios));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(envios));
     }
 
-    // === Renderizar tabla ===
+    // ======= RENDERIZAR TABLA =======
     function renderizarTabla(enviosToShow = null) {
       const tbody = document.getElementById("enviosTableBody");
       tbody.innerHTML = "";
@@ -198,31 +166,36 @@
         return;
       }
 
-      envios.forEach(envio => {
+      envios.forEach(e => {
         const row = document.createElement("tr");
+        const estadoClase = e.estado === "Entregado"
+          ? "status-delivered"
+          : e.estado === "En tránsito"
+          ? "status-transit"
+          : "status-pending";
+
         row.innerHTML = `
-          <td>${envio.id}</td>
-          <td>${envio.origen}</td>
-          <td>${envio.destino}</td>
-          <td><span class="status ${envio.estado === "Entregado" ? "status-delivered" : "status-pending"}">${envio.estado}</span></td>
-          <td>${envio.fecha}</td>
-          <td>${envio.transportista}</td>
-          <td>${envio.producto}</td>
+          <td>${e.id}</td>
+          <td>${e.origen}</td>
+          <td>${e.destino}</td>
+          <td><span class="status ${estadoClase}">${e.estado}</span></td>
+          <td>${e.fecha}</td>
+          <td>${e.transportista}</td>
+          <td>${e.producto}</td>
           <td class="actions">
-            <button class="view-btn" title="Ver" data-id="${envio.id}"><i class="fas fa-eye"></i></button>
-            <button class="edit-btn" title="Editar" data-id="${envio.id}"><i class="fas fa-edit"></i></button>
-            <button class="delete-btn" title="Eliminar" data-id="${envio.id}"><i class="fas fa-trash"></i></button>
+            <button class="view-btn" data-id="${e.id}"><i class="fas fa-eye"></i></button>
+            <button class="edit-btn" data-id="${e.id}"><i class="fas fa-edit"></i></button>
+            <button class="delete-btn" data-id="${e.id}"><i class="fas fa-trash"></i></button>
           </td>`;
         tbody.appendChild(row);
       });
 
-      // Eventos
       document.querySelectorAll(".delete-btn").forEach(b => b.onclick = () => eliminarEnvio(b.dataset.id));
       document.querySelectorAll(".edit-btn").forEach(b => b.onclick = () => abrirModalEdicion(b.dataset.id));
       document.querySelectorAll(".view-btn").forEach(b => b.onclick = () => verEnvio(b.dataset.id));
     }
 
-    // === CRUD básico ===
+    // ======= FUNCIONES CRUD =======
     function eliminarEnvio(id) {
       if (!confirm("¿Eliminar este envío?")) return;
       const envios = getEnvios().filter(e => e.id !== id);
@@ -231,30 +204,113 @@
     }
 
     function abrirModalEdicion(id) {
-      const envio = getEnvios().find(e => e.id === id);
-      if (!envio) return;
-      document.getElementById("editId").value = envio.id;
-      document.getElementById("editOrigen").value = envio.origen;
-      document.getElementById("editDestino").value = envio.destino;
-      document.getElementById("editEstado").value = envio.estado;
-      document.getElementById("editFecha").value = envio.fecha;
-      document.getElementById("editTransportista").value = envio.transportista;
-      document.getElementById("editProducto").value = envio.producto;
+      const e = getEnvios().find(x => x.id === id);
+      if (!e) return;
+      document.getElementById("editId").value = e.id;
+      document.getElementById("editOrigen").value = e.origen;
+      document.getElementById("editDestino").value = e.destino;
+      document.getElementById("editEstado").value = e.estado;
+      document.getElementById("editFecha").value = e.fecha;
+      document.getElementById("editTransportista").value = e.transportista;
+      document.getElementById("editProducto").value = e.producto;
       document.getElementById("editModal").style.display = "flex";
     }
 
     function verEnvio(id) {
-      const e = getEnvios().find(e => e.id === id);
+      const e = getEnvios().find(x => x.id === id);
       if (!e) return;
-      alert(`📦 Envío ${e.id}\n\nOrigen: ${e.origen}\nDestino: ${e.destino}\nEstado: ${e.estado}\nFecha: ${e.fecha}\nTransportista: ${e.transportista}\nProducto: ${e.producto}`);
+      alert(`📦 Envío ${e.id}\nOrigen: ${e.origen}\nDestino: ${e.destino}\nEstado: ${e.estado}\nFecha: ${e.fecha}\nTransportista: ${e.transportista}\nProducto: ${e.producto}`);
     }
 
-    // === Inicialización ===
+    // ======= FILTROS =======
+    document.getElementById("btnBuscar").onclick = () => {
+      const origen = document.getElementById("filterOrigen").value.trim().toLowerCase();
+      const destino = document.getElementById("filterDestino").value.trim().toLowerCase();
+      const estado = document.getElementById("filterEstado").value;
+
+      const filtrados = getEnvios().filter(e =>
+        (!origen || e.origen.toLowerCase().includes(origen)) &&
+        (!destino || e.destino.toLowerCase().includes(destino)) &&
+        (!estado || e.estado === estado)
+      );
+      renderizarTabla(filtrados);
+    };
+
+    // ======= MODALES =======
+    const addModal = document.getElementById("addModal");
+    const editModal = document.getElementById("editModal");
+
+    document.getElementById("btnAgregar").onclick = () => addModal.style.display = "flex";
+    document.getElementById("cancelAdd").onclick = () => { addModal.style.display = "none"; addForm.reset(); };
+    document.getElementById("cancelEdit").onclick = () => { editModal.style.display = "none"; editForm.reset(); };
+    document.querySelectorAll(".close-modal").forEach(btn => btn.onclick = () => btn.closest(".modal").style.display = "none");
+
+    // ======= AGREGAR / EDITAR =======
+    addForm.onsubmit = e => {
+      e.preventDefault();
+      const nuevo = {
+        id: document.getElementById("addId").value || "SHP-" + Date.now(),
+        origen: document.getElementById("addOrigen").value.trim(),
+        destino: document.getElementById("addDestino").value.trim(),
+        estado: document.getElementById("addEstado").value,
+        fecha: document.getElementById("addFecha").value.trim(),
+        transportista: document.getElementById("addTransportista").value.trim(),
+        producto: document.getElementById("addProducto").value.trim()
+      };
+      const lista = [...getEnvios(), nuevo];
+      saveEnvios(lista);
+      renderizarTabla();
+      addModal.style.display = "none";
+      addForm.reset();
+      alert("✅ Envío agregado correctamente.");
+    };
+
+    editForm.onsubmit = e => {
+      e.preventDefault();
+      const id = document.getElementById("editId").value;
+      let lista = getEnvios();
+      const i = lista.findIndex(x => x.id === id);
+      if (i >= 0) {
+        lista[i] = {
+          ...lista[i],
+          origen: document.getElementById("editOrigen").value.trim(),
+          destino: document.getElementById("editDestino").value.trim(),
+          estado: document.getElementById("editEstado").value,
+          fecha: document.getElementById("editFecha").value.trim(),
+          transportista: document.getElementById("editTransportista").value.trim(),
+          producto: document.getElementById("editProducto").value.trim()
+        };
+        saveEnvios(lista);
+        renderizarTabla();
+        editModal.style.display = "none";
+        editForm.reset();
+        alert("✅ Envío actualizado correctamente.");
+      }
+    };
+
+    // ======= ELIMINAR TODOS =======
+    document.getElementById("btnEliminar").onclick = () => {
+      if (confirm("¿Eliminar todos los envíos? Esta acción no se puede deshacer.")) {
+        localStorage.removeItem(STORAGE_KEY);
+        renderizarTabla();
+        alert("🗑️ Todos los envíos fueron eliminados.");
+      }
+    };
+
+    // ======= INICIALIZACIÓN =======
     window.onload = () => {
-      syncSolicitudesConEnvios(); // 🔁 Carga automática desde productor
+      const usuarioActivo = JSON.parse(localStorage.getItem("agrolinkUsuario") || "null");
+      if (!usuarioActivo || (usuarioActivo.rol || "").toLowerCase() !== "admin") {
+        alert("⚠️ Acceso restringido. Solo administradores pueden ver los envíos.");
+        window.location.href = "../login.html";
+        return;
+      }
+
+      document.getElementById("adminName").textContent = usuarioActivo.nombre || "Admin";
+      document.getElementById("adminAvatar").textContent = (usuarioActivo.nombre || "A").charAt(0).toUpperCase();
+
       renderizarTabla();
     };
   </script>
 </body>
-
 </html>

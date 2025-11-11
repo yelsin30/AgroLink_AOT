@@ -15,52 +15,27 @@
       <h1>AgroLink</h1>
     </div>
     <nav class="nav-menu">
-      <a href="admin.html" class="nav-item active">
-        <i class="fas fa-home"></i>
-        <span>Dashboard</span>
-      </a>
-      <a href="envios.html" class="nav-item">
-        <i class="fas fa-truck"></i>
-        <span>Envíos</span>
-      </a>
-      <a href="transportistas.html" class="nav-item">
-        <i class="fas fa-users"></i>
-        <span>Transportistas</span>
-      </a>
-      <a href="productos.html" class="nav-item">
-        <i class="fas fa-box"></i>
-        <span>Productos</span>
-      </a>
-      <a href="usuarios.html" class="nav-item">
-        <i class="fas fa-user"></i>
-        <span>Usuarios</span>
-      </a>
-      <a href="reportes.html" class="nav-item">
-        <i class="fas fa-chart-bar"></i>
-        <span>Reportes</span>
-      </a>
-      <a href="configuracion.html" class="nav-item">
-        <i class="fas fa-cog"></i>
-        <span>Configuración</span>
-      </a>
-      <a href="../index.html" class="nav-item logout">
-        <i class="fas fa-sign-out-alt"></i>
-        <span>Cerrar Sesión</span>
-      </a>
+      <a href="admin.html" class="nav-item active"><i class="fas fa-home"></i><span>Dashboard</span></a>
+      <a href="envios.html" class="nav-item"><i class="fas fa-truck"></i><span>Envíos</span></a>
+      <a href="transportistas.html" class="nav-item"><i class="fas fa-users"></i><span>Transportistas</span></a>
+      <a href="productos.html" class="nav-item"><i class="fas fa-box"></i><span>Productos</span></a>
+      <a href="usuarios.html" class="nav-item"><i class="fas fa-user"></i><span>Usuarios</span></a>
+      <a href="reportes.html" class="nav-item"><i class="fas fa-chart-bar"></i><span>Reportes</span></a>
+      <a href="configuracion.html" class="nav-item"><i class="fas fa-cog"></i><span>Configuración</span></a>
+      <a href="../index.html" class="nav-item logout" id="btnLogout"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a>
     </nav>
   </aside>
 
   <!-- Main Content -->
   <main class="main-content">
-    <!-- Header -->
     <header class="header">
       <div class="header-title">
-        <i class="fas fa-truck"></i>
+        <i class="fas fa-gauge-high"></i>
         <h1>AgroLink Admin</h1>
       </div>
       <div class="user-profile">
-        <div class="avatar">A</div>
-        <span class="username">Admin</span>
+        <div class="avatar" id="adminAvatar">A</div>
+        <span class="username" id="adminName">Admin</span>
       </div>
     </header>
 
@@ -90,83 +65,97 @@
       </div>
     </div>
 
-    <!-- Recent Activity -->
+    <!-- Actividad reciente -->
     <div class="recent-activity">
       <h2>Actividad Reciente</h2>
-      <ul class="activity-list" id="activityList">
-        <li class="activity-item"><i class="fas fa-truck"></i> Nuevo envío SHP-2025-004 registrado.</li>
-        <li class="activity-item"><i class="fas fa-user"></i> Usuario "Juan Pérez" agregado.</li>
-        <li class="activity-item"><i class="fas fa-box"></i> Producto "Maíz" actualizado.</li>
-      </ul>
+      <ul class="activity-list" id="activityList"></ul>
     </div>
   </main>
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    // === FUNCIONES DE LECTURA ===
-    function getSolicitudes() {
-      return JSON.parse(localStorage.getItem("solicitudesAgroLink") || "[]");
+
+    // ======== FUNCIONES DE BASE DE DATOS ========
+    function getEnvios() {
+      return JSON.parse(localStorage.getItem("agrolink_envios") || "[]");
     }
 
     function getUsuarios() {
       return JSON.parse(localStorage.getItem("agrolinkUsuarios") || "[]");
     }
 
-    // === ACTUALIZAR ESTADÍSTICAS ===
+    // ======== MOSTRAR ESTADÍSTICAS ========
     function actualizarEstadisticas() {
-      const solicitudes = getSolicitudes();
+      const envios = getEnvios();
       const usuarios = getUsuarios();
 
-      // Filtrar transportistas
-      const transportistas = usuarios.filter(u => u.rol === "transportista");
+      const transportistas = usuarios.filter(u => (u.rol || "").toLowerCase() === "transportista");
 
-      // KPIs
-      const totalEnvios = solicitudes.length;
-      const pendientes = solicitudes.filter(s => /Pendiente/i.test(s.estado || "")).length;
-      const entregados = solicitudes.filter(s => /Completado|Entregado/i.test(s.estado || "")).length;
+      // Totales
+      const totalEnvios = envios.length;
+      const pendientes = envios.filter(e => /pendiente/i.test(e.estado || "")).length;
+      const entregados = envios.filter(e => /entregado|completado/i.test(e.estado || "")).length;
       const totalTransportistas = transportistas.length;
 
-      // Mostrar en pantalla
+      // Mostrar
       document.getElementById("totalEnvios").textContent = totalEnvios;
       document.getElementById("enviosPendientes").textContent = pendientes;
       document.getElementById("enviosEntregados").textContent = entregados;
       document.getElementById("totalTransportistas").textContent = totalTransportistas;
+    }
 
-      // === ACTUALIZAR ACTIVIDAD RECIENTE ===
+    // ======== ACTIVIDAD RECIENTE ========
+    function actualizarActividad() {
+      const envios = getEnvios();
       const activityList = document.getElementById("activityList");
       activityList.innerHTML = "";
 
-      // Tomar últimas 5 actividades (orden inverso)
-      const recientes = solicitudes.slice(-5).reverse();
-
-      if (recientes.length === 0) {
-        activityList.innerHTML = `<li class="activity-item"><i class="fas fa-info-circle"></i> No hay actividad reciente registrada.</li>`;
-      } else {
-        recientes.forEach(s => {
-          const estadoIcono =
-            /Pendiente/i.test(s.estado)
-              ? "fa-clock text-warning"
-              : /En curso/i.test(s.estado)
-              ? "fa-truck text-primary"
-              : /Completado|Entregado/i.test(s.estado)
-              ? "fa-circle-check text-success"
-              : "fa-box";
-
-          const li = document.createElement("li");
-          li.classList.add("activity-item");
-          li.innerHTML = `
-            <i class="fas ${estadoIcono}"></i>
-            <strong>${s.tipo || "Transporte"}</strong> ${s.id ? `(${s.id})` : ""}
-            — ${s.origen || "?"} → ${s.destino || "?"}
-            <small style="color:#6b7280;"> (${s.estado || "Sin estado"})</small>
-          `;
-          activityList.appendChild(li);
-        });
+      if (envios.length === 0) {
+        activityList.innerHTML = `<li class="activity-item"><i class="fas fa-info-circle"></i> No hay actividad registrada.</li>`;
+        return;
       }
+
+      const recientes = envios.slice(-5).reverse();
+      recientes.forEach(e => {
+        let icono = "fa-truck text-primary";
+        if (/pendiente/i.test(e.estado)) icono = "fa-clock text-warning";
+        if (/entregado|completado/i.test(e.estado)) icono = "fa-circle-check text-success";
+
+        const li = document.createElement("li");
+        li.classList.add("activity-item");
+        li.innerHTML = `
+          <i class="fas ${icono}"></i>
+          <strong>${e.id || "ENV-" + Math.random().toString(36).slice(2,6)}</strong>
+          — ${e.origen || "?"} → ${e.destino || "?"}
+          <small style="color:#6b7280;"> (${e.estado || "Sin estado"})</small>
+        `;
+        activityList.appendChild(li);
+      });
     }
 
-    // === INICIALIZACIÓN ===
+    // ======== VALIDAR SESIÓN ADMIN ========
+    const usuarioActivo = JSON.parse(localStorage.getItem("agrolinkUsuario") || "null");
+    if (!usuarioActivo || (usuarioActivo.rol || "").toLowerCase() !== "admin") {
+      alert("⚠️ Acceso restringido. Solo los administradores pueden ver este panel.");
+      window.location.href = "../login.html";
+      return;
+    }
+
+    document.getElementById("adminName").textContent = usuarioActivo.nombre || "Admin";
+    document.getElementById("adminAvatar").textContent = (usuarioActivo.nombre || "A").charAt(0).toUpperCase();
+
+    // ======== LOGOUT ========
+    document.getElementById("btnLogout").addEventListener("click", (e) => {
+      e.preventDefault();
+      alert("👋 Sesión de administrador cerrada.");
+      localStorage.removeItem("agrolinkUsuario");
+      localStorage.removeItem("agrolinkRol");
+      window.location.href = "../index.html";
+    });
+
+    // ======== INICIALIZAR ========
     actualizarEstadisticas();
+    actualizarActividad();
   });
 </script>
 

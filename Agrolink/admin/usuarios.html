@@ -22,7 +22,7 @@
       <a href="usuarios.html" class="nav-item active"><i class="fas fa-user"></i><span>Usuarios</span></a>
       <a href="reportes.html" class="nav-item"><i class="fas fa-chart-bar"></i><span>Reportes</span></a>
       <a href="configuracion.html" class="nav-item"><i class="fas fa-cog"></i><span>Configuración</span></a>
-      <a href="../index.html" class="nav-item logout"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a>
+      <a href="../index.html" class="nav-item logout" id="btnLogout"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a>
     </nav>
   </aside>
 
@@ -31,11 +31,11 @@
     <header class="header">
       <div class="header-title">
         <i class="fas fa-user"></i>
-        <h1>Gestión de Usuarios</h1>
+        <h1>Gestión de Usuarios (Productores)</h1>
       </div>
       <div class="user-profile">
-        <div class="avatar">A</div>
-        <span class="username">Admin</span>
+        <div class="avatar" id="adminAvatar">A</div>
+        <span class="username" id="adminName">Admin</span>
       </div>
     </header>
 
@@ -45,12 +45,11 @@
         <div class="filter-input">
           <input type="text" placeholder="Nombre (Ej. Juan)" id="filterNombre" />
         </div>
+        <!-- El rol siempre será 'productor', pero dejo el filtro sencillo -->
         <div class="filter-input">
           <select id="filterRol">
             <option value="">Todos los roles</option>
-            <option value="admin">Administrador</option>
             <option value="productor">Productor</option>
-            <option value="conductor">Conductor</option>
           </select>
         </div>
         <button class="filter-button" id="btnBuscar">
@@ -85,7 +84,7 @@
   <div class="modal" id="addModal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 class="modal-title">Agregar Nuevo Usuario</h3>
+        <h3 class="modal-title">Agregar Nuevo Usuario (Productor)</h3>
         <button class="close-modal">&times;</button>
       </div>
       <form id="addForm">
@@ -99,9 +98,9 @@
         </div>
         <div class="form-group">
           <label>Rol</label>
+          <!-- Siempre productor en este panel -->
           <select id="addRol" required>
             <option value="productor">Productor</option>
-            <option value="conductor">Conductor</option>
           </select>
         </div>
         <div class="form-group">
@@ -120,21 +119,29 @@
   <div class="modal" id="editModal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 class="modal-title">Editar Usuario</h3>
+        <h3 class="modal-title">Editar Usuario (Productor)</h3>
         <button class="close-modal">&times;</button>
       </div>
       <form id="editForm">
         <input type="hidden" id="editId" />
-        <div class="form-group"><label>Nombre Completo</label><input type="text" id="editNombre" required /></div>
-        <div class="form-group"><label>Correo Electrónico</label><input type="email" id="editCorreo" required /></div>
+        <div class="form-group">
+          <label>Nombre Completo</label>
+          <input type="text" id="editNombre" required />
+        </div>
+        <div class="form-group">
+          <label>Correo Electrónico</label>
+          <input type="email" id="editCorreo" required />
+        </div>
         <div class="form-group">
           <label>Rol</label>
           <select id="editRol" required>
             <option value="productor">Productor</option>
-            <option value="conductor">Conductor</option>
           </select>
         </div>
-        <div class="form-group"><label>Último Acceso</label><input type="text" id="editUltimoAcceso" /></div>
+        <div class="form-group">
+          <label>Último Acceso</label>
+          <input type="text" id="editUltimoAcceso" />
+        </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-cancel" id="cancelEdit">Cancelar</button>
           <button type="submit" class="btn btn-add">Actualizar</button>
@@ -144,66 +151,74 @@
   </div>
 
   <script>
-    // 🔁 Sincronizar usuarios registrados en login/registro con el panel admin
-    function syncUsuariosConAdmin() {
-      const registrados = JSON.parse(localStorage.getItem("agrolinkUsuarios") || "[]");
-      const usuarioActivo = JSON.parse(localStorage.getItem("agrolinkUsuario") || "null");
+    // ========= UTILIDADES DE USUARIOS (BASE REAL: agrolinkUsuarios) =========
 
-      // Combinar ambos orígenes si existen
-      let nuevosUsuarios = [...registrados];
-      if (usuarioActivo && !nuevosUsuarios.find(u => u.correo === usuarioActivo.correo)) {
-        nuevosUsuarios.push(usuarioActivo);
-      }
+    const STORAGE_KEY = "agrolinkUsuarios";
 
-      let adminUsuarios = JSON.parse(localStorage.getItem("agrolink_usuarios") || "[]");
+    // Leer todos los usuarios reales
+    function getUsuariosBase() {
+      const lista = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      let changed = false;
 
-      nuevosUsuarios.forEach(u => {
-        const existe = adminUsuarios.some(a => a.correo === u.correo);
-        if (!existe) {
-          adminUsuarios.push({
-            id: "USR-" + Date.now().toString().slice(-6),
-            nombre: u.nombre || "Sin nombre",
-            correo: u.correo || "sin_correo@agrolink.com",
-            rol: u.rol || "productor",
-            ultimoAcceso: u.ultimoAcceso || "N/A"
-          });
+      // Asegurar que todos tengan un ID
+      lista.forEach(u => {
+        if (!u.id) {
+          u.id = "USR-" + Date.now().toString().slice(-6) + "-" + Math.floor(Math.random() * 1000);
+          changed = true;
         }
       });
 
-      localStorage.setItem("agrolink_usuarios", JSON.stringify(adminUsuarios));
+      if (changed) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
+      }
+      return lista;
     }
 
-    function getUsuarios() {
-      return JSON.parse(localStorage.getItem("agrolink_usuarios") || "[]");
+    // Solo productores
+    function getUsuariosProductores() {
+      return getUsuariosBase().filter(
+        u => (u.rol || "").toLowerCase() === "productor"
+      );
     }
 
-    function saveUsuarios(usuarios) {
-      localStorage.setItem("agrolink_usuarios", JSON.stringify(usuarios));
+    // Guardar lista de productores, respetando otros roles (admin, transportista, etc.)
+    function saveUsuariosProductores(nuevaListaProductores) {
+      const base = getUsuariosBase();
+      const otros = base.filter(
+        u => (u.rol || "").toLowerCase() !== "productor"
+      );
+      const merged = [...otros, ...nuevaListaProductores];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
     }
 
-    function generateId() {
-      return "USR-" + Date.now().toString().slice(-6);
-    }
-
+    // ========= RENDER TABLA =========
     function renderizarTabla(usuariosToShow = null) {
       const tbody = document.getElementById("usuariosTableBody");
       tbody.innerHTML = "";
-      const usuarios = usuariosToShow || getUsuarios();
+
+      const usuarios = usuariosToShow || getUsuariosProductores();
 
       if (usuarios.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:2rem;">No hay usuarios registrados.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:2rem;">No hay usuarios (productores) registrados.</td></tr>`;
         return;
       }
 
       usuarios.forEach(usuario => {
-        const roleClass = usuario.rol === "admin" ? "role-admin" :
-                          usuario.rol === "productor" ? "role-productor" : "role-conductor";
+        const rol = (usuario.rol || "productor").toLowerCase();
+        const roleClass = rol === "admin"
+          ? "role-admin"
+          : rol === "productor"
+          ? "role-productor"
+          : "role-conductor";
+
+        const correo = usuario.email || usuario.correo || "sin_correo@agrolink.com";
+
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${usuario.id}</td>
-          <td>${usuario.nombre}</td>
-          <td>${usuario.correo}</td>
-          <td><span class="role ${roleClass}">${usuario.rol.charAt(0).toUpperCase() + usuario.rol.slice(1)}</span></td>
+          <td>${usuario.nombre || "Sin nombre"}</td>
+          <td>${correo}</td>
+          <td><span class="role ${roleClass}">${rol.charAt(0).toUpperCase() + rol.slice(1)}</span></td>
           <td>${usuario.ultimoAcceso || "N/A"}</td>
           <td class="actions">
             <button class="edit-btn" data-id="${usuario.id}"><i class="fas fa-edit"></i></button>
@@ -222,87 +237,143 @@
     }
 
     function eliminarUsuario(id) {
-      if (!confirm("¿Eliminar este usuario?")) return;
-      const usuarios = getUsuarios().filter(u => u.id !== id);
-      saveUsuarios(usuarios);
+      if (!confirm("¿Eliminar este usuario (productor)?")) return;
+      const listaProd = getUsuariosProductores().filter(u => u.id !== id);
+      saveUsuariosProductores(listaProd);
       renderizarTabla();
+      alert("✅ Usuario eliminado correctamente.");
     }
 
     function abrirModalEdicion(id) {
-      const u = getUsuarios().find(x => x.id === id);
+      const u = getUsuariosProductores().find(x => x.id === id);
       if (!u) return;
-      editId.value = u.id;
-      editNombre.value = u.nombre;
-      editCorreo.value = u.correo;
-      editRol.value = u.rol;
-      editUltimoAcceso.value = u.ultimoAcceso || "";
-      editModal.style.display = "flex";
+      const correo = u.email || u.correo || "";
+      document.getElementById("editId").value = u.id;
+      document.getElementById("editNombre").value = u.nombre || "";
+      document.getElementById("editCorreo").value = correo;
+      document.getElementById("editRol").value = (u.rol || "productor").toLowerCase();
+      document.getElementById("editUltimoAcceso").value = u.ultimoAcceso || "";
+      document.getElementById("editModal").style.display = "flex";
     }
 
-    // === EVENTOS ===
-    btnBuscar.onclick = () => {
-      const nombre = filterNombre.value.toLowerCase().trim();
-      const rol = filterRol.value;
-      const filtrados = getUsuarios().filter(u =>
-        (!nombre || u.nombre.toLowerCase().includes(nombre)) &&
-        (!rol || u.rol === rol)
-      );
-      renderizarTabla(filtrados);
-    };
-
-    btnAgregar.onclick = () => addModal.style.display = "flex";
-    cancelAdd.onclick = () => { addModal.style.display = "none"; addForm.reset(); };
-    cancelEdit.onclick = () => { editModal.style.display = "none"; editForm.reset(); };
-    document.querySelectorAll(".close-modal").forEach(btn => btn.onclick = () => btn.closest(".modal").style.display = "none");
-
-    addForm.onsubmit = e => {
-      e.preventDefault();
-      const nuevo = {
-        id: generateId(),
-        nombre: addNombre.value,
-        correo: addCorreo.value,
-        rol: addRol.value,
-        ultimoAcceso: addUltimoAcceso.value
-      };
-      const lista = [...getUsuarios(), nuevo];
-      saveUsuarios(lista);
-      renderizarTabla();
-      addModal.style.display = "none";
-      e.target.reset();
-      alert("✅ Usuario agregado correctamente.");
-    };
-
-    editForm.onsubmit = e => {
-      e.preventDefault();
-      const id = editId.value;
-      let lista = getUsuarios();
-      const i = lista.findIndex(x => x.id === id);
-      if (i >= 0) {
-        lista[i] = {
-          id,
-          nombre: editNombre.value,
-          correo: editCorreo.value,
-          rol: editRol.value,
-          ultimoAcceso: editUltimoAcceso.value
-        };
-        saveUsuarios(lista);
-        renderizarTabla();
-        editModal.style.display = "none";
-        e.target.reset();
-        alert("✅ Usuario actualizado correctamente.");
-      }
-    };
-
-    btnEliminar.onclick = () => {
-      if (confirm("¿Eliminar todos los usuarios?")) {
-        localStorage.removeItem("agrolink_usuarios");
-        renderizarTabla();
-      }
-    };
-
-    // === INICIALIZAR ===
+    // ========= INICIALIZACIÓN Y EVENTOS =========
     window.onload = () => {
-      syncUsuariosConAdmin(); // 🔁 Sincroniza con registros existentes
+      // Proteger acceso solo admin
+      const usuarioActivo = JSON.parse(localStorage.getItem("agrolinkUsuario") || "null");
+      if (!usuarioActivo || (usuarioActivo.rol || "").toLowerCase() !== "admin") {
+        alert("⚠️ Acceso restringido. Solo administradores pueden ver esta pantalla.");
+        window.location.href = "../login.html";
+        return;
+      }
+
+      // Pintar datos del admin
+      const adminNameEl = document.getElementById("adminName");
+      const adminAvatarEl = document.getElementById("adminAvatar");
+      if (adminNameEl) adminNameEl.textContent = usuarioActivo.nombre || "Admin";
+      if (adminAvatarEl) adminAvatarEl.textContent = (usuarioActivo.nombre || "A").charAt(0).toUpperCase();
+
+      // Botón logout (solo cerrar sesión visual, no borrar DB)
+      document.getElementById("btnLogout").addEventListener("click", (e) => {
+        e.preventDefault();
+        alert("👋 Sesión de administrador cerrada.");
+        localStorage.removeItem("agrolinkUsuario");
+        localStorage.removeItem("agrolinkRol");
+        window.location.href = "../index.html";
+      });
+
+      // Buscar
+      const btnBuscar = document.getElementById("btnBuscar");
+      const filterNombre = document.getElementById("filterNombre");
+      const filterRol = document.getElementById("filterRol");
+
+      btnBuscar.onclick = () => {
+        const nombre = (filterNombre.value || "").toLowerCase().trim();
+        const rolFiltro = (filterRol.value || "").toLowerCase();
+
+        const base = getUsuariosProductores();
+        const filtrados = base.filter(u => {
+          const nombreOk = !nombre || (u.nombre || "").toLowerCase().includes(nombre);
+          const rolOk = !rolFiltro || (u.rol || "").toLowerCase() === rolFiltro;
+          return nombreOk && rolOk;
+        });
+
+        renderizarTabla(filtrados);
+      };
+
+      // Modales
+      const addModal = document.getElementById("addModal");
+      const editModal = document.getElementById("editModal");
+      const btnAgregar = document.getElementById("btnAgregar");
+      const cancelAdd = document.getElementById("cancelAdd");
+      const cancelEdit = document.getElementById("cancelEdit");
+
+      btnAgregar.onclick = () => (addModal.style.display = "flex");
+      cancelAdd.onclick = () => { addModal.style.display = "none"; document.getElementById("addForm").reset(); };
+      cancelEdit.onclick = () => { editModal.style.display = "none"; document.getElementById("editForm").reset(); };
+      document.querySelectorAll(".close-modal").forEach(btn =>
+        btn.onclick = () => btn.closest(".modal").style.display = "none"
+      );
+
+      // Agregar
+      const addForm = document.getElementById("addForm");
+      addForm.onsubmit = e => {
+        e.preventDefault();
+        const listaProd = getUsuariosProductores();
+
+        const nuevo = {
+          id: "USR-" + Date.now().toString().slice(-6) + "-" + Math.floor(Math.random() * 1000),
+          nombre: document.getElementById("addNombre").value.trim(),
+          correo: document.getElementById("addCorreo").value.trim().toLowerCase(),
+          email: document.getElementById("addCorreo").value.trim().toLowerCase(),
+          rol: "productor",
+          ultimoAcceso: document.getElementById("addUltimoAcceso").value.trim() || "N/A",
+          // password vacío porque este usuario se creó desde admin (si quieres, luego puedes darle una contraseña)
+        };
+
+        listaProd.push(nuevo);
+        saveUsuariosProductores(listaProd);
+        renderizarTabla();
+        addModal.style.display = "none";
+        addForm.reset();
+        alert("✅ Usuario productor agregado correctamente.");
+      };
+
+      // Editar
+      const editForm = document.getElementById("editForm");
+      editForm.onsubmit = e => {
+        e.preventDefault();
+        const id = document.getElementById("editId").value;
+        let listaProd = getUsuariosProductores();
+        const i = listaProd.findIndex(x => x.id === id);
+        if (i >= 0) {
+          const correoNuevo = document.getElementById("editCorreo").value.trim().toLowerCase();
+          listaProd[i] = {
+            ...listaProd[i],
+            nombre: document.getElementById("editNombre").value.trim(),
+            correo: correoNuevo,
+            email: correoNuevo,
+            rol: "productor",
+            ultimoAcceso: document.getElementById("editUltimoAcceso").value.trim() || listaProd[i].ultimoAcceso || "N/A"
+          };
+          saveUsuariosProductores(listaProd);
+          renderizarTabla();
+          editModal.style.display = "none";
+          editForm.reset();
+          alert("✅ Usuario actualizado correctamente.");
+        }
+      };
+
+      // Eliminar todos (solo productores)
+      const btnEliminar = document.getElementById("btnEliminar");
+      btnEliminar.onclick = () => {
+        if (confirm("¿Eliminar TODOS los usuarios productores? Esta acción no se puede deshacer.")) {
+          saveUsuariosProductores([]); // borramos solo productores, no admin ni transportistas
+          renderizarTabla();
+          alert("🗑️ Se eliminaron todos los usuarios productores.");
+        }
+      };
+
+      // Primera carga
       renderizarTabla();
     };
   </script>

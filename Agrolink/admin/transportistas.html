@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="../css/Admin/transportistas.css" />
 </head>
+
 <body>
   <!-- Sidebar -->
   <aside class="sidebar">
@@ -22,7 +23,7 @@
       <a href="usuarios.html" class="nav-item"><i class="fas fa-user"></i><span>Usuarios</span></a>
       <a href="reportes.html" class="nav-item"><i class="fas fa-chart-bar"></i><span>Reportes</span></a>
       <a href="configuracion.html" class="nav-item"><i class="fas fa-cog"></i><span>Configuración</span></a>
-      <a href="../index.html" class="nav-item logout"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a>
+      <a href="../index.html" class="nav-item logout" id="logout"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a>
     </nav>
   </aside>
 
@@ -35,7 +36,7 @@
       </div>
       <div class="user-profile">
         <div class="avatar">A</div>
-        <span class="username">Admin</span>
+        <span class="username" id="adminName">Admin</span>
       </div>
     </header>
 
@@ -58,24 +59,19 @@
       </div>
     </div>
 
-    <!-- Botones -->
-    <div class="action-buttons">
-      <button class="btn btn-add" id="btnAgregar"><i class="fas fa-plus"></i> Agregar Transportista</button>
-      <button class="btn btn-delete" id="btnEliminar"><i class="fas fa-trash"></i> Eliminar todos</button>
-    </div>
-
     <!-- Tabla -->
     <div class="table-container">
       <table class="table">
         <thead>
           <tr>
-            <th>ID</th>
+            <th>#</th>
             <th>Nombre</th>
-            <th>Teléfono</th>
-            <th>Región</th>
+            <th>Correo</th>
+            <th>Placa</th>
+            <th>Capacidad (kg)</th>
+            <th>Cuenta Bancaria</th>
+            <th>Licencia</th>
             <th>Estado</th>
-            <th>Último Envío</th>
-            <th>Acciones</th>
           </tr>
         </thead>
         <tbody id="transportistasTableBody"></tbody>
@@ -83,243 +79,71 @@
     </div>
   </main>
 
-  <!-- Modal Agregar -->
-  <div class="modal" id="addModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>Agregar Nuevo Transportista</h3>
-        <button class="close-modal">&times;</button>
-      </div>
-      <form id="addForm">
-        <div class="form-group"><label>Nombre Completo</label><input type="text" id="addNombre" required></div>
-        <div class="form-group"><label>Teléfono</label><input type="text" id="addTelefono" required></div>
-        <div class="form-group"><label>Región</label>
-          <select id="addRegion" required>
-            <option value="Lima">Lima</option>
-            <option value="Arequipa">Arequipa</option>
-            <option value="Cusco">Cusco</option>
-            <option value="Puno">Puno</option>
-            <option value="Trujillo">Trujillo</option>
-          </select>
-        </div>
-        <div class="form-group"><label>Estado</label>
-          <select id="addEstado" required>
-            <option value="activo">Activo</option>
-            <option value="inactivo">Inactivo</option>
-          </select>
-        </div>
-        <div class="form-group"><label>Último Envío</label><input type="text" id="addUltimoEnvio"></div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-cancel" id="cancelAdd">Cancelar</button>
-          <button type="submit" class="btn btn-add">Guardar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal Editar -->
-  <div class="modal" id="editModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>Editar Transportista</h3>
-        <button class="close-modal">&times;</button>
-      </div>
-      <form id="editForm">
-        <input type="hidden" id="editId">
-        <div class="form-group"><label>Nombre Completo</label><input type="text" id="editNombre" required></div>
-        <div class="form-group"><label>Teléfono</label><input type="text" id="editTelefono" required></div>
-        <div class="form-group"><label>Región</label>
-          <select id="editRegion" required>
-            <option value="Lima">Lima</option>
-            <option value="Arequipa">Arequipa</option>
-            <option value="Cusco">Cusco</option>
-            <option value="Puno">Puno</option>
-            <option value="Trujillo">Trujillo</option>
-          </select>
-        </div>
-        <div class="form-group"><label>Estado</label>
-          <select id="editEstado" required>
-            <option value="activo">Activo</option>
-            <option value="inactivo">Inactivo</option>
-          </select>
-        </div>
-        <div class="form-group"><label>Último Envío</label><input type="text" id="editUltimoEnvio"></div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-cancel" id="cancelEdit">Cancelar</button>
-          <button type="submit" class="btn btn-add">Actualizar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <script>
-    // 🔁 Sincroniza con transportistas creados por productores
-    function syncTransportistasConAdmin() {
-      const prodTransportistas = JSON.parse(localStorage.getItem("transportistasAgroLink") || "[]");
-      if (prodTransportistas.length === 0) return;
-
-      let adminTransportistas = JSON.parse(localStorage.getItem("agrolink_transportistas") || "[]");
-
-      prodTransportistas.forEach(t => {
-        const existe = adminTransportistas.some(a => a.nombre === t.nombre && a.telefono === t.telefono);
-        if (!existe) {
-          adminTransportistas.push({
-            id: "TR-" + Date.now().toString().slice(-6),
-            nombre: t.nombre || "Sin nombre",
-            telefono: t.telefono || "N/A",
-            region: t.region || "Sin región",
-            estado: t.estado || "activo",
-            ultimoEnvio: t.ultimoEnvio || "N/A"
-          });
-        }
-      });
-
-      localStorage.setItem("agrolink_transportistas", JSON.stringify(adminTransportistas));
-    }
-
-    function getTransportistas() {
-      return JSON.parse(localStorage.getItem("agrolink_transportistas") || "[]");
-    }
-
-    function saveTransportistas(data) {
-      localStorage.setItem("agrolink_transportistas", JSON.stringify(data));
-    }
-
-    function generateId() {
-      return "TR-" + Date.now().toString().slice(-6);
-    }
-
-    function renderizarTabla(dataToShow = null) {
-      const tbody = document.getElementById("transportistasTableBody");
-      tbody.innerHTML = "";
-      const data = dataToShow || getTransportistas();
-
-      if (data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;">No hay transportistas registrados.</td></tr>`;
+    // =============== VALIDACIÓN DE SESIÓN ===============
+    document.addEventListener("DOMContentLoaded", () => {
+      const usuarioActivo = JSON.parse(localStorage.getItem("agrolinkUsuario"));
+      if (!usuarioActivo || usuarioActivo.rol !== "admin") {
+        alert("⚠️ Acceso restringido. Solo los administradores pueden entrar aquí.");
+        window.location.href = "../login.html";
         return;
       }
 
-      data.forEach(t => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${t.id}</td>
-          <td>${t.nombre}</td>
-          <td>${t.telefono}</td>
-          <td>${t.region}</td>
-          <td><span class="status ${t.estado === "activo" ? "status-active" : "status-inactive"}">${t.estado === "activo" ? "Activo" : "Inactivo"}</span></td>
-          <td>${t.ultimoEnvio || "N/A"}</td>
-          <td class="actions">
-            <button class="view-btn" data-id="${t.id}"><i class="fas fa-eye"></i></button>
-            <button class="edit-btn" data-id="${t.id}"><i class="fas fa-edit"></i></button>
-            <button class="delete-btn" data-id="${t.id}"><i class="fas fa-trash"></i></button>
-          </td>`;
-        tbody.appendChild(row);
+      document.getElementById("adminName").textContent = usuarioActivo.nombre || "Administrador";
+
+      // =============== CARGAR TRANSPORTISTAS ===============
+      const usuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios")) || [];
+      const transportistas = usuarios.filter(u => (u.rol || "").toLowerCase() === "transportista");
+
+      const tbody = document.getElementById("transportistasTableBody");
+      renderTabla(transportistas);
+
+      function renderTabla(data) {
+        tbody.innerHTML = "";
+        if (data.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;">No hay transportistas registrados.</td></tr>`;
+          return;
+        }
+
+        data.forEach((t, i) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${i + 1}</td>
+            <td>${t.nombre || "-"}</td>
+            <td>${t.email || "-"}</td>
+            <td>${t.placa || "-"}</td>
+            <td>${t.capacidad || "-"}</td>
+            <td>${t.cuentaBancaria || "-"}</td>
+            <td>${t.licencia || "-"}</td>
+            <td><span class="status status-active">Activo</span></td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
+
+      // =============== FILTROS ===============
+      document.getElementById("btnBuscar").addEventListener("click", () => {
+        const nombreFiltro = document.getElementById("filterNombre").value.toLowerCase();
+        const regionFiltro = document.getElementById("filterRegion").value;
+
+        const filtrados = transportistas.filter(t => {
+          const coincideNombre = !nombreFiltro || (t.nombre || "").toLowerCase().includes(nombreFiltro);
+          const coincideRegion = !regionFiltro || (t.region || "") === regionFiltro;
+          return coincideNombre && coincideRegion;
+        });
+
+        renderTabla(filtrados);
       });
 
-      document.querySelectorAll(".delete-btn").forEach(btn =>
-        btn.onclick = () => eliminarTransportista(btn.dataset.id)
-      );
-      document.querySelectorAll(".edit-btn").forEach(btn =>
-        btn.onclick = () => abrirModalEdicion(btn.dataset.id)
-      );
-      document.querySelectorAll(".view-btn").forEach(btn =>
-        btn.onclick = () => verTransportista(btn.dataset.id)
-      );
-    }
-
-    function eliminarTransportista(id) {
-      if (!confirm("¿Eliminar este transportista?")) return;
-      const data = getTransportistas().filter(t => t.id !== id);
-      saveTransportistas(data);
-      renderizarTabla();
-    }
-
-    function abrirModalEdicion(id) {
-      const t = getTransportistas().find(x => x.id === id);
-      if (!t) return;
-      editId.value = t.id;
-      editNombre.value = t.nombre;
-      editTelefono.value = t.telefono;
-      editRegion.value = t.region;
-      editEstado.value = t.estado;
-      editUltimoEnvio.value = t.ultimoEnvio || "";
-      editModal.style.display = "flex";
-    }
-
-    function verTransportista(id) {
-      const t = getTransportistas().find(x => x.id === id);
-      if (!t) return;
-      alert(`🚚 ${t.nombre}\nTel: ${t.telefono}\nRegión: ${t.region}\nEstado: ${t.estado}\nÚltimo envío: ${t.ultimoEnvio || "N/A"}`);
-    }
-
-    // === Eventos principales ===
-    btnBuscar.onclick = () => {
-      const nombre = filterNombre.value.toLowerCase().trim();
-      const region = filterRegion.value;
-      const filtrados = getTransportistas().filter(t =>
-        (!nombre || t.nombre.toLowerCase().includes(nombre)) &&
-        (!region || t.region === region)
-      );
-      renderizarTabla(filtrados);
-    };
-
-    btnAgregar.onclick = () => addModal.style.display = "flex";
-    cancelAdd.onclick = () => { addModal.style.display = "none"; addForm.reset(); };
-    cancelEdit.onclick = () => { editModal.style.display = "none"; editForm.reset(); };
-    document.querySelectorAll(".close-modal").forEach(btn => btn.onclick = () => btn.closest(".modal").style.display = "none");
-
-    addForm.onsubmit = e => {
-      e.preventDefault();
-      const nuevo = {
-        id: generateId(),
-        nombre: addNombre.value,
-        telefono: addTelefono.value,
-        region: addRegion.value,
-        estado: addEstado.value,
-        ultimoEnvio: addUltimoEnvio.value
-      };
-      const lista = [...getTransportistas(), nuevo];
-      saveTransportistas(lista);
-      renderizarTabla();
-      addModal.style.display = "none";
-      e.target.reset();
-      alert("✅ Transportista agregado correctamente.");
-    };
-
-    editForm.onsubmit = e => {
-      e.preventDefault();
-      const id = editId.value;
-      let lista = getTransportistas();
-      const i = lista.findIndex(x => x.id === id);
-      if (i >= 0) {
-        lista[i] = {
-          id,
-          nombre: editNombre.value,
-          telefono: editTelefono.value,
-          region: editRegion.value,
-          estado: editEstado.value,
-          ultimoEnvio: editUltimoEnvio.value
-        };
-        saveTransportistas(lista);
-        renderizarTabla();
-        editModal.style.display = "none";
-        e.target.reset();
-        alert("✅ Transportista actualizado correctamente.");
-      }
-    };
-
-    btnEliminar.onclick = () => {
-      if (confirm("¿Eliminar todos los transportistas?")) {
-        localStorage.removeItem("agrolink_transportistas");
-        renderizarTabla();
-      }
-    };
-
-    // === Inicialización ===
-    window.onload = () => {
-      syncTransportistasConAdmin(); // 🔁 Importa datos de productores si existen
-      renderizarTabla();
-    };
+      // =============== LOGOUT ===============
+      document.getElementById("logout").addEventListener("click", () => {
+        localStorage.removeItem("agrolinkUsuario");
+        localStorage.removeItem("usuarioActivo");
+        localStorage.removeItem("agrolinkRol");
+        alert("👋 Sesión cerrada correctamente.");
+        window.location.href = "../index.html";
+      });
+    });
   </script>
 </body>
 </html>
