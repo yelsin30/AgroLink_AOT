@@ -51,70 +51,70 @@
       </div>
     </div>
 
-      <!-- KPIs -->
-      <div class="row g-3 mb-3">
-        <div class="col-md-3 col-6">
-          <div class="kpi-card"><i class="fa-solid fa-money-bill-trend-up kpi-icon"></i>
-            <h6>Cobertura nacional</h6>
-            <div class="kpi-value">0 regiones</div>
-            <i class="fa-solid fa-map-location-dot kpi-icon"></i>
+    <!-- KPIs -->
+    <div class="row g-3 mb-3">
+      <div class="col-md-3 col-6">
+        <div class="kpi-card"><i class="fa-solid fa-money-bill-trend-up kpi-icon"></i>
+          <h6>Cobertura nacional</h6>
+          <div class="kpi-value">0 regiones</div>
+          <i class="fa-solid fa-map-location-dot kpi-icon"></i>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="kpi-card"><i class="fa-solid fa-truck kpi-icon"></i>
+          <h6>Envíos totales</h6>
+          <div class="kpi-value">0</div>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="kpi-card"><i class="fa-solid fa-weight-hanging kpi-icon"></i>
+          <h6>Toneladas transportadas</h6>
+          <div class="kpi-value">0.0 T</div>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="kpi-card"><i class="fa-solid fa-star kpi-icon"></i>
+          <h6>Calificación promedio</h6>
+          <div class="kpi-value">— ⭐</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel principal -->
+    <div class="board">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><i class="fa-solid fa-map"></i> Actividad reciente</div>
+          <div class="actions">
+            <a href="solicitudes.html"><i class="fa-solid fa-plus"></i> Nueva solicitud</a>
+            <a href="envios.html" class="active"><i class="fa-solid fa-truck"></i> Mis envíos</a>
           </div>
         </div>
-        <div class="col-md-3 col-6">
-          <div class="kpi-card"><i class="fa-solid fa-truck kpi-icon"></i>
-            <h6>Envíos totales</h6>
-            <div class="kpi-value">0</div>
-          </div>
-        </div>
-        <div class="col-md-3 col-6">
-          <div class="kpi-card"><i class="fa-solid fa-weight-hanging kpi-icon"></i>
-            <h6>Toneladas transportadas</h6>
-            <div class="kpi-value">0.0 T</div>
-          </div>
-        </div>
-        <div class="col-md-3 col-6">
-          <div class="kpi-card"><i class="fa-solid fa-star kpi-icon"></i>
-            <h6>Calificación promedio</h6>
-            <div class="kpi-value">— ⭐</div>
-          </div>
+        <div class="panel-body text-muted small">
+          <p><i class="fa-regular fa-circle-check text-success"></i> No tienes actividad todavía</p>
+          <p>Crea tu primera solicitud para verla aquí</p>
         </div>
       </div>
 
-      <!-- Panel principal -->
-      <div class="board">
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title"><i class="fa-solid fa-map"></i> Actividad reciente</div>
-            <div class="actions">
-              <a href="solicitudes.html"><i class="fa-solid fa-plus"></i> Nueva solicitud</a>
-              <a href="envios.html" class="active"><i class="fa-solid fa-truck"></i> Mis envíos</a>
-            </div>
-          </div>
-          <div class="panel-body text-muted small">
-            <p><i class="fa-regular fa-circle-check text-success"></i> No tienes actividad todavía</p>
-            <p>Crea tu primera solicitud para verla aquí</p>
-          </div>
+      <!-- PANEL DERECHO -->
+      <div class="panel" id="panelResumen">
+        <div class="panel-header">
+          <div class="panel-title"><i class="fa-solid fa-bolt"></i> Resumen rápido</div>
         </div>
-
-        <!-- PANEL DERECHO -->
-        <div class="panel" id="panelResumen">
-          <div class="panel-header">
-            <div class="panel-title"><i class="fa-solid fa-bolt"></i> Resumen rápido</div>
-          </div>
-          <div class="panel-body small" id="resumenRapido"></div>
-        </div>
+        <div class="panel-body small" id="resumenRapido"></div>
       </div>
+    </div>
 
-      <!-- Calendario -->
-      <div class="calendar-card">
-        <h5 class="mb-3 text-success"><i class="fa-solid fa-calendar-days"></i> Calendario de envíos</h5>
-        <div id="calendar"></div>
-        <div class="legend">
-          <span><i style="background:#03b075;"></i> Completado</span>
-          <span><i style="background:#ffc107;"></i> En curso</span>
-          <span><i style="background:#999;"></i> Pendiente</span>
-        </div>
+    <!-- Calendario -->
+    <div class="calendar-card">
+      <h5 class="mb-3 text-success"><i class="fa-solid fa-calendar-days"></i> Calendario de envíos</h5>
+      <div id="calendar"></div>
+      <div class="legend">
+        <span><i style="background:#03b075;"></i> Completado</span>
+        <span><i style="background:#ffc107;"></i> En curso</span>
+        <span><i style="background:#999;"></i> Pendiente</span>
       </div>
+    </div>
   </main>
 
   <footer>© 2025 AgroLink. Todos los derechos reservados.</footer>
@@ -156,85 +156,94 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    /* ==========================
-       🔒 VALIDACIÓN DE SESIÓN
-    ========================== */
-    let usuario = JSON.parse(localStorage.getItem("agrolinkUsuario"));
-    const todosUsuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios")) || [];
+    document.addEventListener("DOMContentLoaded", () => {
+      /* ==========================
+         🔒 VALIDACIÓN DE SESIÓN
+      ========================== */
+      // === Verificación de sesión activa unificada ===
+      let usuario =
+        JSON.parse(localStorage.getItem("usuarioActivo")) ||
+        JSON.parse(localStorage.getItem("agrolinkUsuario")) ||
+        null;
 
-    // Si no hay sesión activa, redirigir al inicio
-    if (!usuario || !usuario.correo) {
-      alert("⚠️ No has iniciado sesión. Por favor, vuelve a ingresar.");
-      window.location.href = "../index.html";
-      return;
-    }
-
-    // 🔄 Sincronizar usuario actual con la base de usuarios almacenada
-    const actualizado = todosUsuarios.find(u => u.correo === usuario.correo);
-    if (actualizado) {
-      usuario = { ...usuario, ...actualizado };
-      localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
-    }
-
-    /* ==========================
-       👤 DATOS DE USUARIO EN UI
-    ========================== */
-    const nombreUser = usuario.nombre || "Productor";
-    const helloName = document.getElementById("helloName");
-    const avatar = document.getElementById("avatar");
-
-    if (helloName) helloName.textContent = nombreUser;
-    if (avatar) {
-      if (usuario.avatar || usuario.fotoPerfil) {
-        avatar.innerHTML = `<img src="${usuario.avatar || usuario.fotoPerfil}" alt="${nombreUser}">`;
-      } else {
-        avatar.textContent = (nombreUser[0] || "A").toUpperCase();
-      }
-    }
-
-    /* ==========================
-       🚪 CIERRE DE SESIÓN
-    ========================== */
-    const btnLogout = document.getElementById("btnLogout");
-    if (btnLogout) {
-      btnLogout.addEventListener("click", () => {
-        localStorage.removeItem("agrolinkUsuario"); // solo se cierra sesión, sin borrar usuarios
-        alert("👋 Sesión cerrada correctamente.");
+      if (!usuario) {
+        alert("⚠️ No has iniciado sesión. Por favor, vuelve a ingresar.");
         window.location.href = "../index.html";
-      });
-    }
+      } else {
+        console.log("✅ Sesión detectada:", usuario.nombre, "-", usuario.rol);
+      }
 
-    /* ==========================
-       ⚙️ LÓGICA EXISTENTE (sin tocar)
-    ========================== */
-    const all = JSON.parse(localStorage.getItem("solicitudesAgroLink") || "[]");
-    let envios = all.filter(s => (s.productor || "").toLowerCase() === nombreUser.toLowerCase());
-    if (envios.length === 0) envios = all;
 
-    const enCurso = envios.filter(e => /en curso/i.test(e.estado || "")).length;
-    const pendientes = envios.filter(e => /pendiente/i.test(e.estado || "")).length;
-    const completados = envios.filter(e => /completado/i.test(e.estado || "")).length;
+      // 🔄 Sincronizar usuario actual con la base de usuarios almacenada
+      // 🔄 Sincronizar usuario actual con la base de usuarios almacenada
+      const usuariosGuardados = JSON.parse(localStorage.getItem("agrolinkUsuarios")) || [];
+      const actualizado = usuariosGuardados.find(
+        u => (u.email || u.correo) === (usuario.email || usuario.correo)
+      );
+      if (actualizado) {
+        usuario = { ...usuario, ...actualizado };
+        localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
+        localStorage.setItem("usuarioActivo", JSON.stringify(usuario));
+      }
 
-    const totalEnvios = envios.length;
-    const regiones = new Set(envios.filter(e => /completado/i.test(e.estado || ""))
-      .map(e => (e.destino || "").trim().toLowerCase()));
-    const cobertura = regiones.size;
-    const totalPeso = envios.reduce((acc, e) => acc + (parseFloat(e.peso) || 0), 0);
-    const califProm =
-      envios.reduce((a, e) => a + (parseFloat(e.calificacion) || 0), 0) /
-      (envios.filter(e => e.calificacion).length || 1);
+      /* ==========================
+         👤 DATOS DE USUARIO EN UI
+      ========================== */
+      const nombreUser = usuario.nombre || "Productor";
+      const helloName = document.getElementById("helloName");
+      const avatar = document.getElementById("avatar");
 
-    const kpis = document.querySelectorAll(".kpi-card");
-    if (kpis[0]) kpis[0].querySelector(".kpi-value").textContent = `${cobertura} regiones`;
-    if (kpis[1]) kpis[1].querySelector(".kpi-value").textContent = totalEnvios;
-    if (kpis[2]) kpis[2].querySelector(".kpi-value").textContent = (totalPeso / 1000).toFixed(1) + " T";
-    if (kpis[3]) kpis[3].querySelector(".kpi-value").textContent =
-      califProm > 0 ? califProm.toFixed(1) + " ⭐" : "— ⭐";
+      if (helloName) helloName.textContent = nombreUser;
+      if (avatar) {
+        if (usuario.avatar || usuario.fotoPerfil) {
+          avatar.innerHTML = `<img src="${usuario.avatar || usuario.fotoPerfil}" alt="${nombreUser}">`;
+        } else {
+          avatar.textContent = (nombreUser[0] || "A").toUpperCase();
+        }
+      }
 
-    const resumen = document.getElementById("resumenRapido");
-    if (resumen) {
-      resumen.innerHTML = `
+      /* ==========================
+         🚪 CIERRE DE SESIÓN
+      ========================== */
+      const btnLogout = document.getElementById("btnLogout");
+      if (btnLogout) {
+        btnLogout.addEventListener("click", () => {
+          localStorage.removeItem("agrolinkUsuario"); // solo se cierra sesión, sin borrar usuarios
+          alert("👋 Sesión cerrada correctamente.");
+          window.location.href = "../index.html";
+        });
+      }
+
+      /* ==========================
+         ⚙️ LÓGICA EXISTENTE (sin tocar)
+      ========================== */
+      const all = JSON.parse(localStorage.getItem("solicitudesAgroLink") || "[]");
+      let envios = all.filter(s => (s.productor || "").toLowerCase() === nombreUser.toLowerCase());
+      if (envios.length === 0) envios = all;
+
+      const enCurso = envios.filter(e => /en curso/i.test(e.estado || "")).length;
+      const pendientes = envios.filter(e => /pendiente/i.test(e.estado || "")).length;
+      const completados = envios.filter(e => /completado/i.test(e.estado || "")).length;
+
+      const totalEnvios = envios.length;
+      const regiones = new Set(envios.filter(e => /completado/i.test(e.estado || ""))
+        .map(e => (e.destino || "").trim().toLowerCase()));
+      const cobertura = regiones.size;
+      const totalPeso = envios.reduce((acc, e) => acc + (parseFloat(e.peso) || 0), 0);
+      const califProm =
+        envios.reduce((a, e) => a + (parseFloat(e.calificacion) || 0), 0) /
+        (envios.filter(e => e.calificacion).length || 1);
+
+      const kpis = document.querySelectorAll(".kpi-card");
+      if (kpis[0]) kpis[0].querySelector(".kpi-value").textContent = `${cobertura} regiones`;
+      if (kpis[1]) kpis[1].querySelector(".kpi-value").textContent = totalEnvios;
+      if (kpis[2]) kpis[2].querySelector(".kpi-value").textContent = (totalPeso / 1000).toFixed(1) + " T";
+      if (kpis[3]) kpis[3].querySelector(".kpi-value").textContent =
+        califProm > 0 ? califProm.toFixed(1) + " ⭐" : "— ⭐";
+
+      const resumen = document.getElementById("resumenRapido");
+      if (resumen) {
+        resumen.innerHTML = `
         <p><i class="fa-solid fa-truck text-success"></i> ${enCurso} envío(s) en curso<br><small class="text-muted">Moviendo carga ahora</small></p>
         <p><i class="fa-solid fa-clock text-warning"></i> ${pendientes} pendiente(s)<br><small class="text-muted">Aún por asignar transportista</small></p>
         <p><i class="fa-solid fa-circle-check text-primary"></i> ${completados} completado(s)<br><small class="text-muted">Últimos 30 días</small></p>
@@ -244,16 +253,16 @@
         </p>
         <small class="text-muted">Selecciona y elimina los que desees</small>
       `;
-    }
+      }
 
-    const actividad = document.querySelector(".panel-body.text-muted");
-    if (actividad) {
-      if (envios.length === 0) {
-        actividad.innerHTML = `<p><i class="fa-regular fa-circle-check text-success"></i> No tienes actividad todavía</p>
+      const actividad = document.querySelector(".panel-body.text-muted");
+      if (actividad) {
+        if (envios.length === 0) {
+          actividad.innerHTML = `<p><i class="fa-regular fa-circle-check text-success"></i> No tienes actividad todavía</p>
                                <p>Crea tu primera solicitud para verla aquí</p>`;
-      } else {
-        const ultimos = envios.slice(-3).reverse();
-        actividad.innerHTML = ultimos.map(e => `
+        } else {
+          const ultimos = envios.slice(-3).reverse();
+          actividad.innerHTML = ultimos.map(e => `
           <div class="border-bottom py-1">
             <i class="fa-solid fa-truck text-success"></i>
             <strong>${e.tipo || "Transporte"}</strong> — ${e.origen || "?"} → ${e.destino || "?"}
@@ -261,46 +270,46 @@
             <div class="small text-muted">${e.fecha || ""}</div>
           </div>
         `).join("") + `<p class="small text-end mt-1 mb-0"><a href="envios.html" class="text-success text-decoration-none">Ver todos →</a></p>`;
+        }
       }
-    }
 
-    const calendarEl = document.getElementById("calendar");
-    if (calendarEl && typeof FullCalendar !== "undefined") {
-      const calendar = new FullCalendar.Calendar(calendarEl, {
-        locale: "es",
-        initialView: "dayGridMonth",
-        headerToolbar: { left: "prev,next today", center: "title", right: "dayGridMonth,timeGridWeek,timeGridDay" },
-        buttonText: { today: "Hoy", month: "Mes", week: "Semana", day: "Día" },
-        height: "auto",
-        events: envios.map(e => ({
-          title: `${e.tipo || "Transporte"} (${e.estado || "Pendiente"})`,
-          start: e.fecha,
-          color: /Completado/.test(e.estado || "") ? "#03b075" :
-                 /En curso/.test(e.estado || "") ? "#ffc107" : "#999"
-        }))
+      const calendarEl = document.getElementById("calendar");
+      if (calendarEl && typeof FullCalendar !== "undefined") {
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+          locale: "es",
+          initialView: "dayGridMonth",
+          headerToolbar: { left: "prev,next today", center: "title", right: "dayGridMonth,timeGridWeek,timeGridDay" },
+          buttonText: { today: "Hoy", month: "Mes", week: "Semana", day: "Día" },
+          height: "auto",
+          events: envios.map(e => ({
+            title: `${e.tipo || "Transporte"} (${e.estado || "Pendiente"})`,
+            start: e.fecha,
+            color: /Completado/.test(e.estado || "") ? "#03b075" :
+              /En curso/.test(e.estado || "") ? "#ffc107" : "#999"
+          }))
+        });
+        calendar.render();
+      }
+
+      document.querySelectorAll(".agro-menu button").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const link = btn.dataset.link;
+          if (link) window.location.href = link;
+        });
       });
-      calendar.render();
-    }
 
-    document.querySelectorAll(".agro-menu button").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const link = btn.dataset.link;
-        if (link) window.location.href = link;
-      });
-    });
+      const btnBorrarEnvios = document.getElementById("btnBorrarEnvios");
+      if (btnBorrarEnvios) {
+        const modalBorrar = new bootstrap.Modal(document.getElementById("modalBorrarEnvios"));
+        const listaEnviosEliminar = document.getElementById("listaEnviosEliminar");
+        const confirmarEliminacion = document.getElementById("confirmarEliminacion");
 
-    const btnBorrarEnvios = document.getElementById("btnBorrarEnvios");
-    if (btnBorrarEnvios) {
-      const modalBorrar = new bootstrap.Modal(document.getElementById("modalBorrarEnvios"));
-      const listaEnviosEliminar = document.getElementById("listaEnviosEliminar");
-      const confirmarEliminacion = document.getElementById("confirmarEliminacion");
-
-      btnBorrarEnvios.addEventListener("click", () => {
-        const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
-        if (solicitudes.length === 0) {
-          listaEnviosEliminar.innerHTML = `<p class="text-muted">No hay envíos registrados actualmente.</p>`;
-        } else {
-          listaEnviosEliminar.innerHTML = `
+        btnBorrarEnvios.addEventListener("click", () => {
+          const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
+          if (solicitudes.length === 0) {
+            listaEnviosEliminar.innerHTML = `<p class="text-muted">No hay envíos registrados actualmente.</p>`;
+          } else {
+            listaEnviosEliminar.innerHTML = `
             <p>Selecciona los envíos que deseas eliminar:</p>
             <div class="list-group" style="max-height:300px;overflow-y:auto;">
               ${solicitudes.map(e => `
@@ -315,26 +324,26 @@
               `).join("")}
             </div>
           `;
-        }
-        modalBorrar.show();
-      });
+          }
+          modalBorrar.show();
+        });
 
-      confirmarEliminacion.addEventListener("click", () => {
-        const seleccionados = Array.from(listaEnviosEliminar.querySelectorAll("input[type='checkbox']:checked")).map(chk => chk.value);
-        if (seleccionados.length === 0) {
-          alert("⚠️ No seleccionaste ningún envío.");
-          return;
-        }
-        let solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
-        solicitudes = solicitudes.filter(e => !seleccionados.includes(e.id));
-        localStorage.setItem("solicitudesAgroLink", JSON.stringify(solicitudes));
-        alert(`🗑️ Se eliminaron ${seleccionados.length} envío(s).`);
-        modalBorrar.hide();
-        location.reload();
-      });
-    }
-  });
-</script>
+        confirmarEliminacion.addEventListener("click", () => {
+          const seleccionados = Array.from(listaEnviosEliminar.querySelectorAll("input[type='checkbox']:checked")).map(chk => chk.value);
+          if (seleccionados.length === 0) {
+            alert("⚠️ No seleccionaste ningún envío.");
+            return;
+          }
+          let solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
+          solicitudes = solicitudes.filter(e => !seleccionados.includes(e.id));
+          localStorage.setItem("solicitudesAgroLink", JSON.stringify(solicitudes));
+          alert(`🗑️ Se eliminaron ${seleccionados.length} envío(s).`);
+          modalBorrar.hide();
+          location.reload();
+        });
+      }
+    });
+  </script>
 </body>
 
 </html>

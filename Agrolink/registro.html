@@ -20,7 +20,6 @@
     </a>
   </header>
 
-
   <!-- ====== CONTENIDO PRINCIPAL ====== -->
   <main class="auth-container">
     <div class="auth-card">
@@ -56,7 +55,8 @@
           <input type="text" id="placa" name="placa" placeholder="ABC-123">
 
           <label for="capacidad">Capacidad de carga (kg)</label>
-          <input type="number" id="capacidad" name="capacidad" min="0" step="0.01" placeholder="Ej: 1500.50" required>
+          <input type="number" id="capacidad" name="capacidad" min="0" step="0.01"
+            placeholder="Ej: 1500.50 (usa punto, no coma)">
 
           <label for="licencia">Número de licencia de conducir</label>
           <input type="text" id="licencia" name="licencia">
@@ -95,18 +95,22 @@
       const mensajeExito = document.getElementById("mensajeExito");
       const rolSelect = document.getElementById("rol");
       const camposTransportista = document.getElementById("camposTransportista");
+      const capacidadInput = document.getElementById("capacidad");
 
       // Mostrar/ocultar campos del transportista
       rolSelect.addEventListener("change", () => {
         const esTransportista = rolSelect.value === "transportista";
         camposTransportista.classList.toggle("hidden", !esTransportista);
 
-        if (!esTransportista) {
+        if (esTransportista) {
+          capacidadInput.setAttribute("required", "required");
+        } else {
+          capacidadInput.removeAttribute("required");
           camposTransportista.querySelectorAll("input").forEach(i => (i.value = ""));
         }
       });
 
-      // Función para convertir imagen a Base64
+      // Convertir imagen a Base64
       const fileToBase64 = (file) => new Promise((resolve, reject) => {
         if (!file) return resolve("");
         const reader = new FileReader();
@@ -129,7 +133,17 @@
           return;
         }
 
-        // Obtener usuarios existentes
+        if (rol === "transportista") {
+          const capVal = capacidadInput.value.trim();
+          const capNum = parseFloat(capVal.replace(",", "."));
+          if (!capVal || isNaN(capNum) || capNum < 0) {
+            alert("⚠️ Ingresa una capacidad válida (ej: 1500.50).");
+            capacidadInput.focus();
+            return;
+          }
+        }
+
+        // Obtener usuarios actuales
         const usuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios")) || [];
 
         if (usuarios.some(u => u.email === email)) {
@@ -138,7 +152,7 @@
           return;
         }
 
-        // Crear objeto base
+        // Crear nuevo usuario
         const nuevoUsuario = {
           rol,
           nombre,
@@ -147,16 +161,15 @@
           fechaRegistro: new Date().toLocaleString("es-PE"),
         };
 
-        // Si es transportista, añadir datos adicionales
+        // Si es transportista, añadir campos extra
         if (rol === "transportista") {
           nuevoUsuario.placa = document.getElementById("placa").value.trim();
-          nuevoUsuario.capacidad = document.getElementById("capacidad").value.trim();
+          nuevoUsuario.capacidad = capacidadInput.value.trim();
           nuevoUsuario.licencia = document.getElementById("licencia").value.trim();
           nuevoUsuario.cuentaBancaria = document.getElementById("cuentaBancaria").value.trim();
           nuevoUsuario.fotoPerfil = await fileToBase64(document.getElementById("fotoPerfil").files[0]);
           nuevoUsuario.vehiculoImg = await fileToBase64(document.getElementById("vehiculoImg").files[0]);
 
-          // Documentos
           const soatFile = document.getElementById("soat").files[0];
           const revisionFile = document.getElementById("revision").files[0];
 
@@ -164,33 +177,37 @@
             nuevoUsuario.soatData = await fileToBase64(soatFile);
             nuevoUsuario.soatNombre = soatFile.name;
           }
-
           if (revisionFile) {
             nuevoUsuario.revisionData = await fileToBase64(revisionFile);
             nuevoUsuario.revisionNombre = revisionFile.name;
           }
         }
 
-        // Guardar en lista global
+        // Guardar usuario en la lista global
         usuarios.push(nuevoUsuario);
         localStorage.setItem("agrolinkUsuarios", JSON.stringify(usuarios));
 
-        // Guardar sesión activa
+        // Guardar sesión activa (sin borrar los demás usuarios)
         localStorage.setItem("usuarioActivo", JSON.stringify(nuevoUsuario));
+        localStorage.setItem("agrolinkUsuario", JSON.stringify(nuevoUsuario));
+        localStorage.setItem("agrolinkRol", rol);
 
         // Mostrar mensaje de éxito
         mensajeExito.style.display = "block";
         setTimeout(() => {
           mensajeExito.style.display = "none";
-          window.location.href =
-            rol === "productor"
-              ? "productor/dashboard.html"
-              : "transportista/dashboard.html";
+
+          if (rol === "productor") {
+            window.location.href = "productor/dashboard.html";
+          } else if (rol === "transportista") {
+            window.location.href = "transportista/dashboard.html";
+          } else {
+            window.location.href = "index.html";
+          }
         }, 1800);
       });
     });
   </script>
 
 </body>
-
 </html>

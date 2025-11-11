@@ -297,31 +297,43 @@
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       /* ======================================
-         🔒 SESIÓN PERSISTENTE DEL PRODUCTOR
+         🔒 SESIÓN PERSISTENTE UNIVERSAL (PRODUCTOR)
       ====================================== */
-      let usuario = JSON.parse(localStorage.getItem("agrolinkUsuario"));
+      let usuario =
+        JSON.parse(localStorage.getItem("usuarioActivo")) ||
+        JSON.parse(localStorage.getItem("agrolinkUsuario")) ||
+        JSON.parse(localStorage.getItem("productorActivo")) ||
+        JSON.parse(localStorage.getItem("transportistaActivo")) ||
+        null;
+
       const listaUsuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios") || "[]");
 
-      // Si no hay usuario logueado, se va al inicio
-      if (!usuario || !usuario.correo) {
+      // 🛑 Validar sesión
+      if (!usuario || (!usuario.correo && !usuario.email)) {
         alert("⚠️ No has iniciado sesión. Por favor, vuelve a ingresar.");
         window.location.href = "../index.html";
         return;
       }
 
-      // Sincronizar con la versión más reciente en agrolinkUsuarios
-      const actualizado = listaUsuarios.find(u => u.correo === usuario.correo);
+      // ✅ Sincronizar si hay versión más reciente del usuario
+      const actualizado = listaUsuarios.find(
+        u => (u.correo || u.email) === (usuario.correo || usuario.email)
+      );
       if (actualizado) {
         usuario = { ...usuario, ...actualizado };
-        localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
       }
 
-      const nombreUser = usuario.nombre || "Productor";
+      // Guardar de forma unificada
+      localStorage.setItem("usuarioActivo", JSON.stringify(usuario));
+      localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
+      localStorage.setItem("agrolinkRol", usuario.rol || "productor");
+
+      // Mostrar datos básicos
+      const nombreUser = usuario.nombre || usuario.nombres || "Productor";
       const helloNameEl = document.getElementById("helloName");
       const avatarEl = document.getElementById("avatar");
 
       if (helloNameEl) helloNameEl.textContent = nombreUser;
-
       if (avatarEl) {
         if (usuario.avatar || usuario.fotoPerfil) {
           avatarEl.innerHTML = `<img src="${usuario.avatar || usuario.fotoPerfil}" alt="${nombreUser}">`;
@@ -330,21 +342,34 @@
         }
       }
 
-      const rol = usuario.rol || localStorage.getItem("agrolinkRol") || "";
-      // Si quisieras forzar solo productores:
-      // if (rol !== "productor") window.location.href = "../index.html";
+      /* ======================================
+         🚪 CIERRE DE SESIÓN
+      ====================================== */
+      const btnLogout = document.getElementById("btnLogout");
+      if (btnLogout) {
+        btnLogout.addEventListener("click", () => {
+          alert("👋 Sesión cerrada correctamente.");
+          // solo eliminamos la sesión activa
+          localStorage.removeItem("usuarioActivo");
+          localStorage.removeItem("agrolinkUsuario");
+          localStorage.removeItem("agrolinkRol");
+          window.location.href = "../index.html";
+        });
+      }
 
-      // ===== Datos =====
+      /* ======================================
+         📦 CARGA DE ENVÍOS
+      ====================================== */
       const all = JSON.parse(localStorage.getItem("solicitudesAgroLink") || "[]");
-      let envios = all.filter(s => (s.productor || "").toLowerCase() === nombreUser.toLowerCase());
+      let envios = all.filter(
+        s => (s.productor || "").toLowerCase() === nombreUser.toLowerCase()
+      );
 
       // ===== Estado UI =====
       let vista = "grid";
       let filtroEstado = "Todos";
       let query = "";
-      let seleccion = null;
 
-      // ===== Elementos =====
       const grid = document.getElementById("grid");
       const tbody = document.getElementById("tbody");
       const tablaWrap = document.getElementById("tablaWrap");
@@ -352,44 +377,35 @@
       const chips = document.querySelectorAll(".chip");
       const q = document.getElementById("q");
 
-      // KPIs extra para panel derecho
-      const cntEnCurso = document.getElementById("cntEnCurso");
-      const cntPendientes = document.getElementById("cntPendientes");
-      const cntCompletados = document.getElementById("cntCompletados");
-
-      // KPIs Pagos
+      // ===== KPIs =====
       function setKPIs(list) {
         const enCurso = list.filter(e => /en\s*curso/i.test(e.estado || "")).length;
         const comp = list.filter(e => /completado/i.test(e.estado || "")).length;
         const canc = list.filter(e => /cancelado|rechazad/i.test(e.estado || "")).length;
         const pend = list.filter(e => /pendiente/i.test(e.estado || "")).length;
-
-        // ✅ Solo sumar pagos de envíos completados
         const pago = list
-          .filter(e => /completado/i.test(e.estado || "")) // solo completados
-          .reduce((a, e) => {
-            const valor =
-              parseFloat(e.pagoFinal) || // si se marcó como completado con pagoFinal
-              parseFloat(e.pago) ||      // o el pago estimado
-              0;
-            return a + valor;
-          }, 0);
+          .filter(e => /completado/i.test(e.estado || ""))
+          .reduce((a, e) => a + (parseFloat(e.pagoFinal || e.pago) || 0), 0);
 
-        document.getElementById("kpiEnCurso").textContent = enCurso;
-        document.getElementById("kpiCompletados").textContent = comp;
-        document.getElementById("kpiCancelados").textContent = canc;
-        document.getElementById("kpiPago").textContent = pago.toFixed(2);
+        const helloSub = document.getElementById("helloSub");
+        if (helloSub)
+          helloSub.textContent =
+            (new Date().getHours() < 12 ? "Buenos días. " : "Buen día. ") +
+            `Tienes ${enCurso} envío(s) en curso y ${pend} pendiente(s).`;
 
-        document.getElementById("cntEnCurso").textContent = enCurso;
-        document.getElementById("cntPendientes").textContent = pend;
-        document.getElementById("cntCompletados").textContent = comp;
-
-        document.getElementById("helloSub").textContent =
-          (new Date().getHours() < 12 ? "Buenos días. " : "Buen día. ") +
-          `Tienes ${enCurso} envío(s) en curso y ${pend} pendiente(s).`;
+        const kpi = (id, val) => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = val;
+        };
+        kpi("kpiEnCurso", enCurso);
+        kpi("kpiCompletados", comp);
+        kpi("kpiCancelados", canc);
+        kpi("kpiPago", pago.toFixed(2));
+        kpi("cntEnCurso", enCurso);
+        kpi("cntPendientes", pend);
+        kpi("cntCompletados", comp);
       }
 
-      // ===== Filtros =====
       function filtrar() {
         let out = envios.slice();
         if (filtroEstado !== "Todos") {
@@ -397,12 +413,11 @@
           out = out.filter(e => {
             const estado = (e.estado || "").toLowerCase();
             if (estadoBuscado === "cancelado") {
-              return estado.includes("cancelado") || estado.includes("rechazad"); // ✅ reconoce "Rechazada"
+              return estado.includes("cancelado") || estado.includes("rechazad");
             }
             return estado.includes(estadoBuscado);
           });
         }
-
         if (query.trim()) {
           const ql = query.trim().toLowerCase();
           out = out.filter(e =>
@@ -416,7 +431,6 @@
         return out;
       }
 
-      // ===== RENDER GRID =====
       function renderGrid(list) {
         grid.innerHTML = "";
         if (!list.length) {
@@ -434,28 +448,22 @@
           const card = document.createElement("div");
           card.className = "envio-card";
           card.innerHTML = `
-            <div class="envio-top">
-              <div>
-                <div class="envio-title">${e.tipo || "Solicitud"}</div>
-                <small class="text-muted">ID: ${e.id || "—"}</small>
-              </div>
-              <span class="badge-state ${badge}">${e.estado || "—"}</span>
-            </div>
-            <div class="envio-meta">
-              <div><i class="fa-solid fa-location-dot text-success"></i> ${e.origen || "—"} → ${e.destino || "—"}</div>
-              <div><i class="fa-regular fa-calendar"></i> ${e.fecha || "Sin fecha"}</div>
-              <div><i class="fa-solid fa-user-truck"></i> ${e.transportista || "No asignado"}</div>
-            </div>
-            <div class="envio-actions">
-              <button class="agro-btn secondary btn-det" data-id="${e.id || ""}"><i class="fa-solid fa-eye"></i></button>
-              <button class="agro-btn gray btn-dup" data-id="${e.id || ""}"><i class="fa-solid fa-copy"></i></button>
-            </div>
-          `;
+        <div class="envio-top">
+          <div>
+            <div class="envio-title">${e.tipo || "Solicitud"}</div>
+            <small class="text-muted">ID: ${e.id || "—"}</small>
+          </div>
+          <span class="badge-state ${badge}">${e.estado || "—"}</span>
+        </div>
+        <div class="envio-meta">
+          <div><i class="fa-solid fa-location-dot text-success"></i> ${e.origen || "—"} → ${e.destino || "—"}</div>
+          <div><i class="fa-regular fa-calendar"></i> ${e.fecha || "Sin fecha"}</div>
+          <div><i class="fa-solid fa-user-truck"></i> ${e.transportista || "No asignado"}</div>
+        </div>`;
           grid.appendChild(card);
         });
       }
 
-      // ===== RENDER TABLA =====
       function renderTable(list) {
         tbody.innerHTML = "";
         if (!list.length) {
@@ -471,18 +479,14 @@
 
           const tr = document.createElement("tr");
           tr.innerHTML = `
-            <td>${e.id || "—"}</td>
-            <td>${e.tipo || "—"}</td>
-            <td>${e.origen || "—"}</td>
-            <td>${e.destino || "—"}</td>
-            <td>${e.transportista || "—"}</td>
-            <td>${e.fecha || "—"}</td>
-            <td><span class="badge-state ${badge}">${st}</span></td>
-            <td>S/ ${e.pago || 0}</td>
-            <td class="text-end">
-              <button class="agro-btn secondary btn-det" data-id="${e.id || ""}"><i class="fa-solid fa-eye"></i></button>
-            </td>
-          `;
+        <td>${e.id || "—"}</td>
+        <td>${e.tipo || "—"}</td>
+        <td>${e.origen || "—"}</td>
+        <td>${e.destino || "—"}</td>
+        <td>${e.transportista || "—"}</td>
+        <td>${e.fecha || "—"}</td>
+        <td><span class="badge-state ${badge}">${st}</span></td>
+        <td>S/ ${e.pago || 0}</td>`;
           tbody.appendChild(tr);
         });
       }
@@ -500,7 +504,7 @@
         }
       }
 
-      // ===== Eventos filtros =====
+      // ===== Filtros =====
       chips.forEach(ch => {
         ch.addEventListener("click", () => {
           chips.forEach(x => x.classList.remove("active"));
@@ -510,383 +514,24 @@
         });
       });
 
-      q.addEventListener("input", (e) => {
+      q.addEventListener("input", e => {
         query = e.target.value;
         render();
       });
 
       // ===== Toggle vista =====
       toggleVista.addEventListener("click", () => {
-        vista = (vista === "grid") ? "table" : "grid";
+        vista = vista === "grid" ? "table" : "grid";
         toggleVista.innerHTML = vista === "grid"
           ? `<i class="fa-solid fa-table-cells"></i> Vista tabla`
           : `<i class="fa-solid fa-grip"></i> Vista tarjetas`;
         render();
       });
 
-      // ====== Slide-over ====== 
-      const overlay = document.getElementById("overlay");
-      const slide = document.getElementById("slideover");
-      const closeSlide = document.getElementById("closeSlide");
-      const dProducto = document.getElementById("dProducto");
-      const dTransp = document.getElementById("dTransp");
-      const dTelefono = document.getElementById("dTelefono");
-      const dOrigen = document.getElementById("dOrigen");
-      const dDestino = document.getElementById("dDestino");
-      const dFecha = document.getElementById("dFecha");
-      const dPeso = document.getElementById("dPeso");
-      const dPago = document.getElementById("dPago");
-      const dEstado = document.getElementById("dEstado");
-      const dProgress = document.getElementById("dProgress");
-      const detailHead = document.getElementById("detailHead");
-      const btnContactar = document.getElementById("btnContactar");
-      const btnRuta = document.getElementById("btnRuta");
-      const btnDuplicar = document.getElementById("btnDuplicar");
-      const btnCancelar = document.getElementById("btnCancelar");
-      const calificarWrap = document.getElementById("calificarWrap");
-      const rateStars = document.getElementById("rateStars");
-      const mapPanel = document.getElementById("mapPanel");
-      let _mapPanel = null;
-
-      function openSlide() {
-        overlay.classList.add("show");
-        slide.classList.add("open");
-      }
-      function closeSlideFn() {
-        overlay.classList.remove("show");
-        slide.classList.remove("open");
-        if (mapPanel) {
-          mapPanel.style.display = "none";
-          if (_mapPanel) {
-            _mapPanel.remove();
-            _mapPanel = null;
-          }
-        }
-      }
-      closeSlide.addEventListener("click", closeSlideFn);
-      overlay.addEventListener("click", closeSlideFn);
-
-      const coords = {
-        Lima: [-12.0464, -77.0428], Trujillo: [-8.1117, -79.0288], Arequipa: [-16.409, -71.5375],
-        Piura: [-5.1945, -80.6328], Chiclayo: [-6.7714, -79.8409], Cusco: [-13.5319, -71.9675],
-        Puno: [-15.8402, -70.0219], Huancayo: [-12.0651, -75.2049]
-      };
-
-      function progressPct(estado) {
-        if (/Completado/.test(estado || "")) return 100;
-        if (/En curso/.test(estado || "")) return 60;
-        if (/Pendiente/.test(estado || "")) return 25;
-        return 10;
-      }
-
-      // Delegación para botones
-      document.addEventListener("click", (e) => {
-        const det = e.target.closest(".btn-det");
-        const dup = e.target.closest(".btn-dup");
-
-        if (det) {
-          const id = det.dataset.id;
-          seleccion = envios.find(x => String(x.id || "") === String(id));
-          if (!seleccion) return;
-
-          detailHead.textContent = `ID: ${seleccion.id || "—"}`;
-          dProducto.textContent = seleccion.tipo || "—";
-          dTransp.textContent = seleccion.transportista || "—";
-          dTelefono.textContent = seleccion.telefono || "—";
-          dOrigen.textContent = seleccion.origen || "—";
-          dDestino.textContent = seleccion.destino || "—";
-          dFecha.textContent = seleccion.fecha || "—";
-          dPeso.textContent = (seleccion.peso || 0) + " kg";
-          dPago.textContent = "S/ " + (seleccion.pago || 0);
-          dEstado.textContent = seleccion.estado || "—";
-          dProgress.style.width = progressPct(seleccion.estado) + "%";
-
-          // ✅ ruta al chat
-          btnContactar.removeAttribute("target");
-          btnContactar.href = `./Comunicacion/chat.html?id=${encodeURIComponent(seleccion.id)}&transportista=${encodeURIComponent(seleccion.transportista || '')}`;
-
-          calificarWrap.style.display = /Completado/.test(seleccion.estado || "") ? "block" : "none";
-          paintStars(Math.round(parseFloat(seleccion.calificacion) || 0));
-
-          openSlide();
-        }
-
-        if (dup) {
-          const id = dup.dataset.id;
-          const env = envios.find(x => String(x.id || "") === String(id));
-          if (!env) return;
-          const copy = { ...env, id: Date.now(), estado: "Pendiente" };
-          all.push(copy);
-          localStorage.setItem("solicitudesAgroLink", JSON.stringify(all));
-          envios = all.filter(s => (s.productor || "").toLowerCase() === nombreUser.toLowerCase());
-          showToast("📄 Solicitud duplicada.");
-          render();
-        }
-      });
-
-      // Ver ruta
-      btnRuta.addEventListener("click", () => {
-        if (!seleccion) return;
-        const A = coords[seleccion.origen], B = coords[seleccion.destino];
-        if (!A || !B) {
-          showToast("No hay coordenadas para esa ruta.");
-          return;
-        }
-
-        mapPanel.style.display = "block";
-        if (_mapPanel) {
-          _mapPanel.remove();
-          _mapPanel = null;
-        }
-
-        _mapPanel = L.map("mapPanel").setView(A, 6);
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution: "&copy; OpenStreetMap",
-        }).addTo(_mapPanel);
-
-        const markerA = L.marker(A).addTo(_mapPanel).bindPopup(seleccion.origen);
-        const markerB = L.marker(B).addTo(_mapPanel).bindPopup(seleccion.destino);
-
-        const url = `https://router.project-osrm.org/route/v1/driving/${A[1]},${A[0]};${B[1]},${B[0]}?overview=full&geometries=geojson`;
-
-        fetch(url)
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.routes && data.routes.length > 0) {
-              const route = data.routes[0].geometry;
-              const line = L.geoJSON(route, {
-                style: { color: "#03b075", weight: 5, opacity: 0.85 },
-              }).addTo(_mapPanel);
-
-              _mapPanel.fitBounds(line.getBounds());
-
-              const km = (data.routes[0].distance / 1000).toFixed(1);
-              const min = Math.round(data.routes[0].duration / 60);
-              L.popup()
-                .setLatLng(B)
-                .setContent(
-                  `<b>Ruta calculada</b><br>Distancia: ${km} km<br>Duración aprox: ${min} min`
-                )
-                .openOn(_mapPanel);
-            } else {
-              showToast("No se encontró ruta real.");
-              L.polyline([A, B], { color: "#03b075", weight: 4 }).addTo(_mapPanel);
-            }
-          })
-          .catch((err) => {
-            console.error(err);
-            showToast("Error al cargar la ruta real.");
-            L.polyline([A, B], { color: "#03b075", weight: 4 }).addTo(_mapPanel);
-          });
-      });
-
-      // Cancelar
-      btnCancelar.addEventListener("click", () => {
-        if (!seleccion) return;
-        if (!confirm("¿Cancelar este envío?")) return;
-        const idx = all.findIndex(x => String(x.id || "") === String(seleccion.id || ""));
-        if (idx > -1) {
-          all[idx].estado = "Cancelado";
-          localStorage.setItem("solicitudesAgroLink", JSON.stringify(all));
-          envios = all.filter(s => (s.productor || "").toLowerCase() === nombreUser.toLowerCase());
-          showToast("❌ Envío cancelado.");
-          render();
-          closeSlideFn();
-        }
-      });
-
-      // Stars
-      function paintStars(n) {
-        rateStars.textContent = "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(0, 5 - n);
-      }
-      rateStars.addEventListener("click", (e) => {
-        if (!seleccion) return;
-        const rect = rateStars.getBoundingClientRect();
-        const pct = (e.clientX - rect.left) / rect.width;
-        const n = Math.min(5, Math.max(1, Math.ceil(pct * 5)));
-        paintStars(n);
-        const idx = all.findIndex(x => String(x.id || "") === String(seleccion.id || ""));
-        if (idx > -1) {
-          all[idx].calificacion = n;
-          localStorage.setItem("solicitudesAgroLink", JSON.stringify(all));
-          showToast("⭐ Calificación guardada.");
-        }
-      });
-
-      // ====== Mapa general ======
-      const mapSheet = document.getElementById("mapSheet");
-      const closeMapSheet = document.getElementById("closeMapSheet");
-      let mapGeneral = null;
-
-      document.getElementById("btnMapaGeneral").addEventListener("click", () => {
-        mapSheet.style.display = "block";
-
-        setTimeout(() => {
-          if (!mapGeneral) {
-            mapGeneral = L.map("mapGeneral").setView([-9.189967, -75.015152], 6);
-            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-              attribution: "&copy; OpenStreetMap",
-            }).addTo(mapGeneral);
-          } else {
-            mapGeneral.eachLayer((layer) => {
-              if (!(layer instanceof L.TileLayer)) mapGeneral.removeLayer(layer);
-            });
-            mapGeneral.invalidateSize();
-          }
-
-          const list = filtrar();
-          if (!list.length) {
-            showToast("No hay rutas para mostrar.");
-            return;
-          }
-
-          list.forEach((e) => {
-            const A = coords[e.origen];
-            const B = coords[e.destino];
-            if (!A || !B) return;
-
-            const colorRuta =
-              /completado/i.test(e.estado || "")
-                ? "#198754"
-                : /en\s*curso/i.test(e.estado || "")
-                  ? "#0d6efd"
-                  : /cancelado|rechazad/i.test(e.estado || "")
-                    ? "#d62828"
-                    : "#03b075";
-
-            const url = `https://router.project-osrm.org/route/v1/driving/${A[1]},${A[0]};${B[1]},${B[0]}?overview=full&geometries=geojson`;
-
-            fetch(url)
-              .then((res) => res.json())
-              .then((data) => {
-                if (data.routes && data.routes.length > 0) {
-                  const route = data.routes[0].geometry;
-                  const line = L.geoJSON(route, {
-                    style: { color: colorRuta, weight: 4, opacity: 0.85 },
-                  }).addTo(mapGeneral);
-
-                  L.marker(A)
-                    .addTo(mapGeneral)
-                    .bindPopup(`<b>${e.tipo}</b><br>${e.origen}`);
-                  L.marker(B)
-                    .addTo(mapGeneral)
-                    .bindPopup(`Destino: ${e.destino}`);
-
-                  const km = (data.routes[0].distance / 1000).toFixed(1);
-                  const min = Math.round(data.routes[0].duration / 60);
-                  line.bindTooltip(
-                    `${e.origen} → ${e.destino}<br><b>${km} km</b> · ${min} min`,
-                    { permanent: false, direction: "center" }
-                  );
-                } else {
-                  L.polyline([A, B], {
-                    color: colorRuta,
-                    weight: 4,
-                    opacity: 0.6,
-                  }).addTo(mapGeneral);
-                }
-              })
-              .catch(() => {
-                L.polyline([A, B], {
-                  color: colorRuta,
-                  weight: 4,
-                  opacity: 0.6,
-                }).addTo(mapGeneral);
-              });
-          });
-        }, 100);
-      });
-
-      closeMapSheet.addEventListener("click", () => {
-        mapSheet.style.display = "none";
-      });
-
-      // ===== Exportar CSV =====
-      document.getElementById("btnExport").addEventListener("click", () => {
-        const list = filtrar();
-        if (!list.length) {
-          showToast("No hay datos para exportar.");
-          return;
-        }
-        const cols = ["id", "tipo", "origen", "destino", "fecha", "peso", "pago", "estado", "transportista", "telefono", "calificacion"];
-        const header = cols.join(",");
-        const rows = list.map(r => cols.map(k => JSON.stringify(r[k] ?? "")).join(","));
-        const csv = [header, ...rows].join("\n");
-        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "mis_envios.csv";
-        a.click();
-      });
-
-      // ===== Logout (solo cierra sesión, no borra usuarios) =====
-      document.getElementById("btnLogout").addEventListener("click", () => {
-        localStorage.removeItem("agrolinkUsuario");
-        localStorage.removeItem("agrolinkRol");
-        location.href = "../index.html";
-      });
-
-      // === Borrar envíos desde el panel de resumen rápido ===
-      const btnBorrarEnvios = document.getElementById("btnBorrarEnvios");
-      if (btnBorrarEnvios) {
-        const modalBorrar = new bootstrap.Modal(document.getElementById("modalBorrarEnvios"));
-        const listaEnviosEliminar = document.getElementById("listaEnviosEliminar");
-        const confirmarEliminacion = document.getElementById("confirmarEliminacion");
-
-        btnBorrarEnvios.addEventListener("click", () => {
-          const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
-
-          if (solicitudes.length === 0) {
-            listaEnviosEliminar.innerHTML = `<p class="text-muted">No hay envíos registrados actualmente.</p>`;
-          } else {
-            listaEnviosEliminar.innerHTML = `
-        <p>Selecciona los envíos que deseas eliminar:</p>
-        <div class="list-group" style="max-height:300px;overflow-y:auto;">
-          ${solicitudes.map(e => `
-            <label class="list-group-item d-flex justify-content-between align-items-center">
-              <div>
-                <input type="checkbox" class="form-check-input me-2" value="${e.id || e.ID}">
-                <strong>${e.tipo || "Sin tipo"}</strong> — ${e.origen || "?"} → ${e.destino || "?"}
-                <div class="small text-muted">${e.fecha || ""} • ${e.estado || "Pendiente"}</div>
-              </div>
-              <span class="badge bg-light text-dark">ID: ${e.id || e.ID}</span>
-            </label>
-          `).join("")}
-        </div>
-      `;
-          }
-
-          modalBorrar.show();
-        });
-
-        confirmarEliminacion.addEventListener("click", () => {
-          const seleccionados = Array.from(listaEnviosEliminar.querySelectorAll("input[type='checkbox']:checked"))
-            .map(chk => chk.value);
-
-          if (seleccionados.length === 0) {
-            alert("⚠️ No seleccionaste ningún envío.");
-            return;
-          }
-
-          let solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
-
-          solicitudes = solicitudes.filter(e => {
-            const idActual = e.id || e.ID;
-            return !seleccionados.includes(String(idActual));
-          });
-
-          localStorage.setItem("solicitudesAgroLink", JSON.stringify(solicitudes));
-
-          alert(`🗑️ Se eliminaron ${seleccionados.length} envío(s).`);
-          modalBorrar.hide();
-          location.reload();
-        });
-      }
-
-      // Primera render
-      render();
+      render(); // Primera carga
     });
   </script>
+
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
