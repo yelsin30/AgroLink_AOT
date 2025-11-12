@@ -83,13 +83,17 @@
   .nav {
     display: none;
     flex-direction: column;
-    background-color: var(--blanco);
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.97); /* semitransparente */
     position: absolute;
     top: 70px;
     left: 0;
     width: 100%;
-    padding: 1rem;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    padding: 1rem 0rem;
+    border-radius: 0 0 16px 16px; /* bordes suaves inferiores */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    z-index: 999;
   }
 
   #menu-toggle:checked + .menu-icon + .nav {
@@ -99,17 +103,28 @@
   .nav ul {
     flex-direction: column;
     align-items: center;
+    gap: 1.3rem;
+    margin: 0;
+    padding: 0;
   }
 
   .nav .buttons {
     flex-direction: column;
-    margin-top: 1rem;
+    margin-top: 1.5rem;
+    gap: 1rem;
   }
 
   .menu-icon {
     display: block;
   }
+
+  .header {
+    padding: 1rem;
+    position: relative;
+    z-index: 1000;
+  }
 }
+
 
 body {
   font-family: var(--fuente);

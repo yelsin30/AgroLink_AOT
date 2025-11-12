@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -34,10 +35,30 @@
       </header>
 
       <div class="stats-row" id="stats">
-        <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-truck"></i></div><div class="stat-text"><h4 id="enCurso">0</h4><span>En curso</span></div></div>
-        <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-check"></i></div><div class="stat-text"><h4 id="completados">0</h4><span>Completados</span></div></div>
-        <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div><div class="stat-text"><h4 id="totalGanado">S/ 0.00</h4><span>Ingresos Totales</span></div></div>
-        <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-star"></i></div><div class="stat-text"><h4>4.8</h4><span>Promedio</span></div></div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-truck"></i></div>
+          <div class="stat-text">
+            <h4 id="enCurso">0</h4><span>En curso</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-check"></i></div>
+          <div class="stat-text">
+            <h4 id="completados">0</h4><span>Completados</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+          <div class="stat-text">
+            <h4 id="totalGanado">S/ 0.00</h4><span>Ingresos Totales</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-star"></i></div>
+          <div class="stat-text">
+            <h4>4.8</h4><span>Promedio</span>
+          </div>
+        </div>
       </div>
 
       <div class="panel">
@@ -130,10 +151,17 @@
           fitSelectedRoutes: true
         }).on("routesfound", e => {
           const r = e.routes[0], d = r.summary.totalDistance / 1000, t = r.summary.totalTime;
+
+          // ✅ Mostrar la ruta con datos reales
           routeInfo.innerHTML = `<i class="fa-solid fa-route"></i>
-            <span><strong>Ruta:</strong> ${viaje.origen} → ${viaje.destino}<br>
-            <strong>Distancia:</strong> ${d.toFixed(1)} km | <strong>Duración:</strong> ${Math.floor(t / 3600)}h ${Math.round((t % 3600) / 60)}min</span>`;
+    <span><strong>Ruta:</strong> ${viaje.origen} → ${viaje.destino}<br>
+    <strong>Distancia:</strong> ${d.toFixed(1)} km | <strong>Duración:</strong> ${Math.floor(t / 3600)}h ${Math.round((t % 3600) / 60)}min</span>`;
+
+          // ✅ Guardar la distancia real en el viaje dentro de solicitudesAgroLink
+          viaje.distancia = d.toFixed(1);
+          localStorage.setItem("solicitudesAgroLink", JSON.stringify(solicitudes));
         }).addTo(map);
+
       }
 
       function actualizarKPIs() {
@@ -231,4 +259,5 @@
     });
   </script>
 </body>
+
 </html>

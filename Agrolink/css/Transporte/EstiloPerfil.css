@@ -1,40 +1,46 @@
 /* ===================================================
    AGROLINK - PERFIL TRANSPORTISTA (EstiloPerfil.css)
-   Mismo estilo de iconos y sidebar que EstiloT.css
    =================================================== */
 
 /* === BASE GENERAL === */
-body {
+html, body {
+  margin: 0;
+  padding: 0;
   background-color: #f7f9f7;
   font-family: "Poppins", sans-serif;
   color: #16291b;
-  margin: 0;
-  display: flex;
+  width: 100%;
+  height: 100%;
 }
 
-/* === SIDEBAR === */
+body {
+  display: block !important;
+}
+
+/* === SIDEBAR (Izquierda en desktop) === */
 .sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
   width: 74px;
-  background: #fff;
+  background: #ffffff;
   box-shadow: 2px 0 6px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: space-between;
   padding: 1.2rem 0;
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 100;
+  z-index: 1000;
 }
 
 .sidebar .logo {
-  color: #16291b;
   font-size: 1.9rem;
+  color: #16291b;
   margin-bottom: 2rem;
 }
 
-/* === ICONOS DE NAVEGACIÓN (Mismo estilo que EstiloT.css) === */
+/* === ICONOS DE NAVEGACIÓN === */
 .nav-icons {
   display: flex;
   flex-direction: column;
@@ -49,61 +55,59 @@ body {
   width: 46px;
   height: 46px;
   border: none;
-  border-radius: 16px;
+  border-radius: 14px;
   background: transparent;
-  color: #0f2615;
+  color: #4b5563;
   font-size: 1.35rem;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.25s, box-shadow 0.25s, transform 0.15s;
+  transition: all 0.25s ease;
   text-decoration: none;
 }
 
 .nav-icons button:hover,
 .nav-links a:hover {
   background: #f3f6f4;
+  color: #00b074;
 }
 
-/* Ícono activo con pastilla verde */
 .nav-icons button.active,
 .nav-links a.active {
-  background: linear-gradient(145deg, #00c97b, #00b26b);
-  color: #0f2615;
-  box-shadow: 0 10px 25px rgba(0, 176, 116, 0.45);
+  background-color: #00b074;
+  color: #fff;
+  box-shadow: 0 0 16px rgba(0, 176, 116, 0.4);
 }
 
-/* BOTÓN SALIR */
-.logout-btn,
-.help-section a {
-  margin-top: auto;
-  color: #d13c3c;
-  background: none;
+/* === BOTÓN SALIR === */
+.logout-btn {
   border: none;
+  background: none;
+  color: #d13c3c;
+  font-weight: 600;
+  font-size: 0.9rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.2rem;
-  font-weight: 600;
+  gap: 0.3rem;
   cursor: pointer;
-  transition: 0.3s;
-  text-decoration: none;
-  font-size: 0.9rem;
+  padding-bottom: 0.8rem;
+  transition: color 0.3s ease;
 }
 
-.logout-btn:hover,
-.help-section a:hover {
+.logout-btn:hover {
   color: #a82424;
 }
 
-/* === CONTENIDO === */
+/* === MAIN === */
 main {
   flex: 1;
   margin-left: 90px;
   padding: 2rem;
 }
 
+/* === HEADER === */
 .main-header h1 {
   font-weight: 700;
   color: #16291b;
@@ -114,7 +118,7 @@ main {
   margin-bottom: 2rem;
 }
 
-/* === LAYOUT PRINCIPAL === */
+/* === LAYOUT GENERAL === */
 .perfil-layout {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -139,7 +143,7 @@ main {
   gap: 1.5rem;
 }
 
-/* Cabecera del perfil */
+/* === CABECERA PERFIL === */
 .perfil-header {
   display: flex;
   align-items: center;
@@ -172,20 +176,23 @@ main {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.2rem 2rem;
+  align-items: center;
 }
 
 .perfil-datos label {
   font-weight: 600;
+  font-size: 0.9rem;
   color: #16291b;
 }
 
 .perfil-datos input {
   width: 100%;
-  border: 1px solid #d9e3db;
+  padding: 10px;
   border-radius: 8px;
-  padding: 8px;
-  background: #f8fbf8;
-  transition: border 0.3s;
+  border: 1px solid #e0e4e0;
+  background-color: #f7f9f7;
+  font-family: "Poppins", sans-serif;
+  color: #16291b;
 }
 
 .perfil-datos input:focus {
@@ -193,10 +200,29 @@ main {
   outline: none;
 }
 
-.perfil-datos input:disabled {
-  background: #f3f3f3;
-  border-color: #e2e8e2;
-  color: #555;
+/* === TÍTULOS DE SECCIÓN === */
+.perfil-section-title {
+  grid-column: 1 / 3;
+  font-weight: 600;
+  margin-top: 15px;
+  margin-bottom: 5px;
+  color: #16291b;
+  border-left: 4px solid #00b074;
+  padding-left: 8px;
+  font-size: 0.95rem;
+}
+
+/* === DOCUMENTOS === */
+.doc-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.doc-link {
+  font-size: 0.9rem;
+  color: #1f2933;
+  word-break: break-all;
 }
 
 /* === FOTOS === */
@@ -259,23 +285,29 @@ main {
   background: #00935f;
 }
 
-/* === FICHA TÉCNICA DEL VEHÍCULO === */
+/* === FICHA TÉCNICA (Versión mejorada) === */
 .ficha-tecnica {
-  background: #fff;
-  border: 1px solid #e6e6e6;
-  border-radius: 10px;
-  padding: 16px 20px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  max-width: 400px;
+  background: #ffffff;
+  border: 1px solid #e2e8e4;
+  border-radius: 16px;
+  padding: 1.6rem 1.8rem;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  max-width: 420px;
+  transition: all 0.3s ease;
+}
+
+.ficha-tecnica:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
 
 .ficha-tecnica h3 {
-  font-size: 1.1rem;
-  color: #16291b;
-  margin-bottom: 14px;
+  font-size: 1.15rem;
+  color: #00b074;
+  margin-bottom: 1rem;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.6rem;
+  font-weight: 700;
 }
 
 .ficha-tecnica ul {
@@ -287,91 +319,102 @@ main {
 .ficha-tecnica li {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 10px;
-  padding: 6px 0;
+  padding: 8px 0;
   font-size: 0.95rem;
-  color: #111827;
-  border-bottom: 1px solid #f0f0f0;
+  color: #16291b;
+  border-bottom: 1px solid #f1f5f2;
 }
 
 .ficha-tecnica li:last-child {
   border-bottom: none;
 }
 
-/* Íconos alineados y uniformes */
 .ficha-tecnica i {
-  width: 22px;
-  min-width: 22px;
+  width: 24px;
+  min-width: 24px;
   text-align: center;
   color: #00b074;
-  font-size: 1rem;
+  font-size: 1.05rem;
 }
 
-/* Texto destacado (títulos de campos) */
 .ficha-tecnica strong {
+  min-width: 130px;
   color: #16291b;
-  min-width: 120px;
   font-weight: 600;
+  display: inline-block;
 }
 
-/* Valores a la derecha */
 .ficha-tecnica span {
-  color: #4b5563;
+  color: #374151;
+  font-weight: 500;
 }
 
 
-/* === FOOTER === */
-.footer {
-  text-align: center;
-  margin-top: 2rem;
-  color: #607462;
-  font-size: 0.9rem;
-}
-/* === Distribución de columnas en el formulario === */
-.perfil-datos {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  column-gap: 40px;
-  row-gap: 10px;
-  align-items: center;
-}
+/* ===================================================
+   RESPONSIVE - MÓVIL (Barra inferior estilo app)
+   =================================================== */
+@media (max-width: 700px) {
+  .sidebar {
+    all: unset;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 68px !important;
+    background: #ffffff !important;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-evenly !important;
+    align-items: center !important;
+    border-radius: 16px 16px 0 0 !important;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08) !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    z-index: 3000 !important;
+  }
 
-.perfil-datos label {
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: #16291b;
-  margin-bottom: 4px;
-}
+  .sidebar .logo,
+  .logout-btn {
+    display: none !important;
+  }
 
-.perfil-datos input {
-  width: 100%;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #e0e4e0;
-  background-color: #f7f9f7;
-  font-family: "Poppins", sans-serif;
-  color: #16291b;
-}
+  .nav-icons {
+    flex-direction: row !important;
+    width: 100% !important;
+    align-items: center !important;
+  }
 
-.perfil-section-title {
-  grid-column: 1 / 3;
-  font-weight: 600;
-  margin-top: 15px;
-  margin-bottom: 5px;
-  color: #16291b;
-  border-left: 4px solid #00b074;
-  padding-left: 8px;
-  font-size: 0.95rem;
-}
+  .nav-icons button {
+    width: 46px !important;
+    height: 46px !important;
+    font-size: 1.25rem !important;
+    border-radius: 14px !important;
+    background: transparent !important;
+    color: #4b5563 !important;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
 
-.doc-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+  .nav-icons button:hover {
+    background: rgba(22, 41, 27, 0.06) !important;
+  }
 
-.doc-link {
-  font-size: 0.9rem;
-  color: #1f2933;
-  word-break: break-all;
+  .nav-icons button.active {
+    background-color: #00b074 !important;
+    color: #fff !important;
+    box-shadow: 0 0 16px rgba(0, 176, 116, 0.4) !important;
+    transform: translateY(-4px) !important;
+  }
+
+  main {
+    margin: 0 !important;
+    padding-top: 90px !important;
+    padding-bottom: 100px !important;
+    box-sizing: border-box;
+  }
+
+  .footer {
+    padding-bottom: 90px !important;
+  }
 }

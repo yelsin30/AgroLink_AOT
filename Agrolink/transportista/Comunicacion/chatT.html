@@ -37,126 +37,124 @@
   </div>
 
   <script>
-document.addEventListener("DOMContentLoaded", () => {
-  /* ======================================================
-     🔒 VALIDACIÓN DE SESIÓN PERSISTENTE (Opción 2)
-  ====================================================== */
-  let usuario = JSON.parse(localStorage.getItem("agrolinkUsuario"));
-  const usuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios")) || [];
+    document.addEventListener("DOMContentLoaded", () => {
+      /* ============================
+         🔒 VALIDACIÓN DE SESIÓN
+      ============================ */
+      let usuario = JSON.parse(localStorage.getItem("agrolinkUsuario"));
+      const usuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios")) || [];
 
-  // Si no hay sesión activa, redirige al inicio
-  if (!usuario || !(usuario.email || usuario.correo)) {
-    alert("⚠️ No has iniciado sesión. Vuelve a ingresar.");
-    window.location.href = "../../index.html";
-    return;
-  }
-
-  // Sincronizar con la versión más reciente guardada
-  const clave = usuario.email || usuario.correo;
-  const actualizado = usuarios.find(u => (u.email || u.correo) === clave);
-  if (actualizado) {
-    usuario = { ...usuario, ...actualizado };
-    localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
-  }
-
-  /* ======================================================
-     💬 CHAT TRANSPORTISTA ORIGINAL
-  ====================================================== */
-  const params = new URLSearchParams(window.location.search);
-  const envioID = params.get("id");
-  const productor = params.get("productor") || "Productor";
-  const chatKey = `chat_${envioID}`;
-  const chatBody = document.getElementById("chatBody");
-
-  const nombreTransportista = usuario.nombre || "Transportista";
-  const fotoTransportista = usuario.avatar || usuario.foto || null;
-
-  document.getElementById("nombreProductor").textContent = productor;
-
-  let mensajes = JSON.parse(localStorage.getItem(chatKey)) || [];
-
-  // 🧠 Mensaje automático del bot (solo una vez)
-  if (!mensajes.some(m => m.tipo === "bot")) {
-    const botMsg = {
-      remitente: "AgroLink BOT",
-      rol: "bot",
-      texto: "🚜 ¡Hola! Soy el productor, gracias por aceptar el envío. Puedes comunicarte conmigo por aquí.",
-      fecha: new Date().toISOString(),
-      tipo: "bot"
-    };
-    mensajes.push(botMsg);
-    localStorage.setItem(chatKey, JSON.stringify(mensajes));
-  }
-
-  function renderMensajes() {
-    chatBody.innerHTML = "";
-    mensajes.forEach(msg => {
-      const isMine = msg.rol === "transportista";
-      const isBot = msg.rol === "bot";
-
-      const contenedor = document.createElement("div");
-      contenedor.classList.add("mensaje-contenedor", isMine ? "enviado" : "recibido");
-
-      const avatar = document.createElement("div");
-      avatar.classList.add("avatar");
-      avatar.textContent = isBot ? "🤖" : msg.remitente.charAt(0).toUpperCase();
-
-      const burbuja = document.createElement("div");
-      burbuja.classList.add("mensaje", isMine ? "msg-enviado" : "msg-recibido");
-      if (isBot) burbuja.style.background = "#bde2c4";
-
-      const hora = new Date(msg.fecha).toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" });
-      burbuja.innerHTML = `<p>${msg.texto}</p><small>${hora}</small>`;
-
-      if (isMine) {
-        contenedor.appendChild(burbuja);
-        contenedor.appendChild(avatar);
-      } else {
-        contenedor.appendChild(avatar);
-        contenedor.appendChild(burbuja);
+      if (!usuario || !(usuario.email || usuario.correo)) {
+        alert("⚠️ No has iniciado sesión. Vuelve a ingresar.");
+        window.location.href = "../../index.html";
+        return;
       }
 
-      chatBody.appendChild(contenedor);
-    });
-    chatBody.scrollTop = chatBody.scrollHeight;
-  }
+      const clave = usuario.email || usuario.correo;
+      const actualizado = usuarios.find(u => (u.email || u.correo) === clave);
+      if (actualizado) {
+        usuario = { ...usuario, ...actualizado };
+        localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
+      }
 
-  function enviarMensaje() {
-    const input = document.getElementById("mensajeInput");
-    const texto = input.value.trim();
-    if (!texto) return;
+      /* ============================
+         💬 CHAT TRANSPORTISTA
+      ============================ */
+      const params = new URLSearchParams(window.location.search);
+      const envioID = params.get("id");
+      const productor = params.get("productor") || "Productor";
+      const chatKey = `chat_${envioID}`;
+      const chatBody = document.getElementById("chatBody");
 
-    const nuevoMsg = {
-      remitente: nombreTransportista,
-      rol: "transportista",
-      texto,
-      fecha: new Date().toISOString(),
-      foto: fotoTransportista
-    };
+      const nombreTransportista = usuario.nombre || "Transportista";
+      const fotoTransportista = usuario.avatar || usuario.foto || null;
 
-    mensajes.push(nuevoMsg);
-    localStorage.setItem(chatKey, JSON.stringify(mensajes));
-    input.value = "";
-    renderMensajes();
-  }
+      document.getElementById("nombreProductor").textContent = productor;
 
-  document.getElementById("enviarBtn").addEventListener("click", enviarMensaje);
-  document.getElementById("mensajeInput").addEventListener("keypress", e => {
-    if (e.key === "Enter") enviarMensaje();
-  });
+      let mensajes = JSON.parse(localStorage.getItem(chatKey)) || [];
 
-  // 🔄 Actualización en tiempo real si cambia el localStorage
-  window.addEventListener("storage", e => {
-    if (e.key === chatKey) {
-      mensajes = JSON.parse(e.newValue || "[]");
+      // ✅ Mensaje inicial del productor (solo una vez)
+      if (!mensajes.some(m => m.rol === "productor")) {
+        const msgInicial = {
+          remitente: productor,
+          rol: "productor", // 👈 cambia de "bot" a "productor"
+          texto: "🚜 ¡Hola! Soy el productor, gracias por aceptar el envío. Puedes comunicarte conmigo por aquí.",
+          fecha: new Date().toISOString()
+        };
+        mensajes.push(msgInicial);
+        localStorage.setItem(chatKey, JSON.stringify(mensajes));
+      }
+
+      function renderMensajes() {
+        chatBody.innerHTML = "";
+        mensajes.forEach(msg => {
+          const esMio = msg.rol === "transportista";
+
+          const contenedor = document.createElement("div");
+          contenedor.classList.add("mensaje-contenedor", esMio ? "enviado" : "recibido");
+
+          const avatar = document.createElement("div");
+          avatar.classList.add("avatar");
+          avatar.textContent = (msg.remitente || "?").charAt(0).toUpperCase();
+
+          const burbuja = document.createElement("div");
+          burbuja.classList.add("mensaje", esMio ? "msg-enviado" : "msg-recibido");
+
+          const hora = new Date(msg.fecha).toLocaleTimeString("es-PE", {
+            hour: "2-digit",
+            minute: "2-digit"
+          });
+
+          burbuja.innerHTML = `<p>${msg.texto}</p><small>${hora}</small>`;
+
+          if (esMio) {
+            contenedor.appendChild(burbuja);
+            contenedor.appendChild(avatar);
+          } else {
+            contenedor.appendChild(avatar);
+            contenedor.appendChild(burbuja);
+          }
+
+          chatBody.appendChild(contenedor);
+        });
+        chatBody.scrollTop = chatBody.scrollHeight;
+      }
+
+      // ✅ Enviar mensaje del transportista
+      function enviarMensaje() {
+        const input = document.getElementById("mensajeInput");
+        const texto = input.value.trim();
+        if (!texto) return;
+
+        const nuevoMsg = {
+          remitente: nombreTransportista,
+          rol: "transportista",
+          texto,
+          fecha: new Date().toISOString(),
+          foto: fotoTransportista
+        };
+
+        mensajes.push(nuevoMsg);
+        localStorage.setItem(chatKey, JSON.stringify(mensajes));
+        input.value = "";
+        renderMensajes();
+      }
+
+      document.getElementById("enviarBtn").addEventListener("click", enviarMensaje);
+      document.getElementById("mensajeInput").addEventListener("keypress", e => {
+        if (e.key === "Enter") enviarMensaje();
+      });
+
+      // 🔄 Escuchar actualizaciones del localStorage (mensajes del productor)
+      window.addEventListener("storage", e => {
+        if (e.key === chatKey) {
+          mensajes = JSON.parse(e.newValue || "[]");
+          renderMensajes();
+        }
+      });
+
       renderMensajes();
-    }
-  });
-
-  renderMensajes();
-});
-</script>
-
+    });
+  </script>
 </body>
-
 </html>

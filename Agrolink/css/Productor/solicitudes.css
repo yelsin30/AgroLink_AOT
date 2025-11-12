@@ -283,3 +283,118 @@ body {
       font-size: .9rem;
       margin-top: 2rem;
     }
+    /* ===== BARRA INFERIOR AGROLINK (VERSIÓN UNIFICADA) ===== */
+/* ===== DISEÑO RESPONSIVO CON BARRA INFERIOR AGROLINK ===== */
+@media (max-width: 700px) {
+  /* --- Barra inferior --- */
+  .sidebar {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    width: 100% !important;
+    height: 64px !important;
+    background: #fff;
+    flex-direction: row !important;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.1);
+    border-top: 1px solid rgba(22, 41, 27, 0.08);
+    z-index: 2000 !important;
+    padding: 0 !important;
+    animation: slideUp 0.25s ease;
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .sidebar .logo {
+    display: none !important;
+  }
+
+  .nav-icons {
+    flex-direction: row !important;
+    
+    width: 100%;
+    gap: 1.3rem;
+  }
+
+  .nav-icons button {
+    width: 46px;
+    height: 46px;
+    font-size: 1.3rem;
+    border-radius: 12px;
+    background: none;
+    color: #4b5563;
+    border: none;
+    transition: all 0.3s ease;
+  }
+
+  .nav-icons button:hover {
+    color: #16291b;
+    background: #f3f6f4;
+  }
+
+  .nav-icons button.active {
+    background-color: #00b074;
+    color: #fff;
+    box-shadow: 0 0 12px rgba(0, 176, 116, 0.4);
+    transform: scale(1.05);
+  }
+
+  .logout-btn {
+    display: none !important;
+  }
+
+  /* --- Contenido principal ajustado --- */
+  main {
+    margin: 0 !important;
+    padding: 90px 1rem 100px !important; /* espacio superior e inferior equilibrado */
+    box-sizing: border-box;
+  }
+
+  header {
+    margin-top: 0.5rem !important;
+    text-align: center;
+  }
+
+  .content-container {
+    margin-top: 0.8rem !important;
+  }
+
+  /* --- KPIs en dos columnas --- */
+  .stats-row {
+    grid-template-columns: repeat(2, minmax(140px, 1fr)) !important;
+    gap: 1rem !important;
+    margin-top: 1rem !important;
+  }
+
+  @media (max-width: 420px) {
+    .stats-row {
+      grid-template-columns: 1fr !important;
+    }
+  }
+
+  /* --- Footer --- */
+  footer {
+    margin: 0 !important;
+    padding-bottom: 80px !important;
+    text-align: center;
+    font-size: 0.8rem;
+  }
+
+  html, body {
+    overflow-x: hidden;
+    overflow-y: auto;
+    height: auto;
+  }
+}

@@ -2,32 +2,47 @@
    AGROLINK - PANEL TRANSPORTISTA (EstiloT.css)
    =================================================== */
 
-/* === BASE GENERAL === */
-/* === SIDEBAR AGROLINK OFICIAL === */
+/* ---- BASE ---- */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #f7f9f7;
+  font-family: "Poppins", sans-serif;
+  color: #16291b;
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  display: block !important;
+}
+
+/* ---- SIDEBAR (Desktop: izquierda) ---- */
 .sidebar {
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
   width: 74px;
-  background: #ffffff;
-  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.08);
+  background: #fff;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, .08);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
   padding: 1.4rem 0;
-  z-index: 100;
+  z-index: 1000;
+  border: none;
 }
 
-/* Tractor superior */
 .sidebar .logo {
   font-size: 1.9rem;
   color: #0f2417;
-  margin-top: 0.4rem;
+  margin-top: .4rem;
 }
 
-/* === ICONOS DE NAVEGACIÓN === */
+/* ---- Menú ---- */
 .nav-icons {
   display: flex;
   flex-direction: column;
@@ -37,49 +52,46 @@
   gap: 1.4rem;
 }
 
-/* Botones base */
 .nav-icons button {
   width: 48px;
   height: 48px;
-  background: transparent;
   border: none;
-  color: #0f2417;
-  font-size: 1.3rem;
   border-radius: 14px;
-  cursor: pointer;
+  background: transparent;
+  color: #4b5563;
+  font-size: 1.3rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.25s ease;
+  cursor: pointer;
+  transition: all .25s ease;
 }
 
-/* Hover */
 .nav-icons button:hover {
   background: #f3f6f4;
   color: #00b074;
 }
 
-/* Activo con efecto glow */
 .nav-icons button.active {
   background: #00b074;
-  color: #ffffff;
-  box-shadow: 0 4px 20px rgba(0, 176, 116, 0.55);
+  color: #fff;
+  box-shadow: 0 0 16px rgba(0, 176, 116, .4);
 }
 
-/* === BOTÓN SALIR === */
+/* ---- Salir ---- */
 .logout-btn {
   border: none;
   background: none;
   color: #b91c1c;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: .9rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.3rem;
+  gap: .3rem;
   cursor: pointer;
-  padding-bottom: 0.8rem;
-  transition: color 0.3s ease;
+  padding-bottom: .8rem;
+  transition: color .3s ease;
 }
 
 .logout-btn i {
@@ -90,8 +102,7 @@
   color: #a22020;
 }
 
-
-/* === CONTENIDO PRINCIPAL === */
+/* ---- Main ---- */
 main {
   margin-left: 74px;
   padding: 2rem 3rem;
@@ -104,18 +115,17 @@ main {
   margin: 0 auto;
 }
 
-/* === HEADER === */
+/* ---- Header/KPIs/Paneles (igual tu base) ---- */
 .content-container header h1 {
   font-weight: 700;
   color: #16291b;
-  margin-bottom: 0.3rem;
+  margin-bottom: .3rem;
 }
 
 .content-container header p {
   color: #4b6650;
 }
 
-/* === KPIs === */
 .stats-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
@@ -126,17 +136,17 @@ main {
   background: #fff;
   border-radius: 16px;
   padding: 1.3rem 1.4rem;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, .06);
   display: flex;
   align-items: center;
   gap: 12px;
   border: 1px solid #e8f6eb;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform .2s, box-shadow .2s;
 }
 
 .stat-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 18px rgba(0, 176, 116, 0.2);
+  box-shadow: 0 8px 18px rgba(0, 176, 116, .2);
 }
 
 .stat-icon {
@@ -144,11 +154,10 @@ main {
   color: #00b074;
 }
 
-/* === PANEL GENÉRICO === */
 .panel {
   background: #fff;
   border-radius: 16px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .05);
   padding: 1.5rem;
 }
 
@@ -161,15 +170,14 @@ main {
   color: #16291b;
 }
 
-/* === CALENDARIO === */
+/* ---- Calendario / Perfil / Chats (sin cambios de layout) ---- */
 #calendario {
   width: 100%;
   background: #fff;
   border-radius: 12px;
-  font-size: 0.9rem;
+  font-size: .9rem;
 }
 
-/* FullCalendar ajustes */
 .fc .fc-toolbar.fc-header-toolbar {
   margin-bottom: 1rem;
 }
@@ -181,20 +189,19 @@ main {
 }
 
 .fc .fc-button-primary {
-  background-color: #00b074;
+  background: #00b074;
   border-color: #00b074;
 }
 
 .fc .fc-button-primary:not(:disabled):hover {
-  background-color: #00945f;
+  background: #00945f;
   border-color: #00945f;
 }
 
-/* === PERFIL === */
 .right-panel .perfil-box {
   border-radius: 16px;
   background: #fff;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, .05);
 }
 
 .perfil-box img {
@@ -208,14 +215,13 @@ main {
 }
 
 .info-mes p {
-  margin-bottom: 0.25rem;
+  margin-bottom: .25rem;
   color: #16291b;
 }
 
-/* === CHATS === */
 .chats-box {
   border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
   background: #fff;
 }
 
@@ -224,10 +230,86 @@ main {
   color: #16291b;
 }
 
-/* === FOOTER === */
 footer {
   text-align: center;
   color: #607462;
-  font-size: 0.9rem;
+  font-size: .9rem;
   margin-top: 2rem;
+}
+
+/* ===================================================
+   RESPONSIVE (<=700px): barra inferior estilo app
+   =================================================== */
+@media (max-width:700px) {
+
+  /* Barra inferior */
+  .sidebar {
+    all: unset;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 68px !important;
+    background: #ffffff !important;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-evenly !important;
+    align-items: center !important;
+    border-radius: 16px 16px 0 0 !important;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, .08) !important;
+    border-top: 1px solid rgba(0, 0, 0, .05);
+    z-index: 3000 !important;
+    padding: 0 !important;
+  }
+
+  /* Oculta elementos que no van en la barra inferior */
+  .sidebar .logo,
+  .logout-btn {
+    display: none !important;
+  }
+
+  .nav-icons {
+    flex-direction: row !important;
+    width: 100% !important;
+    align-items: center !important;
+    gap: .8rem !important;
+  }
+
+  .nav-icons button {
+    width: 46px !important;
+    height: 46px !important;
+    font-size: 1.25rem !important;
+    border-radius: 14px !important;
+    background: transparent !important;
+    color: #4b5563 !important;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+
+  .nav-icons button:hover {
+    background: rgba(22, 41, 27, .06) !important;
+  }
+
+  .nav-icons button.active {
+    background: #00b074 !important;
+    color: #fff !important;
+    box-shadow: 0 0 16px rgba(0, 176, 116, .4) !important;
+    transform: translateY(-4px) !important;
+  }
+
+  /* Contenido: sin margen izquierdo y con espacio inferior para la barra */
+  main {
+    margin: 0 !important;
+    padding: 1.25rem 1rem 100px !important;
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
+
+  .content-container {
+    max-width: 100%;
+  }
+
+  footer {
+    padding-bottom: 90px !important;
+  }
 }

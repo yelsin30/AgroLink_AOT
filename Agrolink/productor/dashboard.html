@@ -15,9 +15,29 @@
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
   <link rel="icon" href="../img/logo.png" type="image/png" />
-
-  <!-- ✅ CSS externo del dashboard -->
   <link rel="stylesheet" href="../css/Productor/Dash.css">
+
+  <style>
+    .mensaje-item {
+      cursor: pointer;
+      border-radius: 10px;
+      padding: .5rem .6rem;
+      transition: background 0.18s;
+    }
+
+    .mensaje-item:hover {
+      background: #f0fdf4;
+    }
+
+    .mensaje-item .texto {
+      color: #334155;
+    }
+
+    .mensaje-item .meta {
+      color: #64748b;
+      font-size: .78rem;
+    }
+  </style>
 </head>
 
 <body>
@@ -46,18 +66,15 @@
           <small id="helloSub" class="text-muted">Tu panel de control personal</small>
         </div>
       </div>
-      <div id="avatar" class="user-avatar" title="Ver perfil" onclick="location.href='perfil.html'">
-        A
-      </div>
+      <div id="avatar" class="user-avatar" title="Ver perfil" onclick="location.href='perfil.html'">A</div>
     </div>
 
     <!-- KPIs -->
     <div class="row g-3 mb-3">
       <div class="col-md-3 col-6">
-        <div class="kpi-card"><i class="fa-solid fa-money-bill-trend-up kpi-icon"></i>
+        <div class="kpi-card"><i class="fa-solid fa-map-location-dot kpi-icon"></i>
           <h6>Cobertura nacional</h6>
           <div class="kpi-value">0 regiones</div>
-          <i class="fa-solid fa-map-location-dot kpi-icon"></i>
         </div>
       </div>
       <div class="col-md-3 col-6">
@@ -90,10 +107,7 @@
             <a href="envios.html" class="active"><i class="fa-solid fa-truck"></i> Mis envíos</a>
           </div>
         </div>
-        <div class="panel-body text-muted small">
-          <p><i class="fa-regular fa-circle-check text-success"></i> No tienes actividad todavía</p>
-          <p>Crea tu primera solicitud para verla aquí</p>
-        </div>
+        <div class="panel-body text-muted small" id="actividadReciente"></div>
       </div>
 
       <!-- PANEL DERECHO -->
@@ -119,104 +133,39 @@
 
   <footer>© 2025 AgroLink. Todos los derechos reservados.</footer>
 
-  <!-- Modal para borrar envíos -->
-  <div class="modal fade" id="modalBorrarEnvios" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content border-0 rounded-4">
-        <div class="modal-header bg-danger text-white rounded-top-4">
-          <h5 class="modal-title"><i class="fa-solid fa-trash-can"></i> Eliminar envíos</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body" id="listaEnviosEliminar">
-          <p class="text-muted">No hay envíos registrados actualmente.</p>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button id="confirmarEliminacion" class="btn btn-danger">
-            <i class="fa-solid fa-trash"></i> Eliminar seleccionados
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal detalle envío -->
-  <div class="modal fade" id="modalEnvio" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 rounded-4">
-        <div class="modal-header bg-success text-white rounded-top-4">
-          <h5 class="modal-title"><i class="fa-solid fa-truck"></i> Detalles del envío</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body" id="detalleEnvio"></div>
-      </div>
-    </div>
-  </div>
-
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      /* ==========================
-         🔒 VALIDACIÓN DE SESIÓN
-      ========================== */
-      // === Verificación de sesión activa unificada ===
+
+      /* === Sesión === */
       let usuario =
         JSON.parse(localStorage.getItem("usuarioActivo")) ||
-        JSON.parse(localStorage.getItem("agrolinkUsuario")) ||
-        null;
+        JSON.parse(localStorage.getItem("agrolinkUsuario")) || null;
 
       if (!usuario) {
         alert("⚠️ No has iniciado sesión. Por favor, vuelve a ingresar.");
         window.location.href = "../index.html";
-      } else {
-        console.log("✅ Sesión detectada:", usuario.nombre, "-", usuario.rol);
       }
 
-
-      // 🔄 Sincronizar usuario actual con la base de usuarios almacenada
-      // 🔄 Sincronizar usuario actual con la base de usuarios almacenada
       const usuariosGuardados = JSON.parse(localStorage.getItem("agrolinkUsuarios")) || [];
-      const actualizado = usuariosGuardados.find(
-        u => (u.email || u.correo) === (usuario.email || usuario.correo)
-      );
+      const actualizado = usuariosGuardados.find(u => (u.email || u.correo) === (usuario.email || usuario.correo));
       if (actualizado) {
         usuario = { ...usuario, ...actualizado };
         localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
         localStorage.setItem("usuarioActivo", JSON.stringify(usuario));
       }
 
-      /* ==========================
-         👤 DATOS DE USUARIO EN UI
-      ========================== */
       const nombreUser = usuario.nombre || "Productor";
-      const helloName = document.getElementById("helloName");
+      document.getElementById("helloName").textContent = nombreUser;
       const avatar = document.getElementById("avatar");
-
-      if (helloName) helloName.textContent = nombreUser;
-      if (avatar) {
-        if (usuario.avatar || usuario.fotoPerfil) {
-          avatar.innerHTML = `<img src="${usuario.avatar || usuario.fotoPerfil}" alt="${nombreUser}">`;
-        } else {
-          avatar.textContent = (nombreUser[0] || "A").toUpperCase();
-        }
+      if (usuario.avatar || usuario.fotoPerfil) {
+        avatar.innerHTML = `<img src="${usuario.avatar || usuario.fotoPerfil}" alt="${nombreUser}">`;
+      } else {
+        avatar.textContent = (nombreUser[0] || "A").toUpperCase();
       }
 
-      /* ==========================
-         🚪 CIERRE DE SESIÓN
-      ========================== */
-      const btnLogout = document.getElementById("btnLogout");
-      if (btnLogout) {
-        btnLogout.addEventListener("click", () => {
-          localStorage.removeItem("agrolinkUsuario"); // solo se cierra sesión, sin borrar usuarios
-          alert("👋 Sesión cerrada correctamente.");
-          window.location.href = "../index.html";
-        });
-      }
-
-      /* ==========================
-         ⚙️ LÓGICA EXISTENTE (sin tocar)
-      ========================== */
+      /* === KPIs === */
       const all = JSON.parse(localStorage.getItem("solicitudesAgroLink") || "[]");
       let envios = all.filter(s => (s.productor || "").toLowerCase() === nombreUser.toLowerCase());
       if (envios.length === 0) envios = all;
@@ -226,43 +175,25 @@
       const completados = envios.filter(e => /completado/i.test(e.estado || "")).length;
 
       const totalEnvios = envios.length;
-      const regiones = new Set(envios.filter(e => /completado/i.test(e.estado || ""))
-        .map(e => (e.destino || "").trim().toLowerCase()));
+      const regiones = new Set(envios.filter(e => /completado/i.test(e.estado || "")).map(e => (e.destino || "").trim().toLowerCase()));
       const cobertura = regiones.size;
-      const totalPeso = envios.reduce((acc, e) => acc + (parseFloat(e.peso) || 0), 0);
-      const califProm =
-        envios.reduce((a, e) => a + (parseFloat(e.calificacion) || 0), 0) /
-        (envios.filter(e => e.calificacion).length || 1);
+      const totalPeso = envios.reduce((a, e) => a + (parseFloat(e.peso) || 0), 0);
+      const califProm = envios.reduce((a, e) => a + (parseFloat(e.calificacion) || 0), 0) / (envios.filter(e => e.calificacion).length || 1);
 
       const kpis = document.querySelectorAll(".kpi-card");
       if (kpis[0]) kpis[0].querySelector(".kpi-value").textContent = `${cobertura} regiones`;
       if (kpis[1]) kpis[1].querySelector(".kpi-value").textContent = totalEnvios;
       if (kpis[2]) kpis[2].querySelector(".kpi-value").textContent = (totalPeso / 1000).toFixed(1) + " T";
-      if (kpis[3]) kpis[3].querySelector(".kpi-value").textContent =
-        califProm > 0 ? califProm.toFixed(1) + " ⭐" : "— ⭐";
+      if (kpis[3]) kpis[3].querySelector(".kpi-value").textContent = califProm > 0 ? califProm.toFixed(1) + " ⭐" : "— ⭐";
 
-      const resumen = document.getElementById("resumenRapido");
-      if (resumen) {
-        resumen.innerHTML = `
-        <p><i class="fa-solid fa-truck text-success"></i> ${enCurso} envío(s) en curso<br><small class="text-muted">Moviendo carga ahora</small></p>
-        <p><i class="fa-solid fa-clock text-warning"></i> ${pendientes} pendiente(s)<br><small class="text-muted">Aún por asignar transportista</small></p>
-        <p><i class="fa-solid fa-circle-check text-primary"></i> ${completados} completado(s)<br><small class="text-muted">Últimos 30 días</small></p>
-        <hr>
-        <p class="text-danger fw-semibold mt-2" style="cursor:pointer" id="btnBorrarEnvios">
-          <i class="fa-solid fa-trash-can"></i> Borrar envíos
-        </p>
-        <small class="text-muted">Selecciona y elimina los que desees</small>
-      `;
-      }
-
-      const actividad = document.querySelector(".panel-body.text-muted");
-      if (actividad) {
-        if (envios.length === 0) {
-          actividad.innerHTML = `<p><i class="fa-regular fa-circle-check text-success"></i> No tienes actividad todavía</p>
-                               <p>Crea tu primera solicitud para verla aquí</p>`;
-        } else {
-          const ultimos = envios.slice(-3).reverse();
-          actividad.innerHTML = ultimos.map(e => `
+      /* === Actividad Reciente === */
+      const actividad = document.getElementById("actividadReciente");
+      if (envios.length === 0) {
+        actividad.innerHTML = `<p><i class="fa-regular fa-circle-check text-success"></i> No tienes actividad todavía</p>
+        <p>Crea tu primera solicitud para verla aquí</p>`;
+      } else {
+        const ultimos = envios.slice(-3).reverse();
+        actividad.innerHTML = ultimos.map(e => `
           <div class="border-bottom py-1">
             <i class="fa-solid fa-truck text-success"></i>
             <strong>${e.tipo || "Transporte"}</strong> — ${e.origen || "?"} → ${e.destino || "?"}
@@ -270,17 +201,64 @@
             <div class="small text-muted">${e.fecha || ""}</div>
           </div>
         `).join("") + `<p class="small text-end mt-1 mb-0"><a href="envios.html" class="text-success text-decoration-none">Ver todos →</a></p>`;
-        }
       }
 
+      /* === Resumen y Mensajes === */
+      const resumen = document.getElementById("resumenRapido");
+      resumen.innerHTML = `
+        <p><i class="fa-solid fa-truck text-success"></i> ${enCurso} envío(s) en curso<br><small class="text-muted">Moviendo carga ahora</small></p>
+        <p><i class="fa-solid fa-clock text-warning"></i> ${pendientes} pendiente(s)<br><small class="text-muted">Aún por asignar transportista</small></p>
+        <p><i class="fa-solid fa-circle-check text-primary"></i> ${completados} completado(s)<br><small class="text-muted">Últimos 30 días</small></p>
+        <hr><h6 class="text-success mb-2"><i class="fa-solid fa-comments"></i> Mensajes recientes</h6>
+        <div id="mensajesRecientes" class="small"></div>
+      `;
+
+      const cont = document.getElementById("mensajesRecientes");
+      const chats = JSON.parse(localStorage.getItem("agrolinkChats") || "[]");
+      const recientes = [];
+
+      chats.forEach(c => {
+        const ult = c.mensajes?.slice(-1)[0];
+        if (!ult) return;
+        if ((c.productor || "").toLowerCase() === nombreUser.toLowerCase()) {
+          recientes.push({
+            id: c.idSolicitud,
+            otro: c.transportista || "Transportista",
+            texto: ult.texto,
+            hora: ult.hora
+          });
+        }
+      });
+
+      if (recientes.length === 0) {
+        cont.innerHTML = `<p class="text-muted mb-0">No tienes mensajes recientes.</p>`;
+      } else {
+        cont.innerHTML = recientes.slice(-5).reverse().map(m => `
+          <div class="mensaje-item" data-id="${m.id}">
+            <div class="d-flex justify-content-between align-items-center">
+              <strong class="text-success">${m.otro}</strong>
+              <span class="meta">${m.hora}</span>
+            </div>
+            <div class="texto mt-1">"${m.texto}"</div>
+          </div>
+        `).join("");
+
+        cont.addEventListener("click", e => {
+          const item = e.target.closest(".mensaje-item");
+          if (!item) return;
+          const id = item.getAttribute("data-id");
+          window.location.href = `./Comunicacion/chatP.html?id=${encodeURIComponent(id)}`;
+        });
+      }
+
+      /* === Calendario === */
       const calendarEl = document.getElementById("calendar");
       if (calendarEl && typeof FullCalendar !== "undefined") {
         const calendar = new FullCalendar.Calendar(calendarEl, {
           locale: "es",
           initialView: "dayGridMonth",
-          headerToolbar: { left: "prev,next today", center: "title", right: "dayGridMonth,timeGridWeek,timeGridDay" },
-          buttonText: { today: "Hoy", month: "Mes", week: "Semana", day: "Día" },
-          height: "auto",
+          headerToolbar: { left: "prev,next today", center: "title", right: "" },
+          buttonText: { today: "Hoy", month: "Mes" },
           events: envios.map(e => ({
             title: `${e.tipo || "Transporte"} (${e.estado || "Pendiente"})`,
             start: e.fecha,
@@ -291,59 +269,21 @@
         calendar.render();
       }
 
+      /* === Navegación === */
       document.querySelectorAll(".agro-menu button").forEach(btn => {
         btn.addEventListener("click", () => {
           const link = btn.dataset.link;
-          if (link) window.location.href = link;
+          if (link) location.href = link;
         });
       });
 
-      const btnBorrarEnvios = document.getElementById("btnBorrarEnvios");
-      if (btnBorrarEnvios) {
-        const modalBorrar = new bootstrap.Modal(document.getElementById("modalBorrarEnvios"));
-        const listaEnviosEliminar = document.getElementById("listaEnviosEliminar");
-        const confirmarEliminacion = document.getElementById("confirmarEliminacion");
-
-        btnBorrarEnvios.addEventListener("click", () => {
-          const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
-          if (solicitudes.length === 0) {
-            listaEnviosEliminar.innerHTML = `<p class="text-muted">No hay envíos registrados actualmente.</p>`;
-          } else {
-            listaEnviosEliminar.innerHTML = `
-            <p>Selecciona los envíos que deseas eliminar:</p>
-            <div class="list-group" style="max-height:300px;overflow-y:auto;">
-              ${solicitudes.map(e => `
-                <label class="list-group-item d-flex justify-content-between align-items-center">
-                  <div>
-                    <input type="checkbox" class="form-check-input me-2" value="${e.id}">
-                    <strong>${e.tipo || "Sin tipo"}</strong> — ${e.origen || "?"} → ${e.destino || "?"}
-                    <div class="small text-muted">${e.fecha || ""} • ${e.estado || "Pendiente"}</div>
-                  </div>
-                  <span class="badge bg-light text-dark">ID: ${e.id}</span>
-                </label>
-              `).join("")}
-            </div>
-          `;
-          }
-          modalBorrar.show();
-        });
-
-        confirmarEliminacion.addEventListener("click", () => {
-          const seleccionados = Array.from(listaEnviosEliminar.querySelectorAll("input[type='checkbox']:checked")).map(chk => chk.value);
-          if (seleccionados.length === 0) {
-            alert("⚠️ No seleccionaste ningún envío.");
-            return;
-          }
-          let solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
-          solicitudes = solicitudes.filter(e => !seleccionados.includes(e.id));
-          localStorage.setItem("solicitudesAgroLink", JSON.stringify(solicitudes));
-          alert(`🗑️ Se eliminaron ${seleccionados.length} envío(s).`);
-          modalBorrar.hide();
-          location.reload();
-        });
-      }
+      /* === Cierre de sesión === */
+      document.getElementById("btnLogout").addEventListener("click", () => {
+        localStorage.removeItem("agrolinkUsuario");
+        alert("👋 Sesión cerrada correctamente.");
+        location.href = "../index.html";
+      });
     });
   </script>
 </body>
-
 </html>

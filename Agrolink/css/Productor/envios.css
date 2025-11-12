@@ -105,15 +105,29 @@ main {
 }
 
 .user-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 999px;
-  background: #e3f1e6;
-  color: var(--verde);
-  font-weight: 700;
-  display: grid;
-  place-items: center;
-  border: 2px solid rgba(22, 41, 27, .25);
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00b074, #028a5a);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+  overflow: hidden;
+}
+
+.user-avatar:hover {
+  transform: scale(1.05);
+}
+
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 /* ===== KPIs ===== */
@@ -473,37 +487,44 @@ main {
   display: none;
 }
 
-/* ===== MAPA GENERAL ===== */
 .map-panel {
   position: fixed;
   inset: 0;
+  background: rgba(0, 0, 0, 0.45);
   display: none;
-  z-index: 1800;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+  transition: all 0.3s ease;
 }
-
+.map-panel.show {
+  display: flex !important;
+}
 .map-panel .sheet {
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 70%;
+  width: 90%;
+  max-width: 800px;
+  height: 80vh;
   background: #fff;
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
-  box-shadow: 0 -10px 24px rgba(0, 0, 0, .15);
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
-
 .map-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: .7rem 1rem;
-  border-bottom: 1px solid rgba(22, 41, 27, .04);
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f9fafb;
 }
-
 #mapGeneral {
   flex: 1;
+  width: 100%;
 }
+
 
 footer {
   margin-left: 90px;
@@ -512,7 +533,9 @@ footer {
   color: #666;
 }
 
-/* ===== RESPONSIVE ===== */
+/* ===== RESPONSIVE AJUSTADO (igual estilo que dashboard) ===== */
+
+/* Tablets o pantallas medianas */
 @media (max-width: 992px) {
   .board {
     grid-template-columns: 1fr;
@@ -521,24 +544,145 @@ footer {
   main {
     margin-left: 80px;
   }
+
+  footer {
+    margin-left: 80px;
+  }
 }
 
-@media (max-width: 700px) {
+/* Dispositivos móviles */
+@media (max-width: 600px) {
+
+  /* --- Barra inferior --- */
   .agro-sidebar {
-    flex-direction: row;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
     width: 100%;
-    height: 62px;
-    inset: auto 0 0 0;
+    height: 64px;
+    background: #fff;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.1);
+    border-top: 1px solid rgba(22, 41, 27, 0.08);
+    z-index: 2000;
   }
 
-  main,
+  .agro-logo,
+  .agro-logout {
+    display: none;
+  }
+
+  .agro-menu {
+    flex-direction: row;
+    gap: 1.3rem;
+  }
+
+  .agro-menu button {
+    width: 44px;
+    height: 44px;
+    font-size: 1.3rem;
+    border-radius: 12px;
+  }
+
+  /* --- Contenido principal --- */
+  main {
+    margin: 0;
+    padding: 1rem;
+    padding-bottom: 90px;
+    /* espacio para la barra inferior */
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
+
+  /* --- Footer --- */
   footer {
-    margin-left: 0;
-    margin-bottom: 70px;
+    margin: 0;
+    padding: 1rem 0 80px;
+    text-align: center;
+    font-size: 0.8rem;
   }
 
+  /* --- KPIs en 2 columnas (como dashboard) --- */
+  .row.g-3.mb-3 {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(140px, 1fr));
+    justify-content: center;
+    align-items: stretch;
+    gap: 1rem;
+    margin: 0 auto;
+    max-width: 600px;
+  }
+
+  /* En pantallas muy pequeñas (por ejemplo celulares compactos) */
+  @media (max-width: 420px) {
+    .row.g-3.mb-3 {
+      grid-template-columns: 1fr;
+      max-width: 100%;
+    }
+  }
+
+  /* --- Íconos KPI --- */
+  .kpi-icon {
+    font-size: 1.8rem;
+    top: 0.8rem;
+    right: 0.8rem;
+    opacity: 0.2;
+  }
+
+  /* --- Ajuste de acciones de página --- */
   .page-actions {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.5rem;
   }
+
+  /* --- Mini-cards y paneles --- */
+  .mini-card {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .map-panel .sheet {
+    height: 75%;
+  }
+}
+
+/* ===== FIX GLOBAL: barra inferior SIEMPRE al fondo ===== */
+@media (max-width: 600px) {
+  .agro-sidebar {
+    position: fixed !important;
+    top: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 64px !important;
+    background: #fff;
+    flex-direction: row !important;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.1);
+    border-top: 1px solid rgba(22, 41, 27, 0.08);
+    z-index: 3000 !important;
+  }
+
+  /* Asegura que el contenido principal deje espacio abajo */
+  main {
+    margin-bottom: 90px !important;
+    padding-bottom: 90px !important;
+  }
+
+  footer {
+    padding-bottom: 80px !important;
+  }
+}
+
+/* Corrige conflicto Bootstrap col-6 en las KPIs */
+.row.g-3.mb-3>[class*="col-"] {
+  width: auto !important;
+  flex: 1 1 45% !important;
+  max-width: none !important;
 }

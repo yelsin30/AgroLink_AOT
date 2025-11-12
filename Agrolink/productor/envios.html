@@ -188,6 +188,19 @@
 
         </div>
       </div>
+      <!-- ====== MAPA GENERAL ====== -->
+      <div id="mapSheet" class="map-panel">
+        <div class="sheet">
+          <div class="map-toolbar">
+            <strong style="color:var(--verde)">
+              <i class="fa-solid fa-map"></i> Mapa general de envíos
+            </strong>
+            <button id="closeMapSheet" class="agro-btn gray">Cerrar</button>
+          </div>
+          <div id="mapGeneral"></div>
+        </div>
+      </div>
+
       <!-- Modal para borrar envíos -->
       <div class="modal fade" id="modalBorrarEnvios" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -554,6 +567,99 @@
         }
       });
     });
+  </script>
+  <script>
+    /* ======================================
+       🗺️ BOTÓN "MAPA" GENERAL
+    ====================================== */
+  document.addEventListener("DOMContentLoaded", () => {
+    const btnMapaGeneral = document.getElementById("btnMapaGeneral");
+    const mapSheet = document.getElementById("mapSheet");
+    const closeMapSheet = document.getElementById("closeMapSheet");
+
+    if (btnMapaGeneral) {
+      btnMapaGeneral.addEventListener("click", () => {
+        mapSheet.classList.add("show");
+        const mapContainer = document.getElementById("mapGeneral");
+        mapContainer.innerHTML = "";
+
+        const envios = JSON.parse(localStorage.getItem("solicitudesAgroLink") || "[]");
+        if (!envios.length) {
+          mapContainer.innerHTML = "<p class='text-muted p-3'>No hay envíos registrados para mostrar en el mapa.</p>";
+          return;
+        }
+
+        const map = L.map("mapGeneral").setView([-9.19, -75.015], 6);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: '&copy; OpenStreetMap' }).addTo(map);
+
+        const group = [];
+        envios.forEach(e => {
+          if (e.origenLat && e.origenLng && e.destinoLat && e.destinoLng) {
+            const origen = [e.origenLat, e.origenLng];
+            const destino = [e.destinoLat, e.destinoLng];
+            group.push(origen, destino);
+            const color = e.estado.includes("Completado") ? "#00b074" : e.estado.includes("En curso") ? "#ffb703" : "#6c757d";
+            L.polyline([origen, destino], { color, weight: 4, opacity: 0.8 }).addTo(map);
+            L.marker(origen).addTo(map).bindPopup(`<b>${e.producto || "Producto"}</b><br>Origen: ${e.origen}`);
+            L.marker(destino).addTo(map).bindPopup(`<b>${e.producto || "Producto"}</b><br>Destino: ${e.destino}`);
+          }
+        });
+        if (group.length) map.fitBounds(group);
+      });
+    }
+
+    if (closeMapSheet) closeMapSheet.addEventListener("click", () => mapSheet.classList.remove("show"));
+  });
+  </script>
+  <script>
+    /* ======================================
+       🗑️ BOTÓN "BORRAR ENVÍOS"
+    ====================================== */
+    const btnBorrarEnvios = document.getElementById("btnBorrarEnvios");
+    const modalBorrarEnvios = new bootstrap.Modal(document.getElementById("modalBorrarEnvios"));
+    const listaEnviosEliminar = document.getElementById("listaEnviosEliminar");
+    const confirmarEliminacion = document.getElementById("confirmarEliminacion");
+
+    if (btnBorrarEnvios) {
+      btnBorrarEnvios.addEventListener("click", (e) => {
+        e.preventDefault();
+        const envios = JSON.parse(localStorage.getItem("solicitudesAgroLink") || "[]");
+        if (!envios.length) {
+          listaEnviosEliminar.innerHTML = `<p class='text-muted'>No hay envíos registrados actualmente.</p>`;
+        } else {
+          listaEnviosEliminar.innerHTML = `
+          <p class='text-muted mb-2'>Selecciona los envíos que deseas eliminar:</p>
+          <div class="list-group" style="max-height:300px;overflow:auto;">
+            ${envios.map((e, i) => `
+              <label class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <input type="checkbox" class="form-check-input me-2" data-index="${i}">
+                  <strong>${e.producto || "Producto"}</strong> — ${e.origen || "?"} → ${e.destino || "?"}
+                  <div class="small text-muted">${e.estado || "Sin estado"}</div>
+                </div>
+              </label>`).join("")}
+          </div>`;
+        }
+        modalBorrarEnvios.show();
+      });
+    }
+
+    if (confirmarEliminacion) {
+      confirmarEliminacion.addEventListener("click", () => {
+        const envios = JSON.parse(localStorage.getItem("solicitudesAgroLink") || "[]");
+        const checks = listaEnviosEliminar.querySelectorAll("input[type='checkbox']:checked");
+        if (!checks.length) {
+          showToast("⚠️ Selecciona al menos un envío para eliminar.");
+          return;
+        }
+        const indices = [...checks].map(ch => parseInt(ch.dataset.index));
+        const nuevos = envios.filter((_, i) => !indices.includes(i));
+        localStorage.setItem("solicitudesAgroLink", JSON.stringify(nuevos));
+        showToast("🗑️ Envíos eliminados correctamente.");
+        modalBorrarEnvios.hide();
+        setTimeout(() => location.reload(), 500);
+      });
+    }
   </script>
 
 </body>

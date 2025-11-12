@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -47,19 +48,27 @@
           <div class="stats-row mb-4">
             <div class="stat-card">
               <div class="stat-icon"><i class="fa-solid fa-truck"></i></div>
-              <div><h4 id="viajesTotales">0</h4><span>Viajes Totales</span></div>
+              <div>
+                <h4 id="viajesTotales">0</h4><span>Viajes Totales</span>
+              </div>
             </div>
             <div class="stat-card">
               <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
-              <div><h4 id="completados">0</h4><span>Completados</span></div>
+              <div>
+                <h4 id="completados">0</h4><span>Completados</span>
+              </div>
             </div>
             <div class="stat-card">
               <div class="stat-icon"><i class="fa-solid fa-road"></i></div>
-              <div><h4 id="distanciaTotal">0 km</h4><span>Distancia Estimada</span></div>
+              <div>
+                <h4 id="distanciaTotal">0 km</h4><span>Distancia Estimada</span>
+              </div>
             </div>
             <div class="stat-card">
               <div class="stat-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
-              <div><h4>S/ <span id="gananciaTotal">0.00</span></h4><span>Ganancia Total</span></div>
+              <div>
+                <h4>S/ <span id="gananciaTotal">0.00</span></h4><span>Ganancia Total</span>
+              </div>
             </div>
           </div>
 
@@ -74,8 +83,8 @@
         <div class="right-panel" style="min-width:320px;">
           <!-- PERFIL -->
           <div class="perfil-box p-3 text-center shadow-sm rounded bg-white">
-            <img src="../img/default-user.png" id="fotoPerfil" alt="Foto de perfil"
-              class="rounded-circle mb-3" width="90" height="90">
+            <img src="../img/default-user.png" id="fotoPerfil" alt="Foto de perfil" class="rounded-circle mb-3"
+              width="90" height="90">
             <h5 id="nombrePerfil" class="fw-bold mb-0">Transportista</h5>
             <p class="text-muted">
               <i class="fa-solid fa-id-badge"></i> <span id="placaPerfil">No registrada</span>
@@ -114,71 +123,79 @@
   <!-- === SCRIPT === -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      // 1) Verificar sesión
-      const sesionGuardada = localStorage.getItem("agrolinkUsuario");
-      if (!sesionGuardada) {
-        // No hay sesión -> al login
+      // === 1️⃣ Verificar sesión ===
+      const sesion = localStorage.getItem("agrolinkUsuario");
+      if (!sesion) {
         window.location.href = "../login.html";
         return;
       }
 
-      let usuario = JSON.parse(sesionGuardada);
+      let usuario = JSON.parse(sesion);
       const usuariosLista = JSON.parse(localStorage.getItem("agrolinkUsuarios") || "[]");
+      const correoRef = (usuario.email || usuario.correo || "").toLowerCase();
 
-      // 2) Sincronizar con la versión más reciente en agrolinkUsuarios
-      if (usuariosLista.length > 0) {
-        const claveEmail = usuario.email || usuario.correo || "";
-        if (claveEmail) {
-          const idx = usuariosLista.findIndex(
-            u => (u.email || u.correo || "").toLowerCase() === claveEmail.toLowerCase()
-          );
-          if (idx !== -1) {
-            usuario = usuariosLista[idx];       // usamos la versión actualizada
-            localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
-          }
-        }
+      const idx = usuariosLista.findIndex(
+        u => (u.email || u.correo || "").toLowerCase() === correoRef
+      );
+      if (idx !== -1) {
+        usuario = usuariosLista[idx];
+        localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
       }
 
-      const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink") || "[]");
-
-      // 3) Perfil
+      // === 2️⃣ Mostrar datos del perfil ===
       document.getElementById("nombreUsuario").textContent = usuario.nombre || "Transportista 👷‍♂️";
       document.getElementById("nombrePerfil").textContent = usuario.nombre || "Transportista";
       document.getElementById("placaPerfil").textContent = usuario.placa || "No registrada";
-      if (usuario.fotoPerfil) {
-        document.getElementById("fotoPerfil").src = usuario.fotoPerfil;
-      }
+      if (usuario.fotoPerfil) document.getElementById("fotoPerfil").src = usuario.fotoPerfil;
 
-      const nombreTransp = (usuario.nombre || "").toLowerCase();
-      const asignados = solicitudes.filter(
-        s => (s.transportista || "").toLowerCase() === nombreTransp
+      // === 3️⃣ Unificar datos de viajes ===
+      const viajesMain = JSON.parse(localStorage.getItem("agrolinkViajes") || "[]");
+      const solicitudes = JSON.parse(localStorage.getItem("solicitudesAgroLink") || "[]");
+      const viajes = [...viajesMain, ...solicitudes];
+
+      const nombreT = (usuario.nombre || "").trim().toLowerCase();
+      const viajesTransp = viajes.filter(
+        v => (v.transportista || "").trim().toLowerCase() === nombreT
       );
 
-      // 4) KPIs
-      const completados = asignados.filter(s => /completado/i.test(s.estado || ""));
-      const totalGanado = completados.reduce(
-        (a, s) => a + (parseFloat(s.pagoFinal || s.pago) || 0),
+      // === 4️⃣ Calcular métricas ===
+      const enCurso = viajesTransp.filter(v => /curso/i.test(v.estado));
+      const completados = viajesTransp.filter(v => /completado/i.test(v.estado));
+      const cancelados = viajesTransp.filter(v => /cancelado/i.test(v.estado));
+
+      const totalDistancia = viajesTransp.reduce(
+        (acc, v) => acc + (parseFloat(v.distancia) || 120),
         0
       );
-      const totalDist = asignados.length * 120;
 
-      document.getElementById("viajesTotales").textContent = asignados.length;
+      const totalGanancia = completados.reduce(
+        (acc, v) => acc + (parseFloat(v.pagoFinal || v.pago) || 0),
+        0
+      );
+
+      // === 5️⃣ Mostrar KPIs ===
+      document.getElementById("viajesTotales").textContent = viajesTransp.length;
       document.getElementById("completados").textContent = completados.length;
-      document.getElementById("distanciaTotal").textContent = totalDist + " km";
-      document.getElementById("gananciaTotal").textContent = totalGanado.toFixed(2);
+      document.getElementById("distanciaTotal").textContent = `${totalDistancia.toFixed(0)} km`;
+      document.getElementById("gananciaTotal").textContent = totalGanancia.toFixed(2);
 
-      // 5) Calendario
+      // === 6️⃣ Renderizar calendario ===
       const calendarEl = document.getElementById("calendario");
       const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: "dayGridMonth",
         locale: "es",
         height: 550,
         headerToolbar: { left: "prev,next today", center: "title", right: "" },
-        events: completados.map(v => ({
-          title: (v.origen || "?") + " → " + (v.destino || "?"),
+        events: viajesTransp.map(v => ({
+          title: `${v.origen || "?"} → ${v.destino || "?"}`,
           start: v.fecha,
-          backgroundColor: "#00b074",
-          borderColor: "#00b074",
+          backgroundColor:
+            /completado/i.test(v.estado)
+              ? "#00b074"
+              : /curso/i.test(v.estado)
+                ? "#ffb703"
+                : "#d9534f",
+          borderColor: "transparent",
           extendedProps: v
         })),
         eventClick: info => {
@@ -188,54 +205,44 @@
             `📦 ${v.origen || "?"} → ${v.destino || "?"}\n` +
             `📅 ${v.fecha || "-"}\n` +
             `💰 S/ ${pago}\n` +
-            `👨‍🌾 ${v.productor || "Productor"}`
+            `🚚 Estado: ${v.estado || "Sin estado"}`
           );
         }
       });
       calendar.render();
 
-      // 6) Chats activos
-      const enCurso = asignados.filter(s => /curso/i.test(s.estado || ""));
+      // === 7️⃣ Chats activos ===
       document.getElementById("contadorChats").textContent = enCurso.length;
-
       document.getElementById("listaChats").innerHTML = enCurso.length
         ? enCurso.map(s => `
-          <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-            <div>
-              <strong>${s.tipo || "Carga"}</strong><br>
-              <small class="text-muted">${s.origen || "?"} → ${s.destino || "?"}</small>
-            </div>
-            <button class="btn btn-sm btn-success"
-              onclick="window.location.href='./Comunicacion/chatT.html?id=${encodeURIComponent(s.id)}&productor=${encodeURIComponent(s.productor || '')}'">
-              <i class="fa-solid fa-comments"></i> Chat
-            </button>
+        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+          <div>
+            <strong>${s.tipo || "Carga"}</strong><br>
+            <small class="text-muted">${s.origen || "?"} → ${s.destino || "?"}</small>
           </div>
-        `).join("")
+          <button class="btn btn-sm btn-success"
+            onclick="window.location.href='./Comunicacion/chatT.html?id=${encodeURIComponent(s.id)}&productor=${encodeURIComponent(s.productor || '')}'">
+            <i class="fa-solid fa-comments"></i> Chat
+          </button>
+        </div>
+      `).join("")
         : `<p class="text-muted small mb-0">No tienes chats activos.</p>`;
 
-      // 7) Logout SIN borrar toda la data
+      // === 8️⃣ Logout ===
       document.getElementById("logout").addEventListener("click", () => {
-        // Marcar sesionActiva = false en agrolinkUsuarios
         const lista = JSON.parse(localStorage.getItem("agrolinkUsuarios") || "[]");
-        const claveEmail = usuario.email || usuario.correo || "";
-        if (claveEmail && lista.length > 0) {
-          const idx = lista.findIndex(
-            u => (u.email || u.correo || "").toLowerCase() === claveEmail.toLowerCase()
-          );
-          if (idx !== -1) {
-            lista[idx].sesionActiva = false;
-            localStorage.setItem("agrolinkUsuarios", JSON.stringify(lista));
-          }
-        }
-
-        // Limpiar solo la sesión actual
+        const i = lista.findIndex(u => (u.email || u.correo || "").toLowerCase() === correoRef);
+        if (i !== -1) lista[i].sesionActiva = false;
+        localStorage.setItem("agrolinkUsuarios", JSON.stringify(lista));
         localStorage.removeItem("agrolinkUsuario");
         localStorage.removeItem("agrolinkRol");
-
         alert("👋 Sesión cerrada correctamente. ¡Hasta pronto!");
         window.location.href = "../index.html";
       });
     });
   </script>
+
+
 </body>
+
 </html>

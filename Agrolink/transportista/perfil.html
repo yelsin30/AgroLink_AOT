@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mi Perfil | AgroLink</title>
 
-  <!-- Estilos principales -->
   <link rel="icon" href="../img/logo.png" type="image/png" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="../css/Transporte/EstiloPerfil.css" />
@@ -19,22 +18,27 @@
       color: #16291b;
       border-left: 3px solid #00b074;
       padding-left: 6px;
-      font-size: 0.9rem;
+      font-size: .9rem
     }
 
     .doc-link {
-      font-size: 0.9rem;
+      font-size: .9rem;
       color: #1f2933;
-      word-break: break-all;
+      word-break: break-all
     }
 
     .doc-link a {
       color: inherit;
-      text-decoration: none;
+      text-decoration: none
     }
 
     .doc-link a:hover {
-      text-decoration: underline;
+      text-decoration: underline
+    }
+
+    /* cursor para indicar que es clickeable en modo edición */
+    .clickable {
+      cursor: pointer
     }
   </style>
 </head>
@@ -91,7 +95,6 @@
 
         <!-- Datos -->
         <form id="perfilForm" class="perfil-datos">
-
           <label>Nombre completo</label>
           <input type="text" id="nombre">
 
@@ -146,7 +149,8 @@
 
         <div class="perfil-buttons">
           <button id="editarBtn" class="btn-secondary"><i class="fa-solid fa-pen"></i> Editar</button>
-          <button id="guardarBtn" class="btn-primary" style="display:none;"><i class="fa-solid fa-save"></i> Guardar</button>
+          <button id="guardarBtn" class="btn-primary" style="display:none;"><i class="fa-solid fa-save"></i>
+            Guardar</button>
         </div>
       </div>
 
@@ -156,12 +160,15 @@
         <ul>
           <li><i class="fa-solid fa-phone"></i> <strong>Teléfono:</strong> <span id="fichaTelefono">---</span></li>
           <li><i class="fa-solid fa-car"></i> <strong>Placa:</strong> <span id="fichaPlaca">---</span></li>
-          <li><i class="fa-solid fa-weight-hanging"></i> <strong>Capacidad:</strong> <span id="fichaCapacidad">---</span></li>
+          <li><i class="fa-solid fa-weight-hanging"></i> <strong>Capacidad:</strong> <span
+              id="fichaCapacidad">---</span></li>
           <li><i class="fa-solid fa-id-badge"></i> <strong>Licencia:</strong> <span id="fichaLicencia">---</span></li>
-          <li><i class="fa-solid fa-money-check-dollar"></i> <strong>Cuenta bancaria:</strong> <span id="fichaCuenta">---</span></li>
+          <li><i class="fa-solid fa-money-check-dollar"></i> <strong>Cuenta bancaria:</strong> <span
+              id="fichaCuenta">---</span></li>
           <li><i class="fa-solid fa-wallet"></i> <strong>Número de Yape:</strong> <span id="fichaYape">---</span></li>
           <li><i class="fa-solid fa-file-shield"></i> <strong>SOAT:</strong> <span id="fichaSoat">---</span></li>
-          <li><i class="fa-solid fa-screwdriver-wrench"></i> <strong>Revisión técnica:</strong> <span id="fichaRevision">---</span></li>
+          <li><i class="fa-solid fa-screwdriver-wrench"></i> <strong>Revisión técnica:</strong> <span
+              id="fichaRevision">---</span></li>
         </ul>
       </div>
     </div>
@@ -169,42 +176,42 @@
     <footer class="footer">© 2025 AgroLink. Todos los derechos reservados.</footer>
   </main>
 
-  <script src="../js/toast.js"></script>
   <script>
+    // Fallback de toast
+    if (typeof window.showToast === "undefined") {
+      window.showToast = (msg) => alert(msg);
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
-      // 1️⃣ Verificar sesión
+      // 1) Sesión
       const sesionGuardada = localStorage.getItem("agrolinkUsuario");
-      if (!sesionGuardada) {
-        window.location.href = "../login.html";
-        return;
-      }
+      if (!sesionGuardada) { window.location.href = "../login.html"; return; }
 
       let usuario = JSON.parse(sesionGuardada);
-      let usuariosLista = JSON.parse(localStorage.getItem("agrolinkUsuarios") || "[]");
-
-      // Sincronizar datos actualizados
-      const emailRef = usuario.email || usuario.correo;
+      const usuariosLista = JSON.parse(localStorage.getItem("agrolinkUsuarios") || "[]");
+      const emailRef = usuario.email || usuario.correo || "";
       const idx = usuariosLista.findIndex(u => (u.email || u.correo) === emailRef);
-      if (idx !== -1) {
-        usuario = usuariosLista[idx];
-        localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
-      }
+      if (idx !== -1) { usuario = usuariosLista[idx]; localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario)); }
 
-      // === ELEMENTOS ===
+      // 2) Elementos
       const previewPerfil = document.getElementById("previewPerfil");
       const filePerfil = document.getElementById("filePerfil");
       const btnCambiarPerfil = document.getElementById("btnCambiarPerfil");
+
       const previewVehiculo = document.getElementById("previewVehiculo");
       const fileVehiculo = document.getElementById("fileVehiculo");
       const btnCambiarVehiculo = document.getElementById("btnCambiarVehiculo");
+
       const fileSoat = document.getElementById("fileSoat");
       const fileRevision = document.getElementById("fileRevision");
       const btnCambiarSoat = document.getElementById("btnCambiarSoat");
       const btnCambiarRevision = document.getElementById("btnCambiarRevision");
       const soatLabel = document.getElementById("soatLabel");
       const revisionLabel = document.getElementById("revisionLabel");
+
       const form = document.getElementById("perfilForm");
       const inputs = form.querySelectorAll("input");
+
       const editarBtn = document.getElementById("editarBtn");
       const guardarBtn = document.getElementById("guardarBtn");
 
@@ -219,6 +226,21 @@
         revision: document.getElementById("fichaRevision"),
       };
 
+      // Helpers
+      const toDataURL = (file) => new Promise((res, rej) => {
+        const fr = new FileReader();
+        fr.onload = () => res(fr.result);
+        fr.onerror = rej;
+        fr.readAsDataURL(file);
+      });
+
+      const persist = () => {
+        localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
+        const list = JSON.parse(localStorage.getItem("agrolinkUsuarios") || "[]");
+        const i = list.findIndex(u => (u.email || u.correo) === (usuario.email || usuario.correo));
+        if (i !== -1) { list[i] = usuario; localStorage.setItem("agrolinkUsuarios", JSON.stringify(list)); }
+      };
+
       function mostrarDatos() {
         document.getElementById("nombre").value = usuario.nombre || "";
         document.getElementById("correo").value = usuario.email || "";
@@ -229,10 +251,21 @@
         document.getElementById("licencia").value = usuario.licencia || "";
         document.getElementById("cuentaBancaria").value = usuario.cuentaBancaria || "";
         document.getElementById("numeroYape").value = usuario.numeroYape || "";
+
         previewPerfil.src = usuario.fotoPerfil || "../img/default-user.png";
         previewVehiculo.src = usuario.vehiculoImg || "../img/default-truck.png";
-        soatLabel.textContent = usuario.soatNombre || "No cargado";
-        revisionLabel.textContent = usuario.revisionNombre || "No cargado";
+
+        // Etiquetas de documentos con link si existen
+        if (usuario.soatData && usuario.soatNombre) {
+          soatLabel.innerHTML = `<a href="${usuario.soatData}" target="_blank">${usuario.soatNombre}</a>`;
+        } else { soatLabel.textContent = "No cargado"; }
+
+        if (usuario.revisionData && usuario.revisionNombre) {
+          revisionLabel.innerHTML = `<a href="${usuario.revisionData}" target="_blank">${usuario.revisionNombre}</a>`;
+        } else { revisionLabel.textContent = "No cargado"; }
+
+        document.getElementById("nombreHeader").textContent = usuario.nombre || "Nombre del Usuario";
+
         ficha.telefono.textContent = usuario.telefono || "No registrado";
         ficha.placa.textContent = usuario.placa || "No registrado";
         ficha.capacidad.textContent = usuario.capacidad ? usuario.capacidad + " kg" : "No registrado";
@@ -241,26 +274,33 @@
         ficha.yape.textContent = usuario.numeroYape || "No registrado";
         ficha.soat.textContent = usuario.soatNombre || "No cargado";
         ficha.revision.textContent = usuario.revisionNombre || "No cargado";
-        document.getElementById("nombreHeader").textContent = usuario.nombre || "Nombre del Usuario";
       }
 
+      // 3) Estado inicial
       mostrarDatos();
       inputs.forEach(i => i.disabled = true);
 
-      editarBtn.addEventListener("click", () => {
-        inputs.forEach(i => i.disabled = false);
-        [btnCambiarPerfil, btnCambiarVehiculo, btnCambiarSoat, btnCambiarRevision].forEach(b => b.style.display = "inline-block");
-        editarBtn.style.display = "none";
-        guardarBtn.style.display = "inline-block";
-      });
+      // 4) Modo edición
+      const setEditable = (on) => {
+        inputs.forEach(i => i.disabled = !on);
+        [btnCambiarPerfil, btnCambiarVehiculo, btnCambiarSoat, btnCambiarRevision]
+          .forEach(b => b.style.display = on ? "inline-block" : "none");
 
-      guardarBtn.addEventListener("click", e => {
+        // permitir click en imágenes para abrir selector en edición
+        [previewPerfil, previewVehiculo].forEach(img => {
+          img.classList.toggle("clickable", on);
+          img.onclick = on ? () => img.nextElementSibling.click() : null;
+        });
+
+        editarBtn.style.display = on ? "none" : "inline-block";
+        guardarBtn.style.display = on ? "inline-block" : "none";
+      };
+
+      editarBtn.addEventListener("click", () => setEditable(true));
+
+      guardarBtn.addEventListener("click", (e) => {
         e.preventDefault();
-        inputs.forEach(i => i.disabled = true);
-        [btnCambiarPerfil, btnCambiarVehiculo, btnCambiarSoat, btnCambiarRevision].forEach(b => b.style.display = "none");
-        editarBtn.style.display = "inline-block";
-        guardarBtn.style.display = "none";
-
+        // datos de texto
         usuario.nombre = document.getElementById("nombre").value.trim();
         usuario.email = document.getElementById("correo").value.trim();
         usuario.password = document.getElementById("password").value.trim();
@@ -271,33 +311,82 @@
         usuario.cuentaBancaria = document.getElementById("cuentaBancaria").value.trim();
         usuario.numeroYape = document.getElementById("numeroYape").value.trim();
 
-        // Actualizar en localStorage
-        localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
-
-        // Actualizar en lista global
-        const usuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios")) || [];
-        const index = usuarios.findIndex(u => (u.email || u.correo) === usuario.email);
-        if (index !== -1) usuarios[index] = usuario;
-        localStorage.setItem("agrolinkUsuarios", JSON.stringify(usuarios));
-
+        persist();
         mostrarDatos();
-        showToast("✅ Perfil actualizado correctamente.", "success");
+        setEditable(false);
+        showToast("✅ Perfil actualizado correctamente.");
       });
 
-      // === LOGOUT ===
+      // 5) Subidas: imágenes
+      const wireImageUpload = (button, input, img, keyDataURL, label = null, keyName = null) => {
+        if (button) button.addEventListener("click", () => input.click());
+        input.addEventListener("change", async (e) => {
+          const f = e.target.files?.[0];
+          if (!f) return;
+          if (!f.type.startsWith("image/")) { showToast("Solo se permiten imágenes (JPG/PNG)."); return; }
+          const data = await toDataURL(f);
+          img.src = data;
+          usuario[keyDataURL] = data;
+          if (keyName) usuario[keyName] = f.name;
+          if (label) label.innerHTML = `<a href="${data}" target="_blank">${f.name}</a>`;
+          persist();
+          showToast("📷 Imagen actualizada.");
+        });
+      };
+
+      wireImageUpload(btnCambiarPerfil, filePerfil, previewPerfil, "fotoPerfil");
+      wireImageUpload(btnCambiarVehiculo, fileVehiculo, previewVehiculo, "vehiculoImg");
+
+      // 6) Subidas: documentos (PDF o imagen)
+      const wireDocUpload = (button, input, label, keyData, keyName) => {
+        if (button) button.addEventListener("click", () => input.click());
+
+        input.addEventListener("change", async (e) => {
+          try {
+            const f = e.target.files?.[0];
+            if (!f) return;
+
+            // Validación del tipo de archivo
+            const isValid = f.type.includes("pdf") || f.type.startsWith("image/");
+            if (!isValid) {
+              showToast("⚠️ Sube un PDF o una imagen (JPG/PNG).");
+              input.value = "";
+              return;
+            }
+
+            // Convertir archivo a base64 (DataURL)
+            const data = await toDataURL(f);
+            usuario[keyData] = data;
+            usuario[keyName] = f.name;
+
+            // Mostrar link al documento
+            label.innerHTML = `<a href="${data}" target="_blank">${f.name}</a>`;
+
+            // Guardar cambios en localStorage
+            persist();
+            mostrarDatos();
+            showToast(`📄 ${f.name} cargado correctamente. Sigue editando si deseas.`);
+          } catch (err) {
+            console.error("Error al subir documento:", err);
+            showToast("❌ Error al subir el documento. Intenta con un archivo más liviano.");
+          }
+        });
+      };
+
+      // Activar para ambos documentos
+      wireDocUpload(btnCambiarSoat, fileSoat, soatLabel, "soatData", "soatNombre");
+      wireDocUpload(btnCambiarRevision, fileRevision, revisionLabel, "revisionData", "revisionNombre");
+
+      // 7) Logout
       document.getElementById("logout").addEventListener("click", () => {
-        const usuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios")) || [];
-        const idx = usuarios.findIndex(u => (u.email || u.correo) === usuario.email);
-        if (idx !== -1) {
-          usuarios[idx].sesionActiva = false;
-          localStorage.setItem("agrolinkUsuarios", JSON.stringify(usuarios));
-        }
-        localStorage.removeItem("agrolinkUsuario");
-        localStorage.removeItem("agrolinkRol");
-        alert("👋 Sesión cerrada correctamente.");
-        window.location.href = "../index.html";
+        const usuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios") || "[]");
+        const idx2 = usuarios.findIndex(u => (u.email || u.correo) === (usuario.email || usuario.correo));
+        if (idx2 !== -1) { usuarios[idx2].sesionActiva = false; localStorage.setItem("agrolinkUsuarios", JSON.stringify(usuarios)); }
+        localStorage.removeItem("agrolinkUsuario"); localStorage.removeItem("agrolinkRol");
+        alert("👋 Sesión cerrada correctamente."); window.location.href = "../index.html";
       });
     });
   </script>
 </body>
+
 </html>
