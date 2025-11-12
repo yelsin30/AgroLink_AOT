@@ -6,16 +6,7 @@
   <title>AgroLink - Reportes</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="../css/Admin/reportes.css" />
-  <style>
-    .chart { display: flex; align-items: flex-end; gap: 10px; height: 200px; margin-top: 1rem; }
-    .bar { width: 30px; background-color: #22c55e; border-radius: 4px 4px 0 0; transition: height 0.5s; position: relative; }
-    .bar::after { content: attr(data-label); position: absolute; bottom: -20px; width: 100%; text-align: center; font-size: 0.8rem; color: #555; }
-    .card { background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
-    .header { background: #fff; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 1.5rem; }
-    .header-title { display: flex; align-items: center; gap: 0.75rem; color: #22c55e; }
-    .header-title h1 { font-size: 1.5rem; }
-  </style>
+
 </head>
 <body>
   <aside class="sidebar">
@@ -39,11 +30,11 @@
     <header class="header">
       <div class="header-title">
         <i class="fas fa-chart-bar"></i>
-        <h1>Reportes</h1>
+        <h1>Reportes Generales</h1>
       </div>
       <div class="user-profile">
-        <div class="avatar">A</div>
-        <span class="username">Admin</span>
+        <div class="avatar" id="adminAvatar">A</div>
+        <span class="username" id="adminName">Admin</span>
       </div>
     </header>
 
@@ -71,52 +62,65 @@
   </main>
 
   <script>
-    // === Obtener datos de localStorage ===
+    /* === VALIDAR SESIÓN ADMIN === */
+    const usuarioActivo = JSON.parse(localStorage.getItem("agrolinkUsuario") || "null");
+    if (!usuarioActivo || (usuarioActivo.rol || "").toLowerCase() !== "admin") {
+      alert("⚠️ Acceso restringido. Solo los administradores pueden ver los reportes.");
+      window.location.href = "../login.html";
+    } else {
+      document.getElementById("adminName").textContent = usuarioActivo.nombre || "Admin";
+      document.getElementById("adminAvatar").textContent = (usuarioActivo.nombre || "A").charAt(0).toUpperCase();
+    }
+
+    /* === FUENTES DE DATOS === */
+    const KEY_SOLICITUDES = "solicitudesAgroLink";
+    const KEY_USUARIOS = "agrolinkUsuarios";
+    const KEY_PRODUCTOS = "agrolink_productos";
+
     function getEnvios() {
-      return JSON.parse(localStorage.getItem("agrolink_envios") || "[]");
+      return JSON.parse(localStorage.getItem(KEY_SOLICITUDES) || "[]");
+    }
+
+    function getUsuarios() {
+      return JSON.parse(localStorage.getItem(KEY_USUARIOS) || "[]");
     }
 
     function getProductos() {
-      return JSON.parse(localStorage.getItem("agrolink_productos") || "[]");
+      return JSON.parse(localStorage.getItem(KEY_PRODUCTOS) || "[]");
     }
 
-    function getTransportistas() {
-      return JSON.parse(localStorage.getItem("agrolink_transportistas") || "[]");
-    }
-
-    // === Envíos por mes ===
+    /* === 📦 Envíos por Mes === */
     function generarEnviosPorMes() {
       const envios = getEnvios();
       const meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
       const conteo = new Array(12).fill(0);
 
-      envios.forEach(e => {
-        if (e.fecha) {
-          const partes = e.fecha.split("/");
-          const mes = parseInt(partes[1]) - 1;
-          if (!isNaN(mes) && mes >= 0 && mes < 12) conteo[mes]++;
-        }
+      envios.forEach(v => {
+        const fecha = v.fecha || v.fechaCompletado || "";
+        const mes = parseInt((fecha.split("/")[1] || fecha.split("-")[1] || "0")) - 1;
+        if (!isNaN(mes) && mes >= 0 && mes < 12) conteo[mes]++;
       });
 
       const chart = document.getElementById("chartEnvios");
       chart.innerHTML = "";
+      const maxVal = Math.max(...conteo, 1);
+
       conteo.forEach((v, i) => {
         const bar = document.createElement("div");
         bar.className = "bar";
-        const height = (v / Math.max(...conteo, 1)) * 100;
-        bar.style.height = height + "%";
+        bar.style.height = (v / maxVal) * 100 + "%";
         bar.setAttribute("data-label", meses[i]);
         chart.appendChild(bar);
       });
     }
 
-    // === Productos más enviados ===
+    /* === 🌾 Productos Más Enviados === */
     function generarProductosMasEnviados() {
       const envios = getEnvios();
       const conteo = {};
-
-      envios.forEach(e => {
-        if (e.producto) conteo[e.producto] = (conteo[e.producto] || 0) + 1;
+      envios.forEach(v => {
+        const nombre = v.tipo || v.producto;
+        if (nombre) conteo[nombre] = (conteo[nombre] || 0) + 1;
       });
 
       const top = Object.entries(conteo)
@@ -126,34 +130,50 @@
       const chart = document.getElementById("chartProductos");
       chart.innerHTML = "";
 
+      if (top.length === 0) {
+        chart.innerHTML = "<p style='color:#777;font-size:0.9rem;'>No hay datos disponibles</p>";
+        return;
+      }
+
       top.forEach(([nombre, cantidad]) => {
         const bar = document.createElement("div");
         bar.className = "bar";
         bar.style.height = (cantidad / top[0][1]) * 100 + "%";
-        bar.setAttribute("data-label", nombre);
+        bar.setAttribute("data-label", nombre.length > 5 ? nombre.slice(0,5) + "…" : nombre);
         chart.appendChild(bar);
       });
     }
 
-    // === Transportistas activos ===
+    /* === 🚚 Transportistas Activos === */
     function mostrarTransportistasActivos() {
-      const t = getTransportistas();
-      document.getElementById("transportistasActivos").innerText = t.length;
+      const usuarios = getUsuarios();
+      const activos = usuarios.filter(u => (u.rol || "").toLowerCase() === "transportista");
+      document.getElementById("transportistasActivos").innerText = activos.length;
     }
 
-    // === Ingresos estimados ===
+    /* === 💰 Ingresos Estimados === */
     function calcularIngresosEstimados() {
-      const productos = getProductos();
+      const envios = getEnvios();
       let total = 0;
-      productos.forEach(p => {
-        if (p.estado === "disponible") {
-          total += parseFloat(p.precio || 0) * parseFloat(p.stock || 0);
+      envios.forEach(v => {
+        if (/(entregado|completado)/i.test(v.estado || "")) {
+          total += parseFloat(v.pagoFinal || v.pago || 0);
         }
       });
       document.getElementById("ingresosEstimados").innerText = "S/ " + total.toFixed(2);
     }
 
-    // === Inicializar reportes ===
+    /* === AUTO-REFRESH AL CAMBIAR LOCALSTORAGE === */
+    window.addEventListener("storage", e => {
+      if ([KEY_SOLICITUDES, KEY_USUARIOS, KEY_PRODUCTOS].includes(e.key)) {
+        generarEnviosPorMes();
+        generarProductosMasEnviados();
+        mostrarTransportistasActivos();
+        calcularIngresosEstimados();
+      }
+    });
+
+    /* === INICIALIZAR === */
     window.onload = () => {
       generarEnviosPorMes();
       generarProductosMasEnviados();

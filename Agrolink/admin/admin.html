@@ -56,6 +56,10 @@
         <div class="stat-label">Pendientes</div>
       </div>
       <div class="stat-card">
+        <div class="stat-value" id="enviosEnCurso">0</div>
+        <div class="stat-label">En curso</div>
+      </div>
+      <div class="stat-card">
         <div class="stat-value" id="enviosEntregados">0</div>
         <div class="stat-label">Entregados</div>
       </div>
@@ -74,37 +78,66 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-
-    // ======== FUNCIONES DE BASE DE DATOS ========
-    function getEnvios() {
-      return JSON.parse(localStorage.getItem("agrolink_envios") || "[]");
+    /* ========== SESIÓN ADMIN ========== */
+    const usuarioActivo = JSON.parse(localStorage.getItem("agrolinkUsuario") || "null");
+    if (!usuarioActivo || (usuarioActivo.rol || "").toLowerCase() !== "admin") {
+      alert("⚠️ Acceso restringido. Solo los administradores pueden ver este panel.");
+      window.location.href = "../login.html";
+      return;
     }
+    document.getElementById("adminName").textContent = usuarioActivo.nombre || "Admin";
+    document.getElementById("adminAvatar").textContent = (usuarioActivo.nombre || "A").charAt(0).toUpperCase();
+
+    document.getElementById("btnLogout").addEventListener("click", (e) => {
+      e.preventDefault();
+      alert("👋 Sesión de administrador cerrada.");
+      localStorage.removeItem("agrolinkUsuario");
+      localStorage.removeItem("agrolinkRol");
+      window.location.href = "../index.html";
+    });
+
+    /* ========== FUENTES DE DATOS (LS) ========== */
+    const KEY_SOLICITUDES = "solicitudesAgroLink";
+    const KEY_ENV_BACKUP = "agrolink_envios"; // respaldo opcional
+    const KEY_USUARIOS = "agrolinkUsuarios";
 
     function getUsuarios() {
-      return JSON.parse(localStorage.getItem("agrolinkUsuarios") || "[]");
+      return JSON.parse(localStorage.getItem(KEY_USUARIOS) || "[]");
     }
 
-    // ======== MOSTRAR ESTADÍSTICAS ========
+    // Une solicitudesAgroLink + agrolink_envios (sin duplicar IDs)
+    function getEnvios() {
+      const a = JSON.parse(localStorage.getItem(KEY_SOLICITUDES) || "[]");
+      const b = JSON.parse(localStorage.getItem(KEY_ENV_BACKUP) || "[]");
+      const map = new Map();
+      [...a, ...b].forEach((e, idx) => {
+        const id = e.id || `ENV-${Date.now()}-${idx}`;
+        if (!map.has(id)) {
+          map.set(id, { ...e, id });
+        }
+      });
+      return Array.from(map.values());
+    }
+
+    /* ========== ESTADÍSTICAS ========== */
     function actualizarEstadisticas() {
       const envios = getEnvios();
       const usuarios = getUsuarios();
-
       const transportistas = usuarios.filter(u => (u.rol || "").toLowerCase() === "transportista");
 
-      // Totales
       const totalEnvios = envios.length;
       const pendientes = envios.filter(e => /pendiente/i.test(e.estado || "")).length;
-      const entregados = envios.filter(e => /entregado|completado/i.test(e.estado || "")).length;
-      const totalTransportistas = transportistas.length;
+      const enCurso = envios.filter(e => /(en\s*curso|en\s*tr[aá]nsito)/i.test(e.estado || "")).length;
+      const entregados = envios.filter(e => /(entregado|completado)/i.test(e.estado || "")).length;
 
-      // Mostrar
       document.getElementById("totalEnvios").textContent = totalEnvios;
       document.getElementById("enviosPendientes").textContent = pendientes;
+      document.getElementById("enviosEnCurso").textContent = enCurso;
       document.getElementById("enviosEntregados").textContent = entregados;
-      document.getElementById("totalTransportistas").textContent = totalTransportistas;
+      document.getElementById("totalTransportistas").textContent = transportistas.length;
     }
 
-    // ======== ACTIVIDAD RECIENTE ========
+    /* ========== ACTIVIDAD RECIENTE ========== */
     function actualizarActividad() {
       const envios = getEnvios();
       const activityList = document.getElementById("activityList");
@@ -115,45 +148,38 @@
         return;
       }
 
-      const recientes = envios.slice(-5).reverse();
+      const recientes = envios.slice(-8).reverse();
       recientes.forEach(e => {
         let icono = "fa-truck text-primary";
-        if (/pendiente/i.test(e.estado)) icono = "fa-clock text-warning";
-        if (/entregado|completado/i.test(e.estado)) icono = "fa-circle-check text-success";
+        if (/pendiente/i.test(e.estado || "")) icono = "fa-clock text-warning";
+        if (/(entregado|completado)/i.test(e.estado || "")) icono = "fa-circle-check text-success";
+        if (/(en\s*curso|en\s*tr[aá]nsito)/i.test(e.estado || "")) icono = "fa-route text-info";
 
+        const fechaTxt = e.fecha || "";
         const li = document.createElement("li");
         li.classList.add("activity-item");
         li.innerHTML = `
           <i class="fas ${icono}"></i>
-          <strong>${e.id || "ENV-" + Math.random().toString(36).slice(2,6)}</strong>
+          <strong>${e.id}</strong>
           — ${e.origen || "?"} → ${e.destino || "?"}
-          <small style="color:#6b7280;"> (${e.estado || "Sin estado"})</small>
+          <small style="color:#6b7280;"> (${e.estado || "Sin estado"}${fechaTxt ? " • " + fechaTxt : ""})</small>
         `;
+        li.style.cursor = "pointer";
+        li.title = "Ver en Envíos";
+        li.addEventListener("click", () => window.location.href = "envios.html");
         activityList.appendChild(li);
       });
     }
 
-    // ======== VALIDAR SESIÓN ADMIN ========
-    const usuarioActivo = JSON.parse(localStorage.getItem("agrolinkUsuario") || "null");
-    if (!usuarioActivo || (usuarioActivo.rol || "").toLowerCase() !== "admin") {
-      alert("⚠️ Acceso restringido. Solo los administradores pueden ver este panel.");
-      window.location.href = "../login.html";
-      return;
-    }
-
-    document.getElementById("adminName").textContent = usuarioActivo.nombre || "Admin";
-    document.getElementById("adminAvatar").textContent = (usuarioActivo.nombre || "A").charAt(0).toUpperCase();
-
-    // ======== LOGOUT ========
-    document.getElementById("btnLogout").addEventListener("click", (e) => {
-      e.preventDefault();
-      alert("👋 Sesión de administrador cerrada.");
-      localStorage.removeItem("agrolinkUsuario");
-      localStorage.removeItem("agrolinkRol");
-      window.location.href = "../index.html";
+    /* ========== AUTO-REFRESH SI CAMBIA EL LS ========== */
+    window.addEventListener("storage", (e) => {
+      if ([KEY_SOLICITUDES, KEY_ENV_BACKUP, KEY_USUARIOS].includes(e.key)) {
+        actualizarEstadisticas();
+        actualizarActividad();
+      }
     });
 
-    // ======== INICIALIZAR ========
+    /* ========== INICIALIZAR ========== */
     actualizarEstadisticas();
     actualizarActividad();
   });

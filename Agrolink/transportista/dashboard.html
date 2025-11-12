@@ -163,10 +163,23 @@
       const completados = viajesTransp.filter(v => /completado/i.test(v.estado));
       const cancelados = viajesTransp.filter(v => /cancelado/i.test(v.estado));
 
-      const totalDistancia = viajesTransp.reduce(
-        (acc, v) => acc + (parseFloat(v.distancia) || 120),
-        0
-      );
+      // === 🧭 Calcular la distancia total usando los valores guardados desde viajes.html ===
+      const totalDistancia = viajesTransp.reduce((acc, v) => {
+        // Si el viaje tiene la distancia guardada (desde viajes.html), úsala
+        if (v.distancia && !isNaN(parseFloat(v.distancia))) {
+          return acc + parseFloat(v.distancia);
+        }
+
+        // Si no tiene distancia guardada, intenta buscarla en solicitudesAgroLink
+        const solicitudMatch = solicitudes.find(s => s.id === v.id && s.distancia);
+        if (solicitudMatch) {
+          return acc + parseFloat(solicitudMatch.distancia);
+        }
+
+        // Si no hay registro, deja la distancia como 0
+        return acc;
+      }, 0);
+
 
       const totalGanancia = completados.reduce(
         (acc, v) => acc + (parseFloat(v.pagoFinal || v.pago) || 0),

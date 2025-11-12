@@ -144,173 +144,172 @@
   </div>
 
   <script>
-    // ======= BASE DE DATOS =======
-    const STORAGE_KEY = "agrolink_envios";
+  // === CONEXIÓN DIRECTA AL LOCALSTORAGE GLOBAL ===
+  const STORAGE_KEY = "solicitudesAgroLink";
 
-    function getEnvios() {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  function getEnvios() {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  }
+
+  function saveEnvios(envios) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(envios));
+  }
+
+  // === RENDERIZAR TABLA ===
+  function renderizarTabla(enviosToShow = null) {
+    const tbody = document.getElementById("enviosTableBody");
+    tbody.innerHTML = "";
+    const envios = enviosToShow || getEnvios();
+
+    if (envios.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;">No hay envíos registrados.</td></tr>`;
+      return;
     }
 
-    function saveEnvios(envios) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(envios));
-    }
+    envios.forEach(e => {
+      const row = document.createElement("tr");
+      const estadoClase =
+        /entregad|completad/i.test(e.estado) ? "status-delivered" :
+        /curso|transit/i.test(e.estado) ? "status-transit" :
+        "status-pending";
 
-    // ======= RENDERIZAR TABLA =======
-    function renderizarTabla(enviosToShow = null) {
-      const tbody = document.getElementById("enviosTableBody");
-      tbody.innerHTML = "";
-      const envios = enviosToShow || getEnvios();
+      row.innerHTML = `
+        <td>${e.id || "-"}</td>
+        <td>${e.origen || "-"}</td>
+        <td>${e.destino || "-"}</td>
+        <td><span class="status ${estadoClase}">${e.estado || "Pendiente"}</span></td>
+        <td>${e.fecha || "-"}</td>
+        <td>${e.transportista || "—"}</td>
+        <td>${e.tipo || e.producto || "—"}</td>
+        <td class="actions">
+          <button class="view-btn" data-id="${e.id}"><i class="fas fa-eye"></i></button>
+          <button class="edit-btn" data-id="${e.id}"><i class="fas fa-edit"></i></button>
+          <button class="delete-btn" data-id="${e.id}"><i class="fas fa-trash"></i></button>
+        </td>`;
+      tbody.appendChild(row);
+    });
 
-      if (envios.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;">No hay envíos registrados.</td></tr>`;
-        return;
-      }
+    document.querySelectorAll(".delete-btn").forEach(b => b.onclick = () => eliminarEnvio(b.dataset.id));
+    document.querySelectorAll(".edit-btn").forEach(b => b.onclick = () => abrirModalEdicion(b.dataset.id));
+    document.querySelectorAll(".view-btn").forEach(b => b.onclick = () => verEnvio(b.dataset.id));
+  }
 
-      envios.forEach(e => {
-        const row = document.createElement("tr");
-        const estadoClase = e.estado === "Entregado"
-          ? "status-delivered"
-          : e.estado === "En tránsito"
-          ? "status-transit"
-          : "status-pending";
+  // === CRUD ===
+  function eliminarEnvio(id) {
+    if (!confirm("¿Eliminar este envío?")) return;
+    const envios = getEnvios().filter(e => e.id !== id);
+    saveEnvios(envios);
+    renderizarTabla();
+  }
 
-        row.innerHTML = `
-          <td>${e.id}</td>
-          <td>${e.origen}</td>
-          <td>${e.destino}</td>
-          <td><span class="status ${estadoClase}">${e.estado}</span></td>
-          <td>${e.fecha}</td>
-          <td>${e.transportista}</td>
-          <td>${e.producto}</td>
-          <td class="actions">
-            <button class="view-btn" data-id="${e.id}"><i class="fas fa-eye"></i></button>
-            <button class="edit-btn" data-id="${e.id}"><i class="fas fa-edit"></i></button>
-            <button class="delete-btn" data-id="${e.id}"><i class="fas fa-trash"></i></button>
-          </td>`;
-        tbody.appendChild(row);
-      });
+  function abrirModalEdicion(id) {
+    const e = getEnvios().find(x => x.id === id);
+    if (!e) return;
+    document.getElementById("editId").value = e.id;
+    document.getElementById("editOrigen").value = e.origen;
+    document.getElementById("editDestino").value = e.destino;
+    document.getElementById("editEstado").value = e.estado || "Pendiente";
+    document.getElementById("editFecha").value = e.fecha || "";
+    document.getElementById("editTransportista").value = e.transportista || "";
+    document.getElementById("editProducto").value = e.tipo || e.producto || "";
+    document.getElementById("editModal").style.display = "flex";
+  }
 
-      document.querySelectorAll(".delete-btn").forEach(b => b.onclick = () => eliminarEnvio(b.dataset.id));
-      document.querySelectorAll(".edit-btn").forEach(b => b.onclick = () => abrirModalEdicion(b.dataset.id));
-      document.querySelectorAll(".view-btn").forEach(b => b.onclick = () => verEnvio(b.dataset.id));
-    }
+  function verEnvio(id) {
+    const e = getEnvios().find(x => x.id === id);
+    if (!e) return;
+    alert(`📦 Envío ${e.id}\nOrigen: ${e.origen}\nDestino: ${e.destino}\nEstado: ${e.estado}\nFecha: ${e.fecha}\nTransportista: ${e.transportista}\nProducto: ${e.tipo || e.producto}`);
+  }
 
-    // ======= FUNCIONES CRUD =======
-    function eliminarEnvio(id) {
-      if (!confirm("¿Eliminar este envío?")) return;
-      const envios = getEnvios().filter(e => e.id !== id);
-      saveEnvios(envios);
-      renderizarTabla();
-    }
+  // === FILTROS ===
+  document.getElementById("btnBuscar").onclick = () => {
+    const origen = document.getElementById("filterOrigen").value.trim().toLowerCase();
+    const destino = document.getElementById("filterDestino").value.trim().toLowerCase();
+    const estado = document.getElementById("filterEstado").value;
+    const filtrados = getEnvios().filter(e =>
+      (!origen || (e.origen || "").toLowerCase().includes(origen)) &&
+      (!destino || (e.destino || "").toLowerCase().includes(destino)) &&
+      (!estado || (e.estado || "").toLowerCase().includes(estado.toLowerCase()))
+    );
+    renderizarTabla(filtrados);
+  };
 
-    function abrirModalEdicion(id) {
-      const e = getEnvios().find(x => x.id === id);
-      if (!e) return;
-      document.getElementById("editId").value = e.id;
-      document.getElementById("editOrigen").value = e.origen;
-      document.getElementById("editDestino").value = e.destino;
-      document.getElementById("editEstado").value = e.estado;
-      document.getElementById("editFecha").value = e.fecha;
-      document.getElementById("editTransportista").value = e.transportista;
-      document.getElementById("editProducto").value = e.producto;
-      document.getElementById("editModal").style.display = "flex";
-    }
+  // === MODALES ===
+  const addModal = document.getElementById("addModal");
+  const editModal = document.getElementById("editModal");
 
-    function verEnvio(id) {
-      const e = getEnvios().find(x => x.id === id);
-      if (!e) return;
-      alert(`📦 Envío ${e.id}\nOrigen: ${e.origen}\nDestino: ${e.destino}\nEstado: ${e.estado}\nFecha: ${e.fecha}\nTransportista: ${e.transportista}\nProducto: ${e.producto}`);
-    }
+  document.getElementById("btnAgregar").onclick = () => addModal.style.display = "flex";
+  document.getElementById("cancelAdd").onclick = () => { addModal.style.display = "none"; addForm.reset(); };
+  document.getElementById("cancelEdit").onclick = () => { editModal.style.display = "none"; editForm.reset(); };
+  document.querySelectorAll(".close-modal").forEach(btn => btn.onclick = () => btn.closest(".modal").style.display = "none");
 
-    // ======= FILTROS =======
-    document.getElementById("btnBuscar").onclick = () => {
-      const origen = document.getElementById("filterOrigen").value.trim().toLowerCase();
-      const destino = document.getElementById("filterDestino").value.trim().toLowerCase();
-      const estado = document.getElementById("filterEstado").value;
-
-      const filtrados = getEnvios().filter(e =>
-        (!origen || e.origen.toLowerCase().includes(origen)) &&
-        (!destino || e.destino.toLowerCase().includes(destino)) &&
-        (!estado || e.estado === estado)
-      );
-      renderizarTabla(filtrados);
+  // === AGREGAR / EDITAR ===
+  addForm.onsubmit = e => {
+    e.preventDefault();
+    const nuevo = {
+      id: document.getElementById("addId").value || "SHP-" + Date.now(),
+      origen: document.getElementById("addOrigen").value.trim(),
+      destino: document.getElementById("addDestino").value.trim(),
+      estado: document.getElementById("addEstado").value,
+      fecha: document.getElementById("addFecha").value.trim(),
+      transportista: document.getElementById("addTransportista").value.trim(),
+      tipo: document.getElementById("addProducto").value.trim()
     };
+    const lista = [...getEnvios(), nuevo];
+    saveEnvios(lista);
+    renderizarTabla();
+    addModal.style.display = "none";
+    addForm.reset();
+    alert("✅ Envío agregado correctamente.");
+  };
 
-    // ======= MODALES =======
-    const addModal = document.getElementById("addModal");
-    const editModal = document.getElementById("editModal");
-
-    document.getElementById("btnAgregar").onclick = () => addModal.style.display = "flex";
-    document.getElementById("cancelAdd").onclick = () => { addModal.style.display = "none"; addForm.reset(); };
-    document.getElementById("cancelEdit").onclick = () => { editModal.style.display = "none"; editForm.reset(); };
-    document.querySelectorAll(".close-modal").forEach(btn => btn.onclick = () => btn.closest(".modal").style.display = "none");
-
-    // ======= AGREGAR / EDITAR =======
-    addForm.onsubmit = e => {
-      e.preventDefault();
-      const nuevo = {
-        id: document.getElementById("addId").value || "SHP-" + Date.now(),
-        origen: document.getElementById("addOrigen").value.trim(),
-        destino: document.getElementById("addDestino").value.trim(),
-        estado: document.getElementById("addEstado").value,
-        fecha: document.getElementById("addFecha").value.trim(),
-        transportista: document.getElementById("addTransportista").value.trim(),
-        producto: document.getElementById("addProducto").value.trim()
+  editForm.onsubmit = e => {
+    e.preventDefault();
+    const id = document.getElementById("editId").value;
+    let lista = getEnvios();
+    const i = lista.findIndex(x => x.id === id);
+    if (i >= 0) {
+      lista[i] = {
+        ...lista[i],
+        origen: document.getElementById("editOrigen").value.trim(),
+        destino: document.getElementById("editDestino").value.trim(),
+        estado: document.getElementById("editEstado").value,
+        fecha: document.getElementById("editFecha").value.trim(),
+        transportista: document.getElementById("editTransportista").value.trim(),
+        tipo: document.getElementById("editProducto").value.trim()
       };
-      const lista = [...getEnvios(), nuevo];
       saveEnvios(lista);
       renderizarTabla();
-      addModal.style.display = "none";
-      addForm.reset();
-      alert("✅ Envío agregado correctamente.");
-    };
+      editModal.style.display = "none";
+      editForm.reset();
+      alert("✅ Envío actualizado correctamente.");
+    }
+  };
 
-    editForm.onsubmit = e => {
-      e.preventDefault();
-      const id = document.getElementById("editId").value;
-      let lista = getEnvios();
-      const i = lista.findIndex(x => x.id === id);
-      if (i >= 0) {
-        lista[i] = {
-          ...lista[i],
-          origen: document.getElementById("editOrigen").value.trim(),
-          destino: document.getElementById("editDestino").value.trim(),
-          estado: document.getElementById("editEstado").value,
-          fecha: document.getElementById("editFecha").value.trim(),
-          transportista: document.getElementById("editTransportista").value.trim(),
-          producto: document.getElementById("editProducto").value.trim()
-        };
-        saveEnvios(lista);
-        renderizarTabla();
-        editModal.style.display = "none";
-        editForm.reset();
-        alert("✅ Envío actualizado correctamente.");
-      }
-    };
-
-    // ======= ELIMINAR TODOS =======
-    document.getElementById("btnEliminar").onclick = () => {
-      if (confirm("¿Eliminar todos los envíos? Esta acción no se puede deshacer.")) {
-        localStorage.removeItem(STORAGE_KEY);
-        renderizarTabla();
-        alert("🗑️ Todos los envíos fueron eliminados.");
-      }
-    };
-
-    // ======= INICIALIZACIÓN =======
-    window.onload = () => {
-      const usuarioActivo = JSON.parse(localStorage.getItem("agrolinkUsuario") || "null");
-      if (!usuarioActivo || (usuarioActivo.rol || "").toLowerCase() !== "admin") {
-        alert("⚠️ Acceso restringido. Solo administradores pueden ver los envíos.");
-        window.location.href = "../login.html";
-        return;
-      }
-
-      document.getElementById("adminName").textContent = usuarioActivo.nombre || "Admin";
-      document.getElementById("adminAvatar").textContent = (usuarioActivo.nombre || "A").charAt(0).toUpperCase();
-
+  // === ELIMINAR TODOS ===
+  document.getElementById("btnEliminar").onclick = () => {
+    if (confirm("¿Eliminar todos los envíos? Esta acción no se puede deshacer.")) {
+      localStorage.removeItem(STORAGE_KEY);
       renderizarTabla();
-    };
-  </script>
+      alert("🗑️ Todos los envíos fueron eliminados.");
+    }
+  };
+
+  // === INICIALIZACIÓN ===
+  window.onload = () => {
+    const usuarioActivo = JSON.parse(localStorage.getItem("agrolinkUsuario") || "null");
+    if (!usuarioActivo || (usuarioActivo.rol || "").toLowerCase() !== "admin") {
+      alert("⚠️ Acceso restringido. Solo administradores pueden ver los envíos.");
+      window.location.href = "../login.html";
+      return;
+    }
+
+    document.getElementById("adminName").textContent = usuarioActivo.nombre || "Admin";
+    document.getElementById("adminAvatar").textContent = (usuarioActivo.nombre || "A").charAt(0).toUpperCase();
+
+    renderizarTabla();
+  };
+</script>
+
 </body>
 </html>

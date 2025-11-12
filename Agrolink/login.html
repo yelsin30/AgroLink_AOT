@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -78,10 +77,8 @@
 
         const email = document.getElementById("email").value.trim().toLowerCase();
         const password = document.getElementById("password").value.trim();
-
         const usuariosActuales = JSON.parse(localStorage.getItem("agrolinkUsuarios")) || [];
 
-        // Buscar usuario (admite "password" o "contrasena")
         const usuario = usuariosActuales.find(u => {
           const correo = (u.email || u.correo || "").toLowerCase();
           const clave = u.password || u.contrasena;
@@ -115,11 +112,32 @@
         }
 
         // ===============================
-        // 💾 Guardar sesión activa
+        // 🧹 Guardar solo datos esenciales
         // ===============================
-        localStorage.setItem("usuarioActivo", JSON.stringify(usuario));
-        localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
-        localStorage.setItem("agrolinkRol", usuario.rol);
+        const usuarioLimpio = {
+          id: usuario.id || Date.now(),
+          nombre: usuario.nombre,
+          correo: usuario.correo || usuario.email,
+          rol: usuario.rol,
+          avatar: usuario.avatar && usuario.avatar.length < 8000 ? usuario.avatar : null // evita base64 pesadas
+        };
+
+        // Intentar guardar sin sobrecargar el localStorage
+        try {
+          localStorage.removeItem("agrolinkUsuario");
+          localStorage.removeItem("usuarioActivo");
+          localStorage.setItem("agrolinkUsuario", JSON.stringify(usuarioLimpio));
+          localStorage.setItem("usuarioActivo", JSON.stringify(usuarioLimpio));
+          localStorage.setItem("agrolinkRol", usuario.rol);
+        } catch (e) {
+          if (e.name === "QuotaExceededError") {
+            console.warn("⚠️ Almacenamiento lleno. Limpiando...");
+            localStorage.clear();
+            localStorage.setItem("agrolinkUsuario", JSON.stringify(usuarioLimpio));
+            localStorage.setItem("usuarioActivo", JSON.stringify(usuarioLimpio));
+            localStorage.setItem("agrolinkRol", usuario.rol);
+          }
+        }
 
         // ===============================
         // 🧭 Redirección según rol
@@ -143,5 +161,4 @@
     });
   </script>
 </body>
-
 </html>
