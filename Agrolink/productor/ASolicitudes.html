@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mis Solicitudes | AgroLink</title>
+
+  <link rel="icon" href="../img/logo.png" type="image/png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="../css/Productor/solicitudes_admin.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+</head>
+
+<body>
+  <!-- Sidebar compacta igual estilo que productor -->
+  <aside class="sidebar">
+    <i class="fa-solid fa-tractor logo"></i>
+    <div class="nav-icons">
+      <button title="Inicio" onclick="location.href='dashboard.html'"><i class="fa-solid fa-house"></i></button>
+      <button title="Envíos" onclick="location.href='envios.html'"><i class="fa-solid fa-truck"></i></button>
+      <button class="active" title="Solicitudes"><i class="fa-solid fa-file-circle-check"></i></button>
+      <button title="Perfil" onclick="location.href='perfil.html'"><i class="fa-solid fa-user"></i></button>
+    </div>
+    <button class="logout-btn" id="logout">
+      <i class="fa-solid fa-right-from-bracket"></i>
+      <span>Salir</span>
+    </button>
+  </aside>
+
+  <main>
+    <div class="content-container">
+      <header>
+        <h1><i class="fa-solid fa-file-circle-check"></i> Mis solicitudes</h1>
+        <p>Revisa tus solicitudes de transporte y acepta o rechaza postulaciones de transportistas.</p>
+      </header>
+
+      <section id="listaSolicitudes" class="solicitudes-list">
+        <!-- tarjetas generadas por JS -->
+      </section>
+    </div>
+  </main>
+
+  <!-- Panel lateral -->
+  <div id="panelOverlay" class="overlay"></div>
+  <div id="panelDetalle" class="panel">
+    <div class="panel-header">
+      <h2 id="panelTitulo">Solicitud</h2>
+      <button class="btn-close" id="cerrarPanel"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="panel-content">
+      <p><strong>Producto:</strong> <span id="pTipo"></span></p>
+      <p><strong>Origen:</strong> <span id="pOrigen"></span></p>
+      <p><strong>Destino:</strong> <span id="pDestino"></span></p>
+      <p><strong>Peso:</strong> <span id="pPeso"></span> kg</p>
+      <p><strong>Pago estimado:</strong> S/ <span id="pPago"></span></p>
+      <p><strong>Fecha:</strong> <span id="pFecha"></span></p>
+
+      <div id="mapSolicitud"></div>
+      <div id="mapSolicitudInfo" class="map-info"></div>
+
+      <hr>
+      <h3>Postulaciones recibidas</h3>
+      <div id="postulacionesContainer" class="postulaciones-box"></div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // === Sesión Productor ===
+      let usuario = JSON.parse(localStorage.getItem("agrolinkUsuario"));
+      if (!usuario) {
+        window.location.href = "../login.html";
+        return;
+      }
+
+      const lista = document.getElementById("listaSolicitudes");
+      const panel = document.getElementById("panelDetalle");
+      const overlay = document.getElementById("panelOverlay");
+
+      const pTipo = document.getElementById("pTipo");
+      const pOrigen = document.getElementById("pOrigen");
+      const pDestino = document.getElementById("pDestino");
+      const pPeso = document.getElementById("pPeso");
+      const pPago = document.getElementById("pPago");
+      const pFecha = document.getElementById("pFecha");
+      const panelTitulo = document.getElementById("panelTitulo");
+      const postulacionesBox = document.getElementById("postulacionesContainer");
+      const mapInfo = document.getElementById("mapSolicitudInfo");
+
+      let map = null;
+      let routing = null;
+      let solicitudActual = null;
+      let db = JSON.parse(localStorage.getItem("solicitudesAgroLink") || "[]");
+
+      function guardarDB() {
+        localStorage.setItem("solicitudesAgroLink", JSON.stringify(db));
+      }
+
+      function renderSolicitudes() {
+        lista.innerHTML = "";
+        const mias = db.filter(s => (s.productor || "").toLowerCase() === (usuario.nombre || "").toLowerCase());
+
+        if (mias.length === 0) {
+          lista.innerHTML = `<p class="no-results">No tienes solicitudes registradas todavía.</p>`;
+          return;
+        }
+
+        mias.forEach(s => {
+          const card = document.createElement("div");
+          card.classList.add("card");
+
+          let cls =
+            s.estado === "Pendiente" ? "pend" :
+            /curso/i.test(s.estado || "") ? "curso" :
+            /completado/i.test(s.estado || "") ? "comp" : "otro";
+
+          const numPost = (s.postulaciones || []).length;
+
+          card.innerHTML = `
+            <div class="card-header">
+              <span class="estado ${cls}">${s.estado || "Sin estado"}</span>
+              <span style="font-size:.75rem;color:#6b7280;">ID: ${s.id || "-"}</span>
+            </div>
+            <h3>${s.tipo || "Sin tipo"}</h3>
+            <p><strong>Origen:</strong> ${s.origen}</p>
+            <p><strong>Destino:</strong> ${s.destino}</p>
+            <p><strong>Pago:</strong> S/ ${s.pago}</p>
+            <p><strong>Postulaciones:</strong> ${numPost}</p>
+            <button class="btn-detalle">Ver detalles</button>
+          `;
+          card.querySelector(".btn-detalle").onclick = () => abrirPanel(s);
+          lista.appendChild(card);
+        });
+      }
+
+      async function abrirPanel(s) {
+        solicitudActual = s;
+
+        panelTitulo.textContent = `Solicitud ${s.id || ""}`;
+        pTipo.textContent = s.tipo || "-";
+        pOrigen.textContent = s.origen || "-";
+        pDestino.textContent = s.destino || "-";
+        pPeso.textContent = s.peso || "0";
+        pPago.textContent = s.pago || "0.00";
+        pFecha.textContent = s.fecha || "-";
+
+        // mapa
+        await mostrarMapaSolicitud(s);
+
+        // postulaciones
+        renderPostulaciones(s);
+
+        overlay.style.display = "block";
+        panel.classList.add("show");
+      }
+
+      async function mostrarMapaSolicitud(s) {
+        const origen = s.origen;
+        const destino = s.destino;
+        if (!origen || !destino) {
+          mapInfo.textContent = "No se puede mostrar el mapa sin origen y destino.";
+          return;
+        }
+
+        if (map) { map.remove(); map = null; }
+        map = L.map("mapSolicitud").setView([-9.19, -75.015], 6);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: "&copy; OpenStreetMap contributors"
+        }).addTo(map);
+
+        const o = await obtenerCoords(origen);
+        const d = await obtenerCoords(destino);
+        if (!o || !d) {
+          mapInfo.textContent = "No se pudo calcular la ruta.";
+          return;
+        }
+
+        routing = L.Routing.control({
+          waypoints: [L.latLng(o), L.latLng(d)],
+          lineOptions: { styles: [{ color: "#00b074", weight: 5 }] },
+          addWaypoints: false,
+          draggableWaypoints: false,
+          showAlternatives: false,
+          fitSelectedRoutes: true
+        }).on("routesfound", (e) => {
+          const r = e.routes[0];
+          const distKm = r.summary.totalDistance / 1000;
+          const tSeg = r.summary.totalTime;
+          const horas = Math.floor(tSeg / 3600);
+          const min = Math.round((tSeg % 3600) / 60);
+          mapInfo.innerHTML = `Distancia estimada: <strong>${distKm.toFixed(1)} km</strong> · Duración: <strong>${horas}h ${min}min</strong>`;
+          // guardamos distancia en la solicitud
+          solicitudActual.distancia = distKm.toFixed(1);
+          const idx = db.findIndex(x => x.id === solicitudActual.id);
+          if (idx !== -1) {
+            db[idx].distancia = solicitudActual.distancia;
+            guardarDB();
+          }
+        }).addTo(map);
+      }
+
+      async function obtenerCoords(ciudad) {
+        if (!ciudad) return null;
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(ciudad + ", Perú")}`);
+          const data = await res.json();
+          return data[0] ? [parseFloat(data[0].lat), parseFloat(data[0].lon)] : null;
+        } catch {
+          return null;
+        }
+      }
+
+      function cerrarPanel() {
+        panel.classList.remove("show");
+        setTimeout(() => overlay.style.display = "none", 250);
+      }
+      document.getElementById("cerrarPanel").onclick = cerrarPanel;
+      overlay.onclick = cerrarPanel;
+
+      // === Render postulaciones ===
+      function renderPostulaciones(solicitud) {
+        postulacionesBox.innerHTML = "";
+
+        if (!solicitud.postulaciones || solicitud.postulaciones.length === 0) {
+          postulacionesBox.innerHTML = `<p class="no-post">No hay postulaciones aún.</p>`;
+          return;
+        }
+
+        solicitud.postulaciones.forEach(post => {
+          const box = document.createElement("div");
+          box.classList.add("post-card");
+
+          box.innerHTML = `
+            <p><strong>Transportista:</strong> ${post.nombre}</p>
+            <p><strong>Oferta:</strong> S/ ${post.oferta || solicitud.pago}</p>
+            <p><strong>Mensaje:</strong> ${post.mensaje || "(Sin mensaje)"} </p>
+            <p style="color:#6b7280;font-size:.75rem;">Postulado el: ${new Date(post.fecha || Date.now()).toLocaleString("es-PE")}</p>
+            <div class="post-btns">
+              <button class="btn-aceptar">Aceptar</button>
+              <button class="btn-rechazar">Rechazar</button>
+            </div>
+          `;
+
+          box.querySelector(".btn-aceptar").onclick = () => aceptarPostulante(post);
+          box.querySelector(".btn-rechazar").onclick = () => rechazarPostulante(post);
+          postulacionesBox.appendChild(box);
+        });
+      }
+
+      // === ACEPTAR POSTULANTE ===
+      function aceptarPostulante(post) {
+        if (!solicitudActual) return;
+
+        // refrescar DB
+        db = JSON.parse(localStorage.getItem("solicitudesAgroLink") || "[]");
+        const idx = db.findIndex(s => s.id === solicitudActual.id);
+        if (idx === -1) return;
+
+        const s = db[idx];
+
+        const pagoFinal = parseFloat(post.oferta || s.pago || 0) || 0;
+
+        s.estado = "En curso";
+        s.transportista = post.nombre;
+        s.transportistaId = post.id;
+        s.pagoFinal = pagoFinal.toFixed(2);
+        s.fechaAsignacion = new Date().toISOString();
+        // conservar solo el aceptado
+        s.postulaciones = [post];
+
+        db[idx] = s;
+        localStorage.setItem("solicitudesAgroLink", JSON.stringify(db));
+        solicitudActual = s;
+
+        // 👉 1. Crear viaje en agrolinkViajes
+        const viajes = JSON.parse(localStorage.getItem("agrolinkViajes") || "[]");
+        const existeViaje = viajes.some(v => v.idSolicitud === s.id && v.transportistaId === post.id);
+        if (!existeViaje) {
+          viajes.push({
+            idViaje: `V-${Date.now()}`,
+            idSolicitud: s.id,
+            productor: s.productor,
+            transportista: s.transportista,
+            transportistaId: s.transportistaId,
+            origen: s.origen,
+            destino: s.destino,
+            fecha: s.fecha,
+            estado: s.estado,
+            pagoFinal: s.pagoFinal,
+            peso: s.peso,
+            tipo: s.tipo,
+            distancia: s.distancia || null
+          });
+          localStorage.setItem("agrolinkViajes", JSON.stringify(viajes));
+        }
+
+        // 👉 2. Crear chat automático
+        const chatKey = `chat_${s.id}`;
+        let mensajes = JSON.parse(localStorage.getItem(chatKey) || "[]");
+        const ahora = new Date().toISOString();
+
+        mensajes.push(
+          {
+            remitente: s.productor,
+            rol: "productor",
+            texto: `Hola ${post.nombre}, he aceptado tu postulación para el envío ${s.origen} → ${s.destino}.`,
+            fecha: ahora,
+            tipo: "sistema"
+          },
+          {
+            remitente: post.nombre,
+            rol: "transportista",
+            texto: "Hola, muchas gracias por la confianza. Coordinemos la entrega.",
+            fecha: ahora,
+            tipo: "sistema"
+          }
+        );
+
+        localStorage.setItem(chatKey, JSON.stringify(mensajes));
+
+        // 👉 3. Notificación al transportista
+        const notifs = JSON.parse(localStorage.getItem("agrolinkNotificaciones") || "[]");
+        notifs.push({
+          id: `N-${Date.now()}`,
+          paraRol: "transportista",
+          paraId: post.id,
+          paraNombre: post.nombre,
+          tipo: "postulacion_aceptada",
+          solicitudId: s.id,
+          mensaje: `Tu postulación para el envío ${s.origen} → ${s.destino} ha sido aceptada.`,
+          fecha: ahora,
+          leida: false
+        });
+        localStorage.setItem("agrolinkNotificaciones", JSON.stringify(notifs));
+
+        Swal.fire({
+          icon: "success",
+          title: "Transportista asignado",
+          text: `${post.nombre} ha sido aceptado para este envío.`,
+          timer: 2500,
+          showConfirmButton: false
+        });
+
+        renderSolicitudes();
+        cerrarPanel();
+      }
+
+      // === RECHAZAR POSTULANTE ===
+      function rechazarPostulante(post) {
+        if (!solicitudActual) return;
+        const idx = db.findIndex(s => s.id === solicitudActual.id);
+        if (idx === -1) return;
+        const s = db[idx];
+
+        s.postulaciones = (s.postulaciones || []).filter(p => p.id !== post.id);
+        db[idx] = s;
+        guardarDB();
+        solicitudActual = s;
+        renderPostulaciones(s);
+      }
+
+      // === Logout productor simple ===
+      document.getElementById("logout").addEventListener("click", e => {
+        e.preventDefault();
+        localStorage.removeItem("agrolinkUsuario");
+        localStorage.removeItem("agrolinkRol");
+        window.location.href = "../index.html";
+      });
+
+      renderSolicitudes();
+    });
+  </script>
+</body>
+</html>

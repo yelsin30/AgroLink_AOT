@@ -1,0 +1,617 @@
+/* =========== BASE GENERAL =========== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f7f9f7;
+  color: #16291b;
+}
+
+/* Para que el contenido no se pegue a la sidebar */
+main {
+  margin-left: 88px;
+  padding: 1.5rem 2rem;
+}
+
+.content-container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* =========== SIDEBAR PRODUCTOR =========== */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 88px;
+  background: #ffffff;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 22px 0 16px;
+  z-index: 100;
+}
+
+.sidebar .logo {
+  font-size: 2rem;
+  color: #0f2417;
+  margin-bottom: 40px;
+}
+
+.nav-icons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+}
+
+.nav-icons button {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #6b7280;
+  font-size: 1.1rem;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
+}
+
+.nav-icons button:hover {
+  background: #f3f4f6;
+  color: #166534;
+  transform: translateY(-1px);
+}
+
+.nav-icons button.active {
+  background: #166534;
+  color: #ffffff;
+}
+
+.logout-btn {
+  margin-top: auto;
+  margin-bottom: 6px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: none;
+  background: #fee2e2;
+  color: #b91c1c;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.logout-btn i {
+  font-size: 0.9rem;
+}
+
+.logout-btn:hover {
+  background: #fecaca;
+  transform: translateY(-1px);
+}
+
+/* =========== ENCABEZADO =========== */
+header h1 {
+  margin: 0;
+  color: #16291b;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+header h1 i {
+  color: #166534;
+}
+
+header p {
+  margin: 0.25rem 0 1.2rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+/* =========== LISTA DE SOLICITUDES =========== */
+.solicitudes-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+  border: 1px solid #e5e7eb;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  margin-bottom: 0.25rem;
+}
+
+.estado {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+/* Estados de solicitud */
+.estado.pend {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.estado.curso {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.estado.comp {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.estado.otro {
+  background: #e5e7eb;
+  color: #4b5563;
+}
+
+.card h3 {
+  margin: 0.3rem 0 0.4rem;
+  font-size: 1.05rem;
+  color: #111827;
+}
+
+.card p {
+  margin: 0.12rem 0;
+  font-size: 0.85rem;
+  color: #4b5563;
+}
+
+.btn-detalle {
+  margin-top: 0.6rem;
+  background: #16a34a;
+  color: #ffffff;
+  border: none;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.btn-detalle:hover {
+  background: #15803d;
+  transform: translateY(-1px);
+}
+
+.no-results {
+  color: #6b7280;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+/* =========== PANEL LATERAL DETALLE =========== */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: none;
+  z-index: 998;
+}
+
+.panel {
+  position: fixed;
+  right: -420px;
+  top: 0;
+  bottom: 0;
+  width: 420px;
+  background: #ffffff;
+  box-shadow: -4px 0 16px rgba(15, 23, 42, 0.25);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  transition: right 0.25s ease;
+}
+
+.panel.show {
+  right: 0;
+}
+
+.panel-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-header h2 {
+  font-size: 1rem;
+  margin: 0;
+  color: #111827;
+}
+
+.btn-close {
+  border: none;
+  background: transparent;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: #6b7280;
+}
+
+.btn-close:hover {
+  color: #111827;
+}
+
+.panel-content {
+  padding: 1rem 1.25rem 1.25rem;
+  overflow-y: auto;
+}
+
+.panel-content p {
+  margin: 0.25rem 0;
+  font-size: 0.86rem;
+  color: #374151;
+}
+
+.panel-content h3 {
+  margin: 0.7rem 0 0.4rem;
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+/* =========== MAPA EN PANEL =========== */
+#mapSolicitud {
+  width: 100%;
+  height: 180px;
+  border-radius: 10px;
+  margin: 0.6rem 0;
+  border: 1px solid #e5e7eb;
+}
+
+.map-info {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+/* =========== POSTULACIONES =========== */
+.postulaciones-box {
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  padding: 0.6rem;
+  max-height: 260px;
+  overflow-y: auto;
+  background: #f9fafb;
+}
+
+.post-card {
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 0.55rem 0.7rem;
+  margin-bottom: 0.45rem;
+  border: 1px solid #e5e7eb;
+  font-size: 0.8rem;
+}
+
+.post-card p {
+  margin: 0.1rem 0;
+}
+
+.post-btns {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+}
+
+.post-btns button {
+  flex: 1;
+  border: none;
+  border-radius: 999px;
+  padding: 0.3rem 0.4rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.btn-aceptar {
+  background: #16a34a;
+  color: #ffffff;
+}
+
+.btn-aceptar:hover {
+  background: #15803d;
+  transform: translateY(-1px);
+}
+
+.btn-rechazar {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.btn-rechazar:hover {
+  background: #fecaca;
+  transform: translateY(-1px);
+}
+
+.postulaciones-box .no-post {
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.8rem;
+}
+
+/* =========== RESPONSIVE =========== */
+@media (max-width: 768px) {
+  main {
+    margin-left: 74px;
+    padding: 1rem;
+  }
+
+  .panel {
+    width: 100%;
+  }
+}
+/* =========== BASE GENERAL =========== */
+body {
+    margin: 0;
+    font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f7f9f7;
+}
+
+main {
+    margin-left: 88px;
+    padding: 1.5rem 2rem;
+}
+
+.content-container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+header h1 {
+    margin: 0;
+    color: #16291b;
+}
+
+header p {
+    margin: .25rem 0 1.2rem;
+    color: #6b7280;
+}
+
+.solicitudes-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+}
+
+.card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 1rem;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, .06);
+    border: 1px solid #e5e7eb;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: .8rem;
+    margin-bottom: .25rem;
+}
+
+.estado {
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: .7rem;
+    font-weight: 600;
+}
+
+.estado.pend {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.estado.curso {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.estado.comp {
+    background: #e0f2fe;
+    color: #075985;
+}
+
+.estado.otro {
+    background: #e5e7eb;
+    color: #4b5563;
+}
+
+.card h3 {
+    margin: .3rem 0 .4rem;
+    font-size: 1.05rem;
+    color: #111827;
+}
+
+.card p {
+    margin: .12rem 0;
+    font-size: .85rem;
+    color: #4b5563;
+}
+
+.card .btn-detalle {
+    margin-top: .6rem;
+    background: #16a34a;
+    color: #fff;
+    border: none;
+    padding: .45rem .9rem;
+    border-radius: 999px;
+    font-size: .8rem;
+    cursor: pointer;
+}
+
+.card .btn-detalle:hover {
+    background: #15803d;
+}
+
+.no-results {
+    color: #6b7280;
+    font-size: .9rem;
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, .45);
+    display: none;
+    z-index: 998;
+}
+
+.panel {
+    position: fixed;
+    right: -420px;
+    top: 0;
+    bottom: 0;
+    width: 420px;
+    background: #fff;
+    box-shadow: -4px 0 16px rgba(15, 23, 42, .25);
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    transition: right .25s ease;
+}
+
+.panel.show {
+    right: 0;
+}
+
+.panel-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.panel-header h2 {
+    font-size: 1rem;
+    margin: 0;
+    color: #111827;
+}
+
+.btn-close {
+    border: none;
+    background: transparent;
+    font-size: 1.1rem;
+    cursor: pointer;
+    color: #6b7280;
+}
+
+.panel-content {
+    padding: 1rem 1.25rem;
+    overflow-y: auto;
+}
+
+.panel-content p {
+    margin: .25rem 0;
+    font-size: .86rem;
+    color: #374151;
+}
+
+.panel-content h3 {
+    margin: .7rem 0 .4rem;
+    font-size: .95rem;
+    color: #111827;
+}
+
+.postulaciones-box {
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    padding: .6rem;
+    max-height: 260px;
+    overflow-y: auto;
+    background: #f9fafb;
+}
+
+.post-card {
+    border-radius: 10px;
+    background: #fff;
+    padding: .55rem .7rem;
+    margin-bottom: .45rem;
+    border: 1px solid #e5e7eb;
+    font-size: .8rem;
+}
+
+.post-card p {
+    margin: .1rem 0;
+}
+
+.post-btns {
+    display: flex;
+    gap: .4rem;
+    margin-top: .35rem;
+}
+
+.post-btns button {
+    flex: 1;
+    border: none;
+    border-radius: 999px;
+    padding: .3rem .4rem;
+    font-size: .75rem;
+    cursor: pointer;
+}
+
+.btn-aceptar {
+    background: #16a34a;
+    color: #fff;
+}
+
+.btn-aceptar:hover {
+    background: #15803d;
+}
+
+.btn-rechazar {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.btn-rechazar:hover {
+    background: #fecaca;
+}
+
+#mapSolicitud {
+    width: 100%;
+    height: 180px;
+    border-radius: 10px;
+    margin: .6rem 0;
+    border: 1px solid #e5e7eb;
+}
+
+.map-info {
+    font-size: .8rem;
+    color: #6b7280;
+    margin-bottom: .5rem;
+}

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -34,7 +35,9 @@
       </header>
 
       <section class="filters" id="filtros">
-        <select id="filterTipo"><option value="">Tipo (Todos)</option></select>
+        <select id="filterTipo">
+          <option value="">Tipo (Todos)</option>
+        </select>
         <input id="filterOrigen" placeholder="Origen (ciudad)" />
         <input id="filterDestino" placeholder="Destino (ciudad)" />
         <input id="filterMinPago" type="number" placeholder="Pago mínimo S/" min="0" />
@@ -53,29 +56,94 @@
     <p>© 2025 AgroLink. Todos los derechos reservados.</p>
   </footer>
 
+  <!-- Modal de Postulación SIMPLE (YA NO SE USA PARA CONTRAOFERTA) -->
+  <div class="panel-overlay" id="overlayPostular"></div>
+
+  <div class="panel" id="panelPostular" style="max-width:480px">
+    <div class="panel-header">
+      <h2>Postular a solicitud</h2>
+    </div>
+
+    <div class="panel-content">
+      <p><strong>Solicitud:</strong> <span id="postularTipo"></span></p>
+      <p><strong>Productor:</strong> <span id="postularProductor"></span></p>
+
+      <label><strong>Oferta propuesta (S/)</strong></label>
+      <input type="number" id="postularOferta" min="0" class="input" placeholder="Ej. 250">
+
+      <label><strong>Mensaje al productor</strong></label>
+      <textarea id="postularMensaje" placeholder="Opcional..."></textarea>
+    </div>
+
+    <div class="panel-buttons">
+      <button class="btn btn-accept" id="btnEnviarPostulacionSimple">
+        <i class="fa-solid fa-paper-plane"></i> Enviar Postulación
+      </button>
+      <button class="btn btn-close" id="btnCerrarPostular">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- Modal oficial de postulación / contraoferta -->
+  <div class="panel-overlay" id="modalPostulacionOverlay"></div>
+
+  <div class="panel small-panel" id="modalPostulacion">
+    <div class="panel-header">
+      <h2>Postular a la solicitud</h2>
+      <button class="btn-close" id="cerrarPostulacion"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="panel-content">
+      <label>Monto ofrecido (S/)</label>
+      <input type="number" id="ofertaMonto" min="0" step="0.1" placeholder="Ej. 450.00" />
+      <small style="color:#64748b;">Si está vacío, se usa el pago sugerido.</small>
+
+      <label style="margin-top:10px;">Mensaje para el productor</label>
+      <textarea id="ofertaMensaje" rows="3" placeholder="Ej: Tengo experiencia en esta ruta."></textarea>
+    </div>
+
+    <div class="panel-buttons">
+      <button class="btn btn-accept" id="btnEnviarPostulacion">
+        <i class="fa-solid fa-paper-plane"></i> Enviar postulación
+      </button>
+      <button class="btn btn-close" id="btnCancelarPostulacion">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- PANEL DETALLE -->
   <div class="panel-overlay" id="overlay"></div>
+
   <div class="panel" id="panelDetalle">
     <div class="panel-header">
-      <h2 id="detalleTipo"></h2>
+      <h2 id="detalleTipo">Tipo</h2>
       <p id="detalleProductor" style="color:#555; font-weight:500;"></p>
     </div>
+
     <div class="panel-content">
-      <div class="tel-header"><i class="fa-solid fa-phone"></i> Teléfonos</div>
-      <p id="detalleTelefono"></p>
+      <p><strong>Teléfono principal:</strong> <span id="detalleTelefono"></span></p>
       <p><strong>Calificación:</strong> ⭐ <span id="detalleCalificacion"></span></p>
       <p><strong>Origen:</strong> <span id="detalleOrigen"></span></p>
       <p><strong>Destino:</strong> <span id="detalleDestino"></span></p>
       <p><strong>Peso:</strong> <span id="detallePeso"></span> kg</p>
-      <p><strong>Pago:</strong> S/ <span id="detallePago"></span></p>
+      <p><strong>Pago sugerido:</strong> S/ <span id="detallePago"></span></p>
       <p><strong>Fecha:</strong> <span id="detalleFecha"></span></p>
-      <div id="map"></div>
+
+      <h4 style="margin-top:1rem;">Ruta estimada</h4>
+      <div id="map" style="height:260px;border-radius:10px;"></div>
     </div>
+
     <div class="panel-buttons">
-      <button class="btn btn-accept" id="btnAceptar"><i class="fa-solid fa-check"></i> Aceptar</button>
-      <button class="btn btn-denunciar" id="btnDenunciar"><i class="fa-solid fa-flag"></i> Denunciar</button>
+      <button class="btn btn-accept" id="btnPostular">
+        <i class="fa-solid fa-handshake"></i> Postular
+      </button>
+
+      <button class="btn btn-denunciar" id="btnDenunciar">
+        <i class="fa-solid fa-flag"></i> Denunciar
+      </button>
+
       <button class="btn btn-close" id="btnCerrar">Cerrar</button>
     </div>
   </div>
+
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
@@ -83,7 +151,7 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
-      // === 🔐 Verificación y sincronización de sesión ===
+      // === 🔐 Sesión y sincronización (igual que tenías) ===
       const sesionGuardada = localStorage.getItem("agrolinkUsuario");
       if (!sesionGuardada) {
         window.location.href = "../login.html";
@@ -91,9 +159,9 @@
       }
       let usuario = JSON.parse(sesionGuardada);
       let usuariosLista = JSON.parse(localStorage.getItem("agrolinkUsuarios") || "[]");
-      const idx = usuariosLista.findIndex(u => (u.email || u.correo) === (usuario.email || usuario.correo));
-      if (idx !== -1) {
-        usuario = usuariosLista[idx];
+      const idxUser = usuariosLista.findIndex(u => (u.email || u.correo) === (usuario.email || usuario.correo));
+      if (idxUser !== -1) {
+        usuario = usuariosLista[idxUser];
         localStorage.setItem("agrolinkUsuario", JSON.stringify(usuario));
       }
 
@@ -103,8 +171,17 @@
       const overlay = document.getElementById("overlay");
       const panel = document.getElementById("panelDetalle");
       const btnCerrar = document.getElementById("btnCerrar");
-      const btnAceptar = document.getElementById("btnAceptar");
       const btnDenunciar = document.getElementById("btnDenunciar");
+      const btnPostular = document.getElementById("btnPostular");
+
+      // Modal de postulación
+      const modalPostulacion = document.getElementById("modalPostulacion");
+      const modalPostulacionOverlay = document.getElementById("modalPostulacionOverlay");
+      const cerrarPostulacion = document.getElementById("cerrarPostulacion");
+      const btnCancelarPostulacion = document.getElementById("btnCancelarPostulacion");
+      const btnEnviarPostulacion = document.getElementById("btnEnviarPostulacion");
+      const ofertaMonto = document.getElementById("ofertaMonto");
+      const ofertaMensaje = document.getElementById("ofertaMensaje");
 
       const filterTipo = document.getElementById("filterTipo");
       const filterOrigen = document.getElementById("filterOrigen");
@@ -150,6 +227,24 @@
           if (maxPago !== null && pago > maxPago) return false;
           return true;
         });
+        // === Notificaciones de postulación aceptada ===
+        const notifs = JSON.parse(localStorage.getItem("agrolinkNotificaciones") || "[]");
+        const miId = usuario.id || usuario.email || usuario.correo || usuario.nombre;
+
+        const mias = notifs.filter(n => !n.leida && n.paraRol === "transportista" && n.paraId === miId);
+
+        if (mias.length > 0) {
+          // Si tienes showToast:
+          // mias.forEach(n => showToast(n.mensaje, "success"));
+          // Si no, al menos un alert:
+          alert(mias[0].mensaje);
+
+          // Marcarlas como leídas
+          notifs.forEach(n => {
+            if (n.paraId === miId && n.paraRol === "transportista") n.leida = true;
+          });
+          localStorage.setItem("agrolinkNotificaciones", JSON.stringify(notifs));
+        }
 
         contenedor.innerHTML = resultados.length
           ? ""
@@ -158,12 +253,18 @@
         resultados.forEach(s => {
           const card = document.createElement("div");
           card.classList.add("card");
+
+          const yaPostule =
+            Array.isArray(s.postulaciones) &&
+            s.postulaciones.some(p => (p.id === (usuario.id || usuario.email || usuario.correo || usuario.nombre)));
+
           card.innerHTML = `
             <h3><i class="fa-solid fa-seedling"></i> ${s.tipo || 'Sin tipo'}</h3>
             <p><strong>Productor:</strong> ${s.productor || 'Desconocido'}</p>
             <p><strong>Origen:</strong> ${s.origen || '---'}</p>
             <p><strong>Destino:</strong> ${s.destino || '---'}</p>
-            <p><strong>Pago:</strong> S/ ${s.pago || '0'}</p>
+            <p><strong>Pago sugerido:</strong> S/ ${s.pago || '0'}</p>
+            <p><strong>Postulación:</strong> ${yaPostule ? 'Ya postulaste ✅' : 'Aún no has postulado'}</p>
             <button class="btn-ver">Ver detalles</button>
           `;
           card.querySelector(".btn-ver").addEventListener("click", () => abrirPanel(s));
@@ -233,34 +334,77 @@
         setTimeout(() => (overlay.style.display = "none"), 400);
       });
 
-      btnAceptar.addEventListener("click", () => {
+      // === 🔹 Abrir modal de postulación ===
+      btnPostular.addEventListener("click", () => {
         if (!solicitudActual || solicitudActual.estado !== "Pendiente") {
           showToast("La solicitud ya no está disponible.", "info");
+          return;
+        }
+        ofertaMonto.value = "";
+        ofertaMensaje.value = "";
+        modalPostulacionOverlay.style.display = "block";
+        modalPostulacion.classList.add("show");
+      });
+
+      function cerrarModalPostulacion() {
+        modalPostulacion.classList.remove("show");
+        setTimeout(() => modalPostulacionOverlay.style.display = "none", 250);
+      }
+
+      cerrarPostulacion.onclick = cerrarModalPostulacion;
+      btnCancelarPostulacion.onclick = cerrarModalPostulacion;
+
+      // === 🔹 Enviar postulación (contraoferta) ===
+      btnEnviarPostulacion.addEventListener("click", () => {
+        if (!solicitudActual || solicitudActual.estado !== "Pendiente") {
+          showToast("La solicitud ya no está disponible.", "info");
+          cerrarModalPostulacion();
+          return;
+        }
+
+        const monto = parseFloat(ofertaMonto.value);
+        const mensaje = ofertaMensaje.value.trim();
+        const ofertaFinal = !isNaN(monto) && monto > 0 ? monto : parseFloat(solicitudActual.pago || 0);
+
+        // refrescar DB
+        db = JSON.parse(localStorage.getItem("solicitudesAgroLink") || "[]");
+        const idxS = db.findIndex(s => s.id === solicitudActual.id);
+        if (idxS === -1) {
+          showToast("La solicitud ya no existe.", "error");
+          cerrarModalPostulacion();
           renderList();
           return;
         }
-        solicitudActual.estado = "En curso";
-        solicitudActual.transportista = usuario.nombre || "Transportista";
-        solicitudActual.transportistaId = usuario.id || null;
-        guardarDB();
+        const s = db[idxS];
+        if (!Array.isArray(s.postulaciones)) s.postulaciones = [];
 
-        const chatKey = `chat_${solicitudActual.id || solicitudActual.fecha}`;
-        let mensajes = JSON.parse(localStorage.getItem(chatKey) || "[]");
-        if (!mensajes.some(m => m.tipo === "autoInicio")) {
-          mensajes.push({
-            remitente: usuario.nombre || "Transportista",
-            rol: "transportista",
-            texto: "🚚 ¡Hola! Estoy en camino al punto de recojo.",
+        const postId = usuario.id || usuario.email || usuario.correo || usuario.nombre;
+
+        const existente = s.postulaciones.find(p => p.id === postId);
+        if (existente) {
+          existente.oferta = ofertaFinal.toFixed(2);
+          existente.mensaje = mensaje;
+          existente.fecha = new Date().toISOString();
+        } else {
+          s.postulaciones.push({
+            id: postId,
+            nombre: usuario.nombre || "Transportista",
+            oferta: ofertaFinal.toFixed(2),
+            mensaje,
             fecha: new Date().toISOString(),
-            tipo: "autoInicio"
+            estado: "pendiente"
           });
-          localStorage.setItem(chatKey, JSON.stringify(mensajes));
         }
 
-        showToast("✅ Has aceptado la solicitud.", "success");
-        cerrarYActualizar();
+        db[idxS] = s;
+        localStorage.setItem("solicitudesAgroLink", JSON.stringify(db));
+
+        showToast("✅ Postulación enviada al productor.", "success");
+        cerrarModalPostulacion();
+        renderList();
       });
 
+      // === Denunciar (igual que antes) ===
       btnDenunciar.addEventListener("click", () => {
         if (!solicitudActual || solicitudActual.estado !== "Pendiente") {
           showToast("La solicitud ya no está disponible.", "info");
@@ -286,18 +430,14 @@
         localStorage.setItem("denunciasAgroLink", JSON.stringify(denuncias));
 
         showToast("🚩 Solicitud denunciada y removida de la lista.", "error");
-        cerrarYActualizar();
-      });
-
-      function cerrarYActualizar() {
         panel.classList.remove("show");
+        overlay.style.display = "none";
         document.body.style.overflow = "auto";
-        setTimeout(() => (overlay.style.display = "none"), 400);
         setTimeout(() => {
-          db = JSON.parse(localStorage.getItem("solicitudesAgroLink")) || [];
+          db = JSON.parse(localStorage.getItem("solicitudesAgroLink") || "[]");
           poblarTipos(); renderList();
         }, 500);
-      }
+      });
 
       btnAplicar.addEventListener("click", e => { e.preventDefault(); renderList(); });
       btnReset.addEventListener("click", e => {
@@ -306,10 +446,10 @@
         renderList();
       });
 
-      // === 🔚 Logout persistente ===
+      // === Logout persistente (igual) ===
       document.getElementById("logout").addEventListener("click", e => {
         e.preventDefault();
-        const usuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios")) || [];
+        const usuarios = JSON.parse(localStorage.getItem("agrolinkUsuarios") || "[]");
         const idx = usuarios.findIndex(u => (u.email || u.correo) === (usuario.email || usuario.correo));
         if (idx !== -1) {
           usuarios[idx].sesionActiva = false;
@@ -326,4 +466,5 @@
     });
   </script>
 </body>
+
 </html>
