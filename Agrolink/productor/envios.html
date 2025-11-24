@@ -33,10 +33,9 @@
 
     <div class="agro-menu">
       <button title="Inicio" onclick="location.href='dashboard.html'"><i class="fa-solid fa-house"></i></button>
-      <button class="active" title="Envíos" onclick="location.href='envios.html'"><i
-          class="fa-solid fa-truck"></i></button>
-      <button title="Solicitudes" onclick="location.href='solicitudes.html'"><i
-          class="fa-solid fa-file-circle-plus"></i></button>
+      <button class="active" title="Envíos" onclick="location.href='envios.html'"><i class="fa-solid fa-truck"></i></button>
+      <button title="Solicitudes" onclick="location.href='solicitudes.html'"><i class="fa-solid fa-file-circle-plus"></i></button>
+      <button title="Postulaciones" onclick="location.href='ASolicitudes.html'"><i class="fa-solid fa-briefcase"></i></button>
       <button title="Perfil" onclick="location.href='perfil.html'"><i class="fa-solid fa-user"></i></button>
     </div>
 
@@ -572,44 +571,44 @@
     /* ======================================
        🗺️ BOTÓN "MAPA" GENERAL
     ====================================== */
-  document.addEventListener("DOMContentLoaded", () => {
-    const btnMapaGeneral = document.getElementById("btnMapaGeneral");
-    const mapSheet = document.getElementById("mapSheet");
-    const closeMapSheet = document.getElementById("closeMapSheet");
+    document.addEventListener("DOMContentLoaded", () => {
+      const btnMapaGeneral = document.getElementById("btnMapaGeneral");
+      const mapSheet = document.getElementById("mapSheet");
+      const closeMapSheet = document.getElementById("closeMapSheet");
 
-    if (btnMapaGeneral) {
-      btnMapaGeneral.addEventListener("click", () => {
-        mapSheet.classList.add("show");
-        const mapContainer = document.getElementById("mapGeneral");
-        mapContainer.innerHTML = "";
+      if (btnMapaGeneral) {
+        btnMapaGeneral.addEventListener("click", () => {
+          mapSheet.classList.add("show");
+          const mapContainer = document.getElementById("mapGeneral");
+          mapContainer.innerHTML = "";
 
-        const envios = JSON.parse(localStorage.getItem("solicitudesAgroLink") || "[]");
-        if (!envios.length) {
-          mapContainer.innerHTML = "<p class='text-muted p-3'>No hay envíos registrados para mostrar en el mapa.</p>";
-          return;
-        }
-
-        const map = L.map("mapGeneral").setView([-9.19, -75.015], 6);
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: '&copy; OpenStreetMap' }).addTo(map);
-
-        const group = [];
-        envios.forEach(e => {
-          if (e.origenLat && e.origenLng && e.destinoLat && e.destinoLng) {
-            const origen = [e.origenLat, e.origenLng];
-            const destino = [e.destinoLat, e.destinoLng];
-            group.push(origen, destino);
-            const color = e.estado.includes("Completado") ? "#00b074" : e.estado.includes("En curso") ? "#ffb703" : "#6c757d";
-            L.polyline([origen, destino], { color, weight: 4, opacity: 0.8 }).addTo(map);
-            L.marker(origen).addTo(map).bindPopup(`<b>${e.producto || "Producto"}</b><br>Origen: ${e.origen}`);
-            L.marker(destino).addTo(map).bindPopup(`<b>${e.producto || "Producto"}</b><br>Destino: ${e.destino}`);
+          const envios = JSON.parse(localStorage.getItem("solicitudesAgroLink") || "[]");
+          if (!envios.length) {
+            mapContainer.innerHTML = "<p class='text-muted p-3'>No hay envíos registrados para mostrar en el mapa.</p>";
+            return;
           }
-        });
-        if (group.length) map.fitBounds(group);
-      });
-    }
 
-    if (closeMapSheet) closeMapSheet.addEventListener("click", () => mapSheet.classList.remove("show"));
-  });
+          const map = L.map("mapGeneral").setView([-9.19, -75.015], 6);
+          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: '&copy; OpenStreetMap' }).addTo(map);
+
+          const group = [];
+          envios.forEach(e => {
+            if (e.origenLat && e.origenLng && e.destinoLat && e.destinoLng) {
+              const origen = [e.origenLat, e.origenLng];
+              const destino = [e.destinoLat, e.destinoLng];
+              group.push(origen, destino);
+              const color = e.estado.includes("Completado") ? "#00b074" : e.estado.includes("En curso") ? "#ffb703" : "#6c757d";
+              L.polyline([origen, destino], { color, weight: 4, opacity: 0.8 }).addTo(map);
+              L.marker(origen).addTo(map).bindPopup(`<b>${e.producto || "Producto"}</b><br>Origen: ${e.origen}`);
+              L.marker(destino).addTo(map).bindPopup(`<b>${e.producto || "Producto"}</b><br>Destino: ${e.destino}`);
+            }
+          });
+          if (group.length) map.fitBounds(group);
+        });
+      }
+
+      if (closeMapSheet) closeMapSheet.addEventListener("click", () => mapSheet.classList.remove("show"));
+    });
   </script>
   <script>
     /* ======================================
