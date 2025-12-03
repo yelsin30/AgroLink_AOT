@@ -579,7 +579,7 @@ button:hover,
 .contact-form input,
 .contact-form textarea {
   width: 100%;
-  padding: 0.9rem;
+  padding: 0.2rem;
   border: 1px solid #cfe6c7;
   border-radius: 8px;
   font-size: 1rem;
@@ -634,7 +634,7 @@ button:hover,
   color: #fff;
   position: relative;
   overflow: hidden;
-  animation: zoomHero 20s ease-in-out infinite alternate;
+  /* animation: zoomHero 20s ease-in-out infinite alternate; */
 }
 
 /* Oscurecer la imagen para que el texto resalte */
