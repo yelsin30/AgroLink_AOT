@@ -1,10 +1,12 @@
 /* === ESTILO CONFIGURACION === */
 :root {
-      --primary: #22c55e;
-      --secondary: #1f2937;
-      --light: #f9fafb;
-      --gray: #6b7280;
-      --border: #e5e7eb;
+    --primary: #22c55e;
+    --primary-dark: #16a34a;
+    --secondary: #1f2937;
+    --light: #f9fafb;
+    --gray: #6b7280;
+    --red: #ef4444;
+    --border: #e5e7eb;
     }
 
     * {
@@ -83,7 +85,7 @@
 
     .main-content {
       margin-left: 250px;
-      width: calc(100%-250px);
+      width: calc(100% - 250px);
       min-height: 100vh;
       padding: 2rem;
     }
