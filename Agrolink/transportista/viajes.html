@@ -165,9 +165,12 @@
       }
 
       function actualizarKPIs() {
-        const enCurso = solicitudes.filter(v => /curso/i.test(v.estado));
-        const completados = solicitudes.filter(v => /completad/i.test(v.estado));
-        const total = completados.reduce((a, v) => a + (parseFloat(v.pagoFinal || v.pago) || 0), 0);
+        const enCurso = solicitudes.filter(v => /en\s*curso/i.test(v.estado));
+        const completados = solicitudes.filter(v => /completado/i.test(v.estado));
+        const cancelados = solicitudes.filter(v => /cancelado/i.test(v.estado));
+        // ---- FIX: calcular total de ingresos con completados ----
+        const total = completados.reduce((acc, v) => acc + (parseFloat(v.pagoFinal || v.pago || 0) || 0), 0);
+
         document.getElementById("enCurso").textContent = enCurso.length;
         document.getElementById("completados").textContent = completados.length;
         document.getElementById("totalGanado").textContent = `S/ ${total.toFixed(2)}`;
@@ -185,10 +188,10 @@
               <span class="estado ${v.estado.toLowerCase()}">${v.estado}</span>
             </div>
             <p><strong>Fecha:</strong> ${v.fecha || "No especificada"}</p>
-            <p><strong>Pago:</strong> S/ ${(v.pagoFinal || v.pago || 0).toFixed(2)}</p>
+            <p><strong>Pago:</strong> S/ ${(parseFloat(v.pagoFinal || v.pago || 0)).toFixed(2)}</p>
             <div class="botones-viaje">
               <button class="btn-ver" onclick="verDetalles('${v.id}')">Ver Detalles</button>
-              ${/curso/i.test(v.estado) ? `<button class="btn-completar" onclick="marcarCompletado('${v.id}')">Marcar como Completado</button>` : ""}
+              ${/en\s*curso/i.test(v.estado) ? `<button class="btn-completar" onclick="marcarCompletado('${v.id}')">Marcar como Completado</button>` : ""}
             </div>`;
           card.addEventListener("click", e => { if (!e.target.closest(".botones-viaje")) mostrarRuta(v); });
           container.appendChild(card);
@@ -222,7 +225,8 @@
         s.fechaCompletado = new Date().toLocaleString("es-PE");
         localStorage.setItem("solicitudesAgroLink", JSON.stringify(solicitudes));
         actualizarKPIs();
-        renderViajes(solicitudes.filter(v => /curso/i.test(v.estado)));
+        // ---- FIX: usar filtro correcto al re-renderizar ----
+        renderViajes(solicitudes.filter(v => /en\s*curso/i.test(v.estado)));
         alert(`✅ El viaje ${s.origen} → ${s.destino} fue completado.`);
       };
 
@@ -233,9 +237,10 @@
           e.target.classList.add("active");
           const tipo = e.target.dataset.tab;
           let lista = [];
-          if (tipo === "curso") lista = solicitudes.filter(v => /curso/i.test(v.estado));
-          if (tipo === "completados") lista = solicitudes.filter(v => /completad/i.test(v.estado));
-          if (tipo === "cancelados") lista = solicitudes.filter(v => /cancelad/i.test(v.estado));
+          if (tipo === "curso") lista = solicitudes.filter(v => /en\s*curso/i.test(v.estado));
+          if (tipo === "completados") lista = solicitudes.filter(v => /completado/i.test(v.estado));
+          if (tipo === "cancelados") lista = solicitudes.filter(v => /cancelado/i.test(v.estado));
+
           renderViajes(lista);
         });
       });
@@ -255,7 +260,8 @@
       };
 
       actualizarKPIs();
-      renderViajes(solicitudes.filter(v => /curso/i.test(v.estado)));
+      // ---- FIX: usar filtro correcto en el render inicial ----
+      renderViajes(solicitudes.filter(v => /en\s*curso/i.test(v.estado)));
     });
   </script>
 </body>
